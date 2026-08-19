@@ -55,12 +55,12 @@
   "scripts": {
     "build": "node scripts/build.mjs --compile",
     "build:site": "node scripts/build-site.mjs",
-    "test": "node --test test/compat.test.mjs test/official-parse.test.mjs",
+    "test": "node --test test/compat.test.mjs test/options.test.mjs test/official-parse.test.mjs",
     "measure": "node scripts/measure.mjs",
     "bench": "node e2e/run.mjs",
     "check:site": "npm run build:site && node --test test/site.test.mjs",
     "check:pack": "node scripts/check-pack.mjs",
-    "prepublishOnly": "node --test test/compat.test.mjs test/official-parse.test.mjs && npm run check:pack && npm run check:site"
+    "prepublishOnly": "npm test && npm run check:pack && npm run check:site"
   },
   "devDependencies": {
     "esbuild": "0.28.1",
