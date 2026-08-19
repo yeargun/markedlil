@@ -7,6 +7,8 @@ import { bundleOfficialParseOnly } from "./official-parse-bundle.mjs"
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const lilPath = join(root, "dist/marked.esm.js")
+const closedPath = join(root, "dist/marked.closed.js")
+const licenseBanner = `${readFileSync(lilPath, "utf8").split("\n", 1)[0]}\n`
 const lanesDir = join(root, ".tmp", "lanes")
 const parseOnlyPath = join(root, ".tmp", "official-parse-only.js")
 
@@ -53,9 +55,15 @@ const artifacts = [
   {
     id: "itslil",
     name: "@itslil/marked",
-    note: "LilScript compiler-selected ESM, not post-minified. parse / parseInline only — no extension system.",
+    note: "JS library: extern class pins gfm / breaks / parse and the rest of the marked 18.0.10 object shape. Compiler-selected ESM, not post-minified.",
     sourcePath: lilPath,
     primary: true,
+  },
+  {
+    id: "itslil-closed",
+    name: "@itslil/marked · closed LilScript",
+    note: "Same program with [mangle] extern_fields = false. Those public JS keys mangle. This is the size if callers were LilScript, not a JS options object. Not the npm file.",
+    code: `${licenseBanner}${readFileSync(closedPath, "utf8").trimEnd()}\n`,
   },
 ]
 
@@ -86,7 +94,7 @@ const report = {
   package: "@itslil/marked",
   codec: "lilscript-codec gzip-9 / brotli-11",
   comparison:
-    "Every size and speed lane is the same surface: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer (no use/Hooks/walkTokens), then Oxc or Terser, versus this port. The published npm file is not a lane — it still contains the extension system.",
+    "Every size and speed lane is the same surface: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer (no use/Hooks/walkTokens), then Oxc or Terser, versus this port. @itslil/marked is the JS library (extern fields on). The closed LilScript lane turns that pin off. The published npm marked file is not a lane — it still contains the extension system.",
   lanes: measured,
 }
 

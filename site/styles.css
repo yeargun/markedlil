@@ -123,6 +123,7 @@ h1 em { color: var(--purple); font-style: normal; }
 .total-bar > div { display: flex; justify-content: space-between; align-items: center; height: 58px; padding-inline: 18px; color: var(--ink); font: 500 12px "DM Mono", monospace; }
 .bar-official { width: 100%; background: #cbb892; }
 .bar-lil { background: var(--acid); }
+.bar-closed { background: #d4c08a; }
 .table-wrap { overflow-x: auto; border-top: 1px solid #3a3228; }
 .table-wrap.light { border-top: 1px solid var(--line); }
 table { width: 100%; border-collapse: collapse; font: 500 12px "DM Mono", monospace; }

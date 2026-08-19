@@ -1,4 +1,4 @@
-import { Kind, Align, Token, Lexer } from "./types.lil";
+import { Kind, Align, Token, Lexer, MarkedOptions } from "./types.lil";
 import { lex, lexInline } from "./lexer.lil";
 import { escapeHtml, cleanUrl, slice, group0, execRe, matched } from "./str.lil";
 import { otherNotSpaceStart } from "./rules.lil";
@@ -253,11 +253,7 @@ export string renderTokens(Token[] tokens) {
   return out;
 }
 
-export bool optionBool(JsValue opt, string key, bool fallback) {
-  if (JS.isUndefined(opt) || JS.isNullish(opt)) {
-    return fallback;
-  }
-  JsValue value = opt[key];
+export bool optionFlag(JsValue value, bool fallback) {
   if (JS.isUndefined(value)) {
     return fallback;
   }
@@ -269,10 +265,11 @@ export string parseTokens(Token[] tokens) {
 }
 
 export string parseMarkdown(string src, bool block, JsValue opt) {
-  bool gfm = optionBool(opt, "gfm", true);
-  bool breaks = optionBool(opt, "breaks", false);
-  bool pedantic = optionBool(opt, "pedantic", false);
-  bool silent = optionBool(opt, "silent", false);
+  MarkedOptions options = JS.assume(opt);
+  bool gfm = optionFlag(options.gfm, true);
+  bool breaks = optionFlag(options.breaks, false);
+  bool pedantic = optionFlag(options.pedantic, false);
+  bool silent = optionFlag(options.silent, false);
   Lexer lx = new Lexer(gfm, breaks, pedantic, silent);
   try {
     if (block) {

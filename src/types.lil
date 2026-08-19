@@ -101,6 +101,23 @@ export class InlineJob {
   }
 }
 
+export extern class MarkedOptions {
+  JsValue gfm;
+  JsValue breaks;
+  JsValue pedantic;
+  JsValue silent;
+  JsValue async;
+}
+
+export extern class MarkedApi {
+  JsValue parse;
+  JsValue parseInline;
+  JsValue setOptions;
+  JsValue options;
+  JsValue getDefaults;
+  JsValue defaults;
+}
+
 export class Lexer {
   bool gfm;
   bool pedantic;

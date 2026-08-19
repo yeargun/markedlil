@@ -40,6 +40,18 @@ function run(cmd, args) {
   if (result.status !== 0) process.exit(result.status ?? 1)
 }
 
+function compileLil(compiler, configName, outputName) {
+  run(compiler, [
+    resolve(root, "src", "entry.lil"),
+    "--target",
+    "js-module",
+    "--config",
+    resolve(root, configName),
+    "-o",
+    resolve(dist, outputName),
+  ])
+}
+
 function compileIfRequested() {
   if (!process.argv.includes("--compile") && existsSync(resolve(dist, "marked.raw.js"))) {
     return
@@ -49,15 +61,8 @@ function compileIfRequested() {
     throw new Error("LilScript compiler not found. Set LILSCRIPT_COMPILER or build lilscript.")
   }
   mkdirSync(dist, { recursive: true })
-  run(compiler, [
-    resolve(root, "src", "entry.lil"),
-    "--target",
-    "js-module",
-    "--config",
-    resolve(root, "lilscript.toml"),
-    "-o",
-    resolve(dist, "marked.raw.js"),
-  ])
+  compileLil(compiler, "lilscript.toml", "marked.raw.js")
+  compileLil(compiler, "lilscript.closed.toml", "marked.closed.js")
 }
 
 

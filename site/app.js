@@ -124,7 +124,7 @@ function renderSize() {
   document.querySelector("#total-bar").innerHTML = sizeLanes
     .map((lane) => {
       const width = Math.max(18, (lane.brotli11 / max) * 100)
-      const cls = lane.primary ? "bar-lil" : "bar-official"
+      const cls = lane.primary ? "bar-lil" : lane.id === "itslil-closed" ? "bar-closed" : "bar-official"
       return `<div class="${cls}" style="width:${width}%"><span>${lane.name}</span><strong>${formatter.format(lane.brotli11)} B</strong></div>`
     })
     .join("")

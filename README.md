@@ -32,7 +32,12 @@ Every size and speed number on this page is the **same surface**: official `mark
 
 The published npm `marked.esm.js` still contains `use()`, Hooks, `walkTokens`, and the `Marked` class. It is not a lane. Comparing this port to that file would be a different product against a subset.
 
-Measured with `lilscript-codec` gzip-9 / Brotli-11.
+Two LilScript artifacts are measured. They are the same program.
+
+- **JS library** (`[mangle] extern_fields = true`, the npm file). `extern class MarkedOptions` / `MarkedApi` pin `gfm`, `breaks`, `pedantic`, `silent`, `async`, `parse`, `parseInline`, `setOptions`, `options`, `getDefaults`, and `defaults`. A JavaScript caller can pass `{ breaks: true }` and read `marked.defaults.gfm`. Those spellings cannot enter the property mangler.
+- **Closed LilScript** (`lilscript.closed.toml`, `extern_fields = false`). Not published. If this parser were only called from LilScript, those keys would not be a JavaScript ABI and would mangle with everything else. Host members such as `string.length` stay exact. Default `parse("# hi")` still matches; a JS options object does not.
+
+Measured with `lilscript-codec` gzip-9 / Brotli-11. Both LilScript lanes include the same license banner.
 
 | Lane | Raw | gzip-9 | Brotli-11 | vs parse-only Oxc |
 | --- | ---: | ---: | ---: | ---: |
@@ -41,9 +46,12 @@ Measured with `lilscript-codec` gzip-9 / Brotli-11.
 | Official parse path · Oxc mangle off | 47,547 | 12,153 | 11,279 | 1.12× |
 | Official parse path · Terser mangle on | 37,725 | 11,045 | 10,138 | 1.00× |
 | Official parse path · Terser mangle off | 48,444 | 12,302 | 11,339 | 1.12× |
-| **`@itslil/marked`** | **36,978** | **11,274** | **10,179** | **1.01×** |
+| **`@itslil/marked` · JS library** | **36,003** | **10,762** | **9,580** | **0.95×** |
+| `@itslil/marked` · closed LilScript | 36,130 | 10,710 | 9,537 | 0.94× |
 
-Against the smallest minified official **parse path**, this build is **0.9% larger on Brotli-11**, **3.1% larger on gzip-9**, and **0.1% smaller raw**. Same 660-case HTML. Candidate search is off: with it on, the compiler was ranking artifacts that throw at runtime. The public option keys (`gfm`, `breaks`, `pedantic`, `silent`) stay unmangled.
+The npm file is **5.1% smaller on Brotli-11**, **1.5% smaller on gzip-9**, and **2.8% smaller raw** than the official parse path · Oxc mangle on. Same 660-case HTML.
+
+Turning the extern pin off does not win raw (the library is 127 bytes smaller uncompressed). It wins the codecs: **43 Brotli bytes** and **52 gzip bytes** versus the library. That is the tax of keeping a JavaScript options object. A program written entirely in LilScript would not pay it.
 
 ## Performance
 

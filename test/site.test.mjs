@@ -30,8 +30,23 @@ describe("github pages artifact", () => {
     assert.match(html, /mangle/)
     assert.match(html, /parse path/)
     assert.match(html, /use\(\)/)
+    assert.match(html, /extern_fields/)
+    assert.match(html, /closed LilScript/)
     assert.doesNotMatch(html, /npm’s full/)
     assert.doesNotMatch(html, /listed last as a diagnostic/)
+  })
+
+  it("reports both the JS library and the closed LilScript sizes", () => {
+    const results = JSON.parse(readFileSync(resolve(site, "results.json"), "utf8"))
+    const library = results.size.find((lane) => lane.id === "itslil")
+    const closed = results.size.find((lane) => lane.id === "itslil-closed")
+    const oxc = results.size.find((lane) => lane.id === "parse-oxc-mangle")
+    assert.equal(library.primary, true)
+    assert.equal(library.brotli11, 9580)
+    assert.equal(closed.brotli11, 9537)
+    assert.ok(library.brotli11 < oxc.brotli11)
+    assert.ok(closed.brotli11 < library.brotli11)
+    assert.equal(results.hero.itslilBrotli, library.brotli11)
   })
 
   it("races the official parse path, not published marked.esm.js", () => {

@@ -12,5 +12,5 @@ function_spelling = "arrow"
 identifiers = true
 properties = true
 exports = false
-extern_fields = true
+extern_fields = false
 pool_strings = true

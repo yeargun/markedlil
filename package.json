@@ -1,6 +1,6 @@
 {
   "name": "@itslil/marked",
-  "version": "18.0.11",
+  "version": "18.0.12",
   "description": "marked 18.0.10 parse path reimplemented in LilScript. parse / parseInline / setOptions — not the extension ABI.",
   "keywords": [
     "marked",
@@ -55,7 +55,7 @@
   "scripts": {
     "build": "node scripts/build.mjs --compile",
     "build:site": "node scripts/build-site.mjs",
-    "test": "node --test test/compat.test.mjs test/options.test.mjs test/official-parse.test.mjs",
+    "test": "node --test test/compat.test.mjs test/options.test.mjs test/official-parse.test.mjs test/closed.test.mjs",
     "measure": "node scripts/measure.mjs",
     "bench": "node e2e/run.mjs",
     "check:site": "npm run build:site && node --test test/site.test.mjs",

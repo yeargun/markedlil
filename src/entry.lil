@@ -1,33 +1,24 @@
-import { parseMarkdown, optionBool } from "./parse.lil";
+import { MarkedApi, MarkedOptions } from "./types.lil";
+import { parseMarkdown, optionFlag } from "./parse.lil";
 
-extern class MarkedOptions {
-  JsValue gfm;
-  JsValue breaks;
-  JsValue pedantic;
-  JsValue silent;
-  JsValue async;
+JsValue liveDefaults = JS.object();
+
+JsValue copyOptions(MarkedOptions source, bool fallbackGfm, bool fallbackBreaks, bool fallbackPedantic, bool fallbackSilent) {
+  MarkedOptions next = JS.assume(JS.object());
+  next.gfm = optionFlag(source.gfm, fallbackGfm);
+  next.breaks = optionFlag(source.breaks, fallbackBreaks);
+  next.pedantic = optionFlag(source.pedantic, fallbackPedantic);
+  next.silent = optionFlag(source.silent, fallbackSilent);
+  next.async = false;
+  return next;
 }
 
-bool defaultGfm = true;
-bool defaultBreaks = false;
-bool defaultPedantic = false;
-bool defaultSilent = false;
-
 JsValue mergeOpt(JsValue opt) {
+  MarkedOptions current = JS.assume(liveDefaults);
   if (JS.isUndefined(opt) || JS.isNullish(opt)) {
-    JsValue next = JS.object();
-    next["gfm"] = defaultGfm;
-    next["breaks"] = defaultBreaks;
-    next["pedantic"] = defaultPedantic;
-    next["silent"] = defaultSilent;
-    return next;
+    return copyOptions(current, true, false, false, false);
   }
-  JsValue next = JS.object();
-  next["gfm"] = optionBool(opt, "gfm", defaultGfm);
-  next["breaks"] = optionBool(opt, "breaks", defaultBreaks);
-  next["pedantic"] = optionBool(opt, "pedantic", defaultPedantic);
-  next["silent"] = optionBool(opt, "silent", defaultSilent);
-  return next;
+  return copyOptions(JS.assume(opt), optionFlag(current.gfm, true), optionFlag(current.breaks, false), optionFlag(current.pedantic, false), optionFlag(current.silent, false));
 }
 
 export string parse(string src, JsValue opt) {
@@ -39,10 +30,14 @@ export string parseInline(string src, JsValue opt) {
 }
 
 export JsValue setOptions(JsValue opt) {
-  defaultGfm = optionBool(opt, "gfm", defaultGfm);
-  defaultBreaks = optionBool(opt, "breaks", defaultBreaks);
-  defaultPedantic = optionBool(opt, "pedantic", defaultPedantic);
-  defaultSilent = optionBool(opt, "silent", defaultSilent);
+  if (!(JS.isUndefined(opt) || JS.isNullish(opt))) {
+    MarkedOptions current = JS.assume(liveDefaults);
+    MarkedOptions incoming = JS.assume(opt);
+    current.gfm = optionFlag(incoming.gfm, optionFlag(current.gfm, true));
+    current.breaks = optionFlag(incoming.breaks, optionFlag(current.breaks, false));
+    current.pedantic = optionFlag(incoming.pedantic, optionFlag(current.pedantic, false));
+    current.silent = optionFlag(incoming.silent, optionFlag(current.silent, false));
+  }
   return getDefaults();
 }
 
@@ -57,13 +52,7 @@ export JsValue getDefaults() {
 }
 
 export JsValue options() {
-  MarkedOptions opt = JS.assume(JS.object());
-  opt.gfm = defaultGfm;
-  opt.breaks = defaultBreaks;
-  opt.pedantic = defaultPedantic;
-  opt.silent = defaultSilent;
-  opt.async = false;
-  return opt;
+  return copyOptions(JS.assume(liveDefaults), true, false, false, false);
 }
 
 extern JsValue TypeError;
@@ -79,19 +68,27 @@ export JsValue marked = JS.method2(markedCall);
 
 JsValue setOptionsCall(JsValue self, JsValue opt) {
   setOptions(opt);
-  marked["defaults"] = options();
+  MarkedApi api = JS.assume(marked);
+  api.defaults = liveDefaults;
   return marked;
 }
 
 JsValue attachApi() {
+  MarkedOptions current = JS.assume(liveDefaults);
+  current.gfm = true;
+  current.breaks = false;
+  current.pedantic = false;
+  current.silent = false;
+  current.async = false;
+  MarkedApi api = JS.assume(marked);
   JsValue set = JS.method1(setOptionsCall);
-  marked["parse"] = marked;
-  marked["parseInline"] = parseInline;
-  marked["setOptions"] = set;
-  marked["options"] = set;
-  marked["getDefaults"] = getDefaults;
-  marked["defaults"] = options();
-  return marked;
+  api.parse = marked;
+  api.parseInline = parseInline;
+  api.setOptions = set;
+  api.options = set;
+  api.getDefaults = getDefaults;
+  api.defaults = liveDefaults;
+  return api;
 }
 
 export JsValue default = attachApi();

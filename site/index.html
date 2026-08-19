@@ -38,6 +38,8 @@
             LilScript. No <code>use()</code>, Hooks, or Tokenizer subclassing: LilScript cannot
             override methods, and it is not trying to become JavaScript. Every number on this page
             compares that same official parse path, then Oxc and Terser, mangling on and off.
+            The npm file keeps the marked option keys exact. A second lane shows the size if
+            callers were LilScript and those keys could mangle.
           </p>
           <div class="install-row">
             <code>npm install @itslil/marked</code>
@@ -65,7 +67,9 @@
             Two different things are measured, and both are written out rather than left as a ratio.
             <strong>Size</strong> is the compressed file a browser downloads — lilscript-codec gzip-9 and Brotli-11 —
             against marked@18.0.10 Lexer/Parser/Tokenizer/Renderer put through Vite 8 Oxc and Terser.
-            The published npm file is not in this table: it still has the extension system.
+            The published official npm file is not in this table: it still has the extension system.
+            Two LilScript rows are in the size table: the JS library you install, and a closed-world
+            compile that releases <code>extern class</code> member names.
             <strong>Speed</strong> is time spent parsing in Chromium. HTML is checked byte-for-byte
             against that same official parse path before any number is reported.
           </p>
@@ -148,7 +152,10 @@
             </div>
             <p>
               Official 18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc and Terser with mangling on and off.
-              @itslil/marked is the LilScript compiler output. It is not post-minified. The published npm package is not a lane.
+              @itslil/marked is the LilScript compiler output. It is not post-minified.
+              The JS-library row keeps <code>gfm</code> / <code>breaks</code> / <code>parse</code> exact
+              (<code>[mangle] extern_fields = true</code>). The closed LilScript row turns that pin off —
+              the size if this program were only called from LilScript. That row is not the npm file.
             </p>
           </div>
           <div class="total-bar" id="total-bar"></div>
@@ -172,7 +179,8 @@
               <code>use()</code> / Hooks / walkTokens — and there is no plan to grow the language into
               JavaScript to get them. Comparing against published <code>marked.esm.js</code> would put
               the extension system on one side only. The fair fight is the 18.0.10 parse path, then the
-              same Oxc and Terser work the JS ecosystem actually ships.
+              same Oxc and Terser work the JS ecosystem actually ships. The closed LilScript row is the
+              other honest comparison: no JavaScript options object, so those property names mangle.
             </p>
             <a href="https://github.com/yeargun/markedlil#size">README ↗</a>
           </div>

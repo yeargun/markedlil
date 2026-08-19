@@ -1,9 +1,9 @@
 {
   "pin": "marked@18.0.10",
   "package": "@itslil/marked",
-  "node": "v24.11.1",
+  "node": "v22.21.1",
   "codec": "lilscript-codec gzip-9 / brotli-11",
-  "comparison": "Every size and speed lane is the same surface: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer (no use/Hooks/walkTokens), then Oxc or Terser, versus this port. The published npm file is not a lane — it still contains the extension system.",
+  "comparison": "Every size and speed lane is the same surface: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer (no use/Hooks/walkTokens), then Oxc or Terser, versus this port. @itslil/marked is the JS library (extern fields on). The closed LilScript lane turns that pin off. The published npm marked file is not a lane — it still contains the extension system.",
   "browser": "playwright-chromium",
   "warmupDiscard": 3,
   "spec": {
@@ -70,11 +70,22 @@
     {
       "id": "itslil",
       "name": "@itslil/marked",
-      "raw": 36978,
-      "gzip9": 11274,
-      "brotli11": 10179,
-      "note": "LilScript compiler-selected ESM, not post-minified. Same parse API; no extension system.",
+      "raw": 36003,
+      "gzip9": 10762,
+      "brotli11": 9580,
+      "note": "JS library: extern class pins gfm / breaks / parse and the rest of the marked 18.0.10 object shape. Compiler-selected ESM, not post-minified.",
       "primary": true,
+      "baseline": false,
+      "diagnostic": false
+    },
+    {
+      "id": "itslil-closed",
+      "name": "@itslil/marked · closed LilScript",
+      "raw": 36130,
+      "gzip9": 10710,
+      "brotli11": 9537,
+      "note": "Same program with [mangle] extern_fields = false. Those public JS keys mangle. This is the size if callers were LilScript, not a JS options object. Not the npm file.",
+      "primary": false,
       "baseline": false,
       "diagnostic": false
     }
@@ -142,9 +153,9 @@
     }
   ],
   "hero": {
-    "brotliRatio": 1.0086206896551724,
+    "brotliRatio": 0.9492667459373761,
     "officialBrotli": 10092,
-    "itslilBrotli": 10179,
+    "itslilBrotli": 9580,
     "parseRawBrotli": 12684
   }
 }
