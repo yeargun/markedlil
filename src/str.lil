@@ -1,14 +1,4 @@
 import {
-  regexSetLastIndex,
-  encodeURIValue,
-  stringTrim,
-  stringTrimEnd,
-  stringSearch,
-  codePointCount,
-  firstCodePointSize,
-  runRegexExec
-} from "./host.lil";
-import {
   otherCodeRemoveIndent,
   otherIndentCodeCompensation,
   otherBeginningSpace,
@@ -19,20 +9,37 @@ import {
   otherPercentDecode
 } from "./rules.lil";
 
+export Regex pickRe(bool flag, Regex whenTrue, Regex whenFalse) {
+  if (flag) {
+    return whenTrue;
+  }
+  return whenFalse;
+}
+
+export Regex pickRe3(bool a, Regex ra, bool b, Regex rb, Regex rc) {
+  if (a) {
+    return ra;
+  }
+  if (b) {
+    return rb;
+  }
+  return rc;
+}
+
 export string slice(string s, int start, int end) {
-  return JS.stringSlice(s, start, end);
+  return s.slice(start, end);
 }
 
 export string sliceFrom(string s, int start) {
-  return JS.stringSlice(s, start);
+  return s.slice(start);
 }
 
 export string replaceRe(string s, Regex re, string replacement) {
-  return JS.stringReplace(s, re, replacement);
+  return s.replace(re, replacement);
 }
 
 export JsValue execRe(Regex re, string src) {
-  return runRegexExec(re, src);
+  return re.exec(src);
 }
 
 export bool matched(JsValue cap) {
@@ -74,7 +81,7 @@ export string joinLines(string[] lines) {
 }
 
 export string[] splitLines(string src) {
-  return JS.stringSplit(src, "\n");
+  return src.split("\n");
 }
 
 export string firstLine(string src) {
@@ -199,11 +206,11 @@ string[] splitCellsRaw(string tableRow, int count, bool limit) {
     }
     i = i + 1;
   }
-  string[] cells = JS.stringSplit(row, " |");
-  if (cells.length > 0 && stringTrim(cells[0]).length == 0) {
+  string[] cells = row.split(" |");
+  if (cells.length > 0 && cells[0].trim().length == 0) {
     cells.splice(0, 1);
   }
-  if (cells.length > 0 && stringTrim(cells[cells.length - 1]).length == 0) {
+  if (cells.length > 0 && cells[cells.length - 1].trim().length == 0) {
     cells.splice(cells.length - 1, 1);
   }
   if (limit) {
@@ -218,7 +225,7 @@ string[] splitCellsRaw(string tableRow, int count, bool limit) {
   }
   int j = 0;
   while (j < cells.length) {
-    cells[j] = replaceRe(stringTrim(cells[j]), otherSlashPipe, "|");
+    cells[j] = replaceRe(cells[j].trim(), otherSlashPipe, "|");
     j = j + 1;
   }
   return cells;
@@ -353,7 +360,7 @@ export string escapeHtml(string html, bool encode) {
 
 export string? cleanUrl(string href) {
   try {
-    href = replaceRe(encodeURIValue(href), otherPercentDecode, "%");
+    href = replaceRe(JS.encodeURI(href), otherPercentDecode, "%");
   } catch {
     return null;
   }
@@ -361,20 +368,46 @@ export string? cleanUrl(string href) {
 }
 
 export string removeCodeIndent(string raw) {
-  regexSetLastIndex(otherCodeRemoveIndent, 0.0);
+  otherCodeRemoveIndent.lastIndex = 0;
   return replaceRe(raw, otherCodeRemoveIndent, "");
 }
 
 export int searchRe(string s, Regex re) {
-  return stringSearch(s, re).toInt();
+  return s.search(re);
 }
 
 export int points(string s) {
-  return codePointCount(s).toInt();
+  return s.codePointLength();
 }
 
 export int firstPointSize(string s) {
-  return firstCodePointSize(s).toInt();
+  if (s.length == 0) {
+    return 0;
+  }
+  int lead = s.charCodeAt(0);
+  if (lead >= 55296 && lead <= 56319 && s.length > 1) {
+    int trail = s.charCodeAt(1);
+    if (trail >= 56320 && trail <= 57343) {
+      return 2;
+    }
+  }
+  return 1;
+}
+
+export string backpedalUrl(Regex re, string src) {
+  string prev = "";
+  string current = src;
+  while (prev != current) {
+    prev = current;
+    re.lastIndex = 0;
+    JsValue cap = execRe(re, current);
+    if (matched(cap)) {
+      current = group0(cap);
+    } else {
+      current = "";
+    }
+  }
+  return current;
 }
 
 export int parseStart(string bull) {

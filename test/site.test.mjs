@@ -28,6 +28,8 @@ describe("github pages artifact", () => {
     assert.match(html, /Oxc/)
     assert.match(html, /Terser/)
     assert.match(html, /mangle/)
+    assert.match(html, /parse-only/)
+    assert.match(html, /use\(\)/)
   })
 
   it("does not point the playground at the repo-root dist path", () => {

@@ -1,4 +1,4 @@
-import { Kind, Align, Token, LinkDef, InlineJob, Lexer, makeToken, lastToken, hasTokens } from "./types.lil";
+import { Kind, Align, Token, LinkDef, InlineJob, Lexer, makeToken, lastToken, hasTokens, queueInline, appendRaw, setLastInlineSrc, unshiftToken } from "./types.lil";
 import {
   newline, blockCode, fences, hr, heading, lheading, lheadingGfm, def, list, html,
   paragraph, blockquote, gfmTable, paragraphGfm, blockText,
@@ -8,7 +8,7 @@ import {
   emStrongRDelimAst, emStrongRDelimAstGfm, emStrongRDelimAstPedantic,
   emStrongRDelimUnd, emStrongRDelimUndPedantic,
   delLDelim, delRDelim, anyPunctuation, autolink, tag, link, reflink, nolink,
-  reflinkSearch, urlRe, backpedal, delRe, textGfm, brBreaks, textBreaks,
+  reflinkSearch, urlRe, backpedal, textGfm, brBreaks, textBreaks,
   linkPed, reflinkPed,
   otherEndingHash, otherEndingSpaceChar, otherNonSpaceChar, otherNewLineCharGlobal,
   otherTabCharGlobal, otherMultipleSpaceGlobal, otherBlankLine, otherDoubleBlankLine,
@@ -27,9 +27,9 @@ import {
   slice, sliceFrom, replaceRe, execRe, matched, group0, groupN, hasGroup, matchIndex,
   joinLines, splitLines, firstLine, rtrimChar, rtrimNl, trimTrailingBlankLines,
   findClosingBracket, expandTabs, splitCells, splitCellsCount, indentCodeCompensation,
-  removeCodeIndent, searchRe, points, firstPointSize, parseStart, repeatA, repeatPlus
+  removeCodeIndent, searchRe, points, firstPointSize, parseStart, repeatA, repeatPlus,
+  backpedalUrl, pickRe, pickRe3
 } from "./str.lil";
-import { stringTrim, stringTrimEnd, stringTrimStart, regexSetLastIndex, intMinusOne, readHref, readTitle, parseBulletStart, callInline, callBlock, pickRegex, pickRegex3, queueJob, appendRaw, setLastInlineSrc, backpedalUrl, unshiftToken } from "./host.lil";
 
 bool groupOn(JsValue cap, int index) {
   return hasGroup(cap, index) && groupN(cap, index).length > 0;
@@ -55,18 +55,13 @@ void failLoop(Lexer lx, int byte) {
   throw err + "\nPlease report this to https://github.com/markedjs/marked.";
 }
 
-Token[] queueInline(Lexer lx, string src) {
-  Token[] tokens = [];
-  return queueJob(lx, src, tokens);
-}
-
 Token? outputLink(JsValue cap, string href, string title, string raw, Lexer lx, bool isImage) {
   string text = replaceRe(groupN(cap, 1), otherOutputLinkReplace, "$1");
   lx.inLink = true;
   bool outerLinkEmitted = lx.linkEmitted;
   bool outerInRawBlock = lx.inRawBlock;
   lx.linkEmitted = false;
-  Token[] tokens = callInline(lx, text, []);
+  Token[] tokens = inlineTokens(lx, text, []);
   lx.linkEmitted = true;
   lx.inLink = false;
   Kind kind = Kind.Link;
@@ -122,7 +117,7 @@ Token? tokFences(Lexer lx, string src) {
   string text = indentCodeCompensation(raw, fenceBody);
   Token token = makeToken(Kind.Code, raw);
   if (groupOn(cap, 2)) {
-    token.lang = replaceRe(stringTrim(groupN(cap, 2)), anyPunctuation, "$1");
+    token.lang = replaceRe(groupN(cap, 2).trim(), anyPunctuation, "$1");
     token.hasLang = true;
   }
   token.text = text;
@@ -130,17 +125,17 @@ Token? tokFences(Lexer lx, string src) {
 }
 
 Token? tokHeading(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex(lx.pedantic, headingPed, heading), src);
+  JsValue cap = execRe(pickRe(lx.pedantic, headingPed, heading), src);
   if (!matched(cap)) {
     return null;
   }
-  string text = stringTrim(groupN(cap, 2));
+  string text = groupN(cap, 2).trim();
   if (otherEndingHash.test(text)) {
     string trimmed = rtrimChar(text, "#", false);
     if (lx.pedantic) {
-      text = stringTrim(trimmed);
+      text = trimmed.trim();
     } else if (trimmed.length == 0 || otherEndingSpaceChar.test(trimmed)) {
-      text = stringTrim(trimmed);
+      text = trimmed.trim();
     }
   }
   Token token = makeToken(Kind.Heading, rtrimNl(group0(cap)));
@@ -204,7 +199,7 @@ Token? tokBlockquote(Lexer lx, string src) {
     }
     bool top = lx.top;
     lx.top = true;
-    callBlock(lx, currentText, tokens, true);
+    blockTokens(lx, currentText, tokens, true);
     lx.top = top;
     if (lines.length == 0) {
       break;
@@ -248,12 +243,12 @@ Token? tokList(Lexer lx, string src) {
   if (!matched(cap)) {
     return null;
   }
-  string bull = stringTrim(groupN(cap, 1));
+  string bull = groupN(cap, 1).trim();
   bool isordered = bull.length > 1;
   Token listTok = makeToken(Kind.List, "");
   listTok.ordered = isordered;
   if (isordered) {
-    listTok.start = parseBulletStart(bull).toInt();
+    listTok.start = parseStart(bull);
   } else {
     listTok.start = 0;
   }
@@ -280,13 +275,13 @@ Token? tokList(Lexer lx, string src) {
     remaining = sliceFrom(remaining, raw.length);
     string line = expandTabs(firstLine(groupN(itemCap, 2)), groupN(itemCap, 1).length);
     string nextLine = firstLine(remaining);
-    bool blankLine = stringTrim(line).length == 0;
+    bool blankLine = line.trim().length == 0;
     int indent = 0;
     string itemContents = "";
     bool endEarly = false;
     if (lx.pedantic) {
       indent = 2;
-      itemContents = stringTrimStart(line);
+      itemContents = line.trimStart();
     } else if (blankLine) {
       indent = groupN(itemCap, 1).length + 1;
     } else {
@@ -338,7 +333,7 @@ Token? tokList(Lexer lx, string src) {
           break;
         }
         int nest = searchRe(nextLineWithoutTabs, otherNonSpaceChar);
-        if (nest >= indent || stringTrim(nextLine).length == 0) {
+        if (nest >= indent || nextLine.trim().length == 0) {
           itemContents = itemContents + "\n" + sliceFrom(nextLineWithoutTabs, indent);
         } else {
           if (blankLine) {
@@ -358,7 +353,7 @@ Token? tokList(Lexer lx, string src) {
           }
           itemContents = itemContents + "\n" + nextLine;
         }
-        blankLine = stringTrim(nextLine).length == 0;
+        blankLine = nextLine.trim().length == 0;
         raw = raw + rawLine + "\n";
         remaining = sliceFrom(remaining, rawLine.length + 1);
         line = sliceFrom(nextLineWithoutTabs, indent);
@@ -382,15 +377,15 @@ Token? tokList(Lexer lx, string src) {
     return null;
   }
   Token lastItem = lastToken(listTok.items);
-  lastItem.raw = stringTrimEnd(lastItem.raw);
-  lastItem.text = stringTrimEnd(lastItem.text);
-  listTok.raw = stringTrimEnd(listTok.raw);
+  lastItem.raw = lastItem.raw.trimEnd();
+  lastItem.text = lastItem.text.trimEnd();
+  listTok.raw = listTok.raw.trimEnd();
   int itemIndex = 0;
   while (itemIndex < listTok.items.length) {
     Token item = listTok.items[itemIndex];
     lx.top = false;
     item.tokens = [];
-    callBlock(lx, item.text, item.tokens, false);
+    blockTokens(lx, item.text, item.tokens, false);
     if (!listTok.loose) {
       bool hasMultipleLineBreaks = false;
       int t = 0;
@@ -486,7 +481,7 @@ Token? tokList(Lexer lx, string src) {
 }
 
 Token? tokHtml(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex(lx.pedantic, htmlPed, html), src);
+  JsValue cap = execRe(pickRe(lx.pedantic, htmlPed, html), src);
   if (!matched(cap)) {
     return null;
   }
@@ -500,7 +495,7 @@ Token? tokHtml(Lexer lx, string src) {
 }
 
 Token? tokDef(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex(lx.pedantic, defPed, def), src);
+  JsValue cap = execRe(pickRe(lx.pedantic, defPed, def), src);
   if (!matched(cap)) {
     return null;
   }
@@ -536,7 +531,7 @@ Token? tokTable(Lexer lx, string src) {
   string[] headers = splitCells(groupN(cap, 1));
   string[] aligns = JS.stringSplit(replaceRe(groupN(cap, 2), otherTableAlignChars, ""), "|");
   string[] rows = [];
-  if (groupOn(cap, 3) && stringTrim(groupN(cap, 3)).length > 0) {
+  if (groupOn(cap, 3) && groupN(cap, 3).trim().length > 0) {
     rows = splitLines(replaceRe(groupN(cap, 3), otherTableRowBlankLine, ""));
   }
   if (headers.length != aligns.length) {
@@ -588,11 +583,11 @@ Token? tokTable(Lexer lx, string src) {
 }
 
 Token? tokLheading(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex3(lx.pedantic, lheadingPed, lx.gfm, lheadingGfm, lheading), src);
+  JsValue cap = execRe(pickRe3(lx.pedantic, lheadingPed, lx.gfm, lheadingGfm, lheading), src);
   if (!matched(cap)) {
     return null;
   }
-  string text = stringTrim(groupN(cap, 1));
+  string text = groupN(cap, 1).trim();
   Token token = makeToken(Kind.Heading, rtrimNl(group0(cap)));
   if (groupN(cap, 2).charAt(0) == "=") {
     token.depth = 1;
@@ -605,7 +600,7 @@ Token? tokLheading(Lexer lx, string src) {
 }
 
 Token? tokParagraph(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex3(lx.pedantic, paragraphPed, lx.gfm, paragraphGfm, paragraph), src);
+  JsValue cap = execRe(pickRe3(lx.pedantic, paragraphPed, lx.gfm, paragraphGfm, paragraph), src);
   if (!matched(cap)) {
     return null;
   }
@@ -664,7 +659,7 @@ Token? tokTag(Lexer lx, string src) {
 }
 
 Token? tokLink(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex(lx.pedantic, linkPed, link), src);
+  JsValue cap = execRe(pickRe(lx.pedantic, linkPed, link), src);
   if (!matched(cap)) {
     return null;
   }
@@ -672,7 +667,7 @@ Token? tokLink(Lexer lx, string src) {
   string cap1 = groupN(cap, 1);
   string cap2 = groupN(cap, 2);
   string cap3 = groupN(cap, 3);
-  string trimmedUrl = stringTrim(cap2);
+  string trimmedUrl = cap2.trim();
   if (!lx.pedantic && otherStartAngleBracket.test(trimmedUrl)) {
     if (!otherEndAngleBracket.test(trimmedUrl)) {
       return null;
@@ -693,7 +688,7 @@ Token? tokLink(Lexer lx, string src) {
       }
       int linkLen = start + cap1.length + lastParenIndex;
       cap2 = slice(cap2, 0, lastParenIndex);
-      cap0 = stringTrim(slice(cap0, 0, linkLen));
+      cap0 = slice(cap0, 0, linkLen).trim();
       cap3 = "";
     }
   }
@@ -708,7 +703,7 @@ Token? tokLink(Lexer lx, string src) {
   } else if (cap3.length > 0) {
     title = slice(cap3, 1, cap3.length - 1);
   }
-  href = stringTrim(href);
+  href = href.trim();
   if (otherStartAngleBracket.test(href)) {
     if (lx.pedantic && !otherEndAngleBracket.test(trimmedUrl)) {
       href = sliceFrom(href, 1);
@@ -726,7 +721,7 @@ Token? tokLink(Lexer lx, string src) {
 }
 
 Token? tokReflink(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex(lx.pedantic, reflinkPed, reflink), src);
+  JsValue cap = execRe(pickRe(lx.pedantic, reflinkPed, reflink), src);
   if (!matched(cap)) {
     cap = execRe(nolink, src);
   }
@@ -749,13 +744,11 @@ Token? tokReflink(Lexer lx, string src) {
     token.text = text;
     return token;
   }
-  string href = readHref(defn);
-  string title = readTitle(defn);
-  return outputLink(cap, href, title, group0(cap), lx, group0(cap).charAt(0) == "!");
+  return outputLink(cap, defn.href, defn.title, group0(cap), lx, group0(cap).charAt(0) == "!");
 }
 
 Token? tokEmStrong(Lexer lx, string src, string maskedSrc, string prevChar) {
-  JsValue cap = execRe(pickRegex3(lx.pedantic, emStrongLDelimPedantic, lx.gfm, emStrongLDelimGfm, emStrongLDelim), src);
+  JsValue cap = execRe(pickRe3(lx.pedantic, emStrongLDelimPedantic, lx.gfm, emStrongLDelimGfm, emStrongLDelim), src);
   if (!matched(cap)) {
     return null;
   }
@@ -772,16 +765,16 @@ Token? tokEmStrong(Lexer lx, string src, string maskedSrc, string prevChar) {
     nextChar = groupN(cap, 3);
   }
   if (nextChar.length == 0 || prevChar.length == 0 || matched(execRe(punctuation, prevChar))) {
-    int lLength = intMinusOne(points(group0(cap))).toInt();
+    int lLength = points(group0(cap)) - 1;
     int delimTotal = lLength;
     int midDelimTotal = 0;
     string delimChar = group0(cap).charAt(0);
     bool midRun = prevChar == delimChar;
-    Regex endReg = pickRegex(lx.pedantic, emStrongRDelimUndPedantic, emStrongRDelimUnd);
+    Regex endReg = pickRe(lx.pedantic, emStrongRDelimUndPedantic, emStrongRDelimUnd);
     if (delimChar == "*") {
-      endReg = pickRegex3(lx.pedantic, emStrongRDelimAstPedantic, lx.gfm, emStrongRDelimAstGfm, emStrongRDelimAst);
+      endReg = pickRe3(lx.pedantic, emStrongRDelimAstPedantic, lx.gfm, emStrongRDelimAstGfm, emStrongRDelimAst);
     }
-    regexSetLastIndex(endReg, 0.0);
+    endReg.lastIndex = 0;
     int clip = maskedSrc.length - src.length + lLength;
     if (clip < 0) {
       clip = 0;
@@ -828,13 +821,13 @@ Token? tokEmStrong(Lexer lx, string src, string maskedSrc, string prevChar) {
         string text = slice(raw, 1, raw.length - 1);
         Token token = makeToken(Kind.Em, raw);
         token.text = text;
-        token.tokens = callInline(lx, text, []);
+        token.tokens = inlineTokens(lx, text, []);
         return token;
       }
       string text = slice(raw, 2, raw.length - 2);
       Token token = makeToken(Kind.Strong, raw);
       token.text = text;
-      token.tokens = callInline(lx, text, []);
+      token.tokens = inlineTokens(lx, text, []);
       return token;
     }
   }
@@ -858,7 +851,7 @@ Token? tokCodespan(Lexer lx, string src) {
 }
 
 Token? tokBr(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex(lx.gfm && lx.breaks, brBreaks, br), src);
+  JsValue cap = execRe(pickRe(lx.gfm && lx.breaks, brBreaks, br), src);
   if (!matched(cap)) {
     return null;
   }
@@ -878,9 +871,9 @@ Token? tokDel(Lexer lx, string src, string maskedSrc, string prevChar) {
     nextChar = groupN(cap, 1);
   }
   if (nextChar.length == 0 || prevChar.length == 0 || matched(execRe(punctuation, prevChar))) {
-    int lLength = intMinusOne(points(group0(cap))).toInt();
+    int lLength = points(group0(cap)) - 1;
     int delimTotal = lLength;
-    regexSetLastIndex(delRDelim, 0.0);
+    delRDelim.lastIndex = 0;
     int clip = maskedSrc.length - src.length + lLength;
     if (clip < 0) {
       clip = 0;
@@ -917,7 +910,7 @@ Token? tokDel(Lexer lx, string src, string maskedSrc, string prevChar) {
       string text = slice(raw, lLength, raw.length - lLength);
       Token token = makeToken(Kind.Del, raw);
       token.text = text;
-      token.tokens = callInline(lx, text, []);
+      token.tokens = inlineTokens(lx, text, []);
       return token;
     }
   }
@@ -976,7 +969,7 @@ Token? tokUrl(Lexer lx, string src) {
 }
 
 Token? tokInlineText(Lexer lx, string src) {
-  JsValue cap = execRe(pickRegex3(lx.gfm && lx.breaks, textBreaks, lx.gfm, textGfm, inlineText), src);
+  JsValue cap = execRe(pickRe3(lx.gfm && lx.breaks, textBreaks, lx.gfm, textGfm, inlineText), src);
   if (!matched(cap)) {
     return null;
   }
@@ -990,7 +983,7 @@ string maskReflinks(Lexer lx, string maskedSrc) {
   if (lx.links.size == 0) {
     return maskedSrc;
   }
-  regexSetLastIndex(reflinkSearch, 0.0);
+  reflinkSearch.lastIndex = 0;
   string out = "";
   int last = 0;
   while (true) {
@@ -1013,14 +1006,14 @@ string maskReflinks(Lexer lx, string maskedSrc) {
     }
     last = idx + raw.length;
     if (raw.length == 0) {
-      regexSetLastIndex(reflinkSearch, last + 1);
+      reflinkSearch.lastIndex = last + 1;
     }
   }
   return out + sliceFrom(maskedSrc, last);
 }
 
 string maskPunctuation(string maskedSrc) {
-  regexSetLastIndex(anyPunctuation, 0.0);
+  anyPunctuation.lastIndex = 0;
   string out = "";
   int last = 0;
   while (true) {
@@ -1033,14 +1026,14 @@ string maskPunctuation(string maskedSrc) {
     out = out + slice(maskedSrc, last, idx) + repeatPlus(raw.length);
     last = idx + raw.length;
     if (raw.length == 0) {
-      regexSetLastIndex(anyPunctuation, last + 1);
+      anyPunctuation.lastIndex = last + 1;
     }
   }
   return out + sliceFrom(maskedSrc, last);
 }
 
 string maskBlockSkip(string maskedSrc) {
-  regexSetLastIndex(blockSkip, 0.0);
+  blockSkip.lastIndex = 0;
   string out = "";
   int last = 0;
   while (true) {
@@ -1058,7 +1051,7 @@ string maskBlockSkip(string maskedSrc) {
     out = out + slice(maskedSrc, last, idx) + slice(raw, 0, offset) + "[" + repeatA(raw.length - offset - 2) + "]";
     last = idx + raw.length;
     if (raw.length == 0) {
-      regexSetLastIndex(blockSkip, last + 1);
+      blockSkip.lastIndex = last + 1;
     }
   }
   return out + sliceFrom(maskedSrc, last);
@@ -1315,11 +1308,11 @@ export Token[] inlineTokens(Lexer lx, string src, Token[] tokens) {
 
 export Token[] lex(Lexer lx, string src) {
   src = replaceRe(src, otherCarriageReturn, "\n");
-  callBlock(lx, src, lx.tokens, false);
+  blockTokens(lx, src, lx.tokens, false);
   int i = 0;
   while (i < lx.inlineQueue.length) {
     InlineJob job = lx.inlineQueue[i];
-    callInline(lx, job.src, job.tokens);
+    inlineTokens(lx, job.src, job.tokens);
     i = i + 1;
   }
   lx.inlineQueue = [];
@@ -1327,5 +1320,5 @@ export Token[] lex(Lexer lx, string src) {
 }
 
 export Token[] lexInline(Lexer lx, string src) {
-  return callInline(lx, src, []);
+  return inlineTokens(lx, src, []);
 }

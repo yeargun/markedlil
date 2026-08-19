@@ -4,8 +4,8 @@ optimization_level = 15
 cost_model = "brotli"
 assume_pristine_builtins = true
 strip_console = true
-local_name_reserve = 8
-candidate_search = "off"
+local_name_reserve = 4
+candidate_search = "production"
 function_spelling = "arrow"
 
 [mangle]

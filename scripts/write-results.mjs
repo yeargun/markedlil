@@ -11,7 +11,10 @@ try {
   // Playwright bench is optional until e2e/run.mjs has been run.
 }
 
-const officialOxc = sizes.lanes.find((lane) => lane.id === "oxc-mangle")
+const officialOxc =
+  sizes.lanes.find((lane) => lane.id === "parse-oxc-mangle") ??
+  sizes.lanes.find((lane) => lane.baseline)
+const parseRaw = sizes.lanes.find((lane) => lane.id === "parse")
 const itslil = sizes.lanes.find((lane) => lane.primary)
 
 const results = {
@@ -19,6 +22,7 @@ const results = {
   package: sizes.package,
   node: sizes.node,
   codec: sizes.codec,
+  comparison: sizes.comparison ?? null,
   browser: bench.browser ?? null,
   warmupDiscard: bench.warmupDiscard ?? 2,
   spec: bench.spec ?? null,
@@ -30,12 +34,15 @@ const results = {
     brotli11: lane.brotli11,
     note: lane.note,
     primary: lane.primary,
+    baseline: lane.baseline,
+    diagnostic: lane.diagnostic,
   })),
   throughput: bench.suites ?? [],
   hero: {
     brotliRatio: itslil && officialOxc ? itslil.brotli11 / officialOxc.brotli11 : null,
     officialBrotli: officialOxc?.brotli11 ?? null,
     itslilBrotli: itslil?.brotli11 ?? null,
+    parseRawBrotli: parseRaw?.brotli11 ?? null,
   },
 }
 

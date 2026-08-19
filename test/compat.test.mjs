@@ -29,7 +29,7 @@ describe("@itslil/marked vs marked@18.0.10", () => {
     assert.match(source, /@itslil\/marked 18\.0\.10/)
     assert.match(source, /export\s*\{/)
     assert.match(source, / as default/)
-    assert.ok(source.split("\n").length <= 8, "ESM must stay compact compiler output plus host")
+    assert.ok(source.split("\n").length <= 8, "ESM must stay compact compiler output")
   })
 
   it("loads from CommonJS", () => {

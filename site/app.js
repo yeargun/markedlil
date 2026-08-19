@@ -41,16 +41,18 @@ function ms(value) {
 }
 
 function renderHero() {
-  const oxc = data.size.find((lane) => lane.id === "oxc-mangle")
-  const official = data.size.find((lane) => lane.id === "official")
+  const oxc =
+    data.size.find((lane) => lane.id === "parse-oxc-mangle") ??
+    data.size.find((lane) => lane.baseline)
+  const parseRaw = data.size.find((lane) => lane.id === "parse")
   const itslil = data.size.find((lane) => lane.primary)
   if (!oxc || !itslil) return
   const ratio = itslil.brotli11 / oxc.brotli11
   document.querySelector("#hero-ratio").innerHTML = `${ratio.toFixed(2)}<span>×</span>`
   document.querySelector("#hero-bytes").textContent =
     `${formatter.format(oxc.brotli11)} B → ${formatter.format(itslil.brotli11)} B`
-  if (official) {
-    document.querySelector("#hero-vs-raw").textContent = times(itslil.brotli11 / official.brotli11)
+  if (parseRaw) {
+    document.querySelector("#hero-vs-raw").textContent = times(itslil.brotli11 / parseRaw.brotli11)
   }
   if (data.spec) {
     document.querySelector("#hero-spec").textContent = `${data.spec.pass}/${data.spec.total}`
@@ -61,7 +63,9 @@ function renderHero() {
 }
 
 function renderSize() {
-  const oxc = data.size.find((lane) => lane.id === "oxc-mangle")
+  const oxc =
+    data.size.find((lane) => lane.id === "parse-oxc-mangle") ??
+    data.size.find((lane) => lane.baseline)
   if (!oxc) return
   document.querySelector("#results-body").innerHTML = data.size
     .map(

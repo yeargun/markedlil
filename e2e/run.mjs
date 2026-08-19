@@ -12,7 +12,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const lanesDir = join(root, ".tmp", "lanes")
 const sizesPath = join(root, "reports", "sizes.json")
 
-if (!existsSync(sizesPath) || !existsSync(join(lanesDir, "itslil.js"))) {
+if (!existsSync(sizesPath) || !existsSync(join(lanesDir, "itslil.js")) || !existsSync(join(lanesDir, "parse.js"))) {
   const measured = spawnSync(process.execPath, [join(root, "scripts", "measure.mjs")], {
     cwd: root,
     stdio: "inherit",
@@ -184,13 +184,13 @@ for (const lane of sizes.lanes) {
     document: window.__ready.html,
     inline: window.__ready.inlineHtml,
   }))
-  if (lane.id === "official") {
+  if (lane.id === "parse") {
     officialHtml.document = html.document
     officialHtml.inline = html.inline
   } else if (html.document !== officialHtml.document) {
-    throw new Error(`${lane.id} document HTML diverged from official marked@18.0.10`)
+    throw new Error(`${lane.id} document HTML diverged from parse-only marked@18.0.10`)
   } else if (html.inline !== officialHtml.inline) {
-    throw new Error(`${lane.id} inline HTML diverged from official marked@18.0.10`)
+    throw new Error(`${lane.id} inline HTML diverged from parse-only marked@18.0.10`)
   }
 
   const documentSamples = await timeSuite(page, "document", loops)
@@ -209,7 +209,7 @@ for (const lane of sizes.lanes) {
 await browser.close()
 server.close()
 
-const official = suites.find((row) => row.id === "official")
+const official = suites.find((row) => row.id === "parse")
 const report = {
   generatedAt: new Date().toISOString(),
   browser: "playwright-chromium",

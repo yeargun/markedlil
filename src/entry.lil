@@ -57,3 +57,33 @@ export JsValue options() {
   opt["async"] = false;
   return opt;
 }
+
+extern JsValue TypeError;
+
+JsValue markedCall(JsValue self, JsValue src, JsValue opt) {
+  if (!(src is string)) {
+    throw JS.construct(TypeError, "marked(): input must be a string");
+  }
+  return parse(src, opt);
+}
+
+export JsValue marked = JS.method2(markedCall);
+
+JsValue setOptionsCall(JsValue self, JsValue opt) {
+  setOptions(opt);
+  marked["defaults"] = options();
+  return marked;
+}
+
+JsValue attachApi() {
+  JsValue set = JS.method1(setOptionsCall);
+  marked["parse"] = marked;
+  marked["parseInline"] = parseInline;
+  marked["setOptions"] = set;
+  marked["options"] = set;
+  marked["getDefaults"] = getDefaults;
+  marked["defaults"] = options();
+  return marked;
+}
+
+export JsValue default = attachApi();

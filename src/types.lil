@@ -78,11 +78,6 @@ export class Token {
     this.block = false;
     this.hasTitle = false;
     this.hasLang = false;
-    this.tokens = [];
-    this.items = [];
-    this.headerCells = [];
-    this.rows = [];
-    this.aligns = [];
   }
 }
 
@@ -147,4 +142,36 @@ export Token lastToken(Token[] tokens) {
 
 export bool hasTokens(Token[] tokens) {
   return tokens.length > 0;
+}
+
+export Token[] queueInline(Lexer lx, string src) {
+  Token[] tokens = [];
+  lx.inlineQueue.push(new InlineJob(src, tokens));
+  return tokens;
+}
+
+export void appendRaw(Token token, string extra) {
+  if (token.raw.endsWith("\n")) {
+    token.raw = token.raw + extra;
+  } else {
+    token.raw = token.raw + "\n" + extra;
+  }
+}
+
+export void setLastInlineSrc(Lexer lx, string src) {
+  if (lx.inlineQueue.length == 0) {
+    return;
+  }
+  lx.inlineQueue[lx.inlineQueue.length - 1].src = src;
+}
+
+export void unshiftToken(Token[] tokens, Token token) {
+  int n = tokens.length;
+  tokens.push(token);
+  int i = n;
+  while (i > 0) {
+    tokens[i] = tokens[i - 1];
+    i = i - 1;
+  }
+  tokens[0] = token;
 }

@@ -1,8 +1,9 @@
 {
   "pin": "marked@18.0.10",
   "package": "@itslil/marked",
-  "node": "v22.21.1",
+  "node": "v24.11.1",
   "codec": "lilscript-codec gzip-9 / brotli-11",
+  "comparison": "Fair size lanes are parse-only marked@18.0.10 sources (no use/Hooks/walkTokens), then Oxc and Terser with mangling on and off. npm marked.esm.js is diagnostic: it still contains the extension ABI.",
   "browser": "playwright-chromium",
   "warmupDiscard": 3,
   "spec": {
@@ -12,125 +13,159 @@
   },
   "size": [
     {
-      "id": "official",
-      "name": "Official marked.esm.js",
-      "raw": 43018,
-      "gzip9": 12992,
-      "brotli11": 11907,
-      "note": "published unminified ESM from marked@18.0.10",
-      "primary": false
+      "id": "parse",
+      "name": "Parse-only official",
+      "raw": 67247,
+      "gzip9": 14064,
+      "brotli11": 12684,
+      "note": "marked@18.0.10 Lexer/Parser/Tokenizer/Renderer only — no use(), Hooks, or walkTokens",
+      "primary": false,
+      "baseline": false,
+      "diagnostic": false
     },
     {
-      "id": "oxc-mangle",
-      "name": "Official · Oxc mangle on",
-      "raw": 42381,
-      "gzip9": 12469,
-      "brotli11": 11475,
-      "note": "Vite 8 Oxc minify, mangle: true",
-      "primary": false
+      "id": "parse-oxc-mangle",
+      "name": "Parse-only · Oxc mangle on",
+      "raw": 37022,
+      "gzip9": 10930,
+      "brotli11": 10092,
+      "note": "Vite 8 Oxc minify of the parse-only 18.0.10 sources, mangle: true",
+      "primary": false,
+      "baseline": true,
+      "diagnostic": false
     },
     {
-      "id": "oxc-nomangle",
-      "name": "Official · Oxc mangle off",
-      "raw": 42446,
-      "gzip9": 12681,
-      "brotli11": 11657,
-      "note": "Vite 8 Oxc minify, mangle: false",
-      "primary": false
+      "id": "parse-oxc-nomangle",
+      "name": "Parse-only · Oxc mangle off",
+      "raw": 47547,
+      "gzip9": 12153,
+      "brotli11": 11279,
+      "note": "Vite 8 Oxc minify of the parse-only 18.0.10 sources, mangle: false",
+      "primary": false,
+      "baseline": false,
+      "diagnostic": false
     },
     {
-      "id": "terser-mangle",
-      "name": "Official · Terser mangle on",
-      "raw": 42757,
-      "gzip9": 12505,
-      "brotli11": 11437,
-      "note": "Terser compress + mangle: true",
-      "primary": false
+      "id": "parse-terser-mangle",
+      "name": "Parse-only · Terser mangle on",
+      "raw": 37725,
+      "gzip9": 11045,
+      "brotli11": 10138,
+      "note": "Terser compress of the parse-only 18.0.10 sources, mangle: true",
+      "primary": false,
+      "baseline": false,
+      "diagnostic": false
     },
     {
-      "id": "terser-nomangle",
-      "name": "Official · Terser mangle off",
-      "raw": 42716,
-      "gzip9": 12715,
-      "brotli11": 11652,
-      "note": "Terser compress + mangle: false",
-      "primary": false
+      "id": "parse-terser-nomangle",
+      "name": "Parse-only · Terser mangle off",
+      "raw": 48444,
+      "gzip9": 12302,
+      "brotli11": 11339,
+      "note": "Terser compress of the parse-only 18.0.10 sources, mangle: false",
+      "primary": false,
+      "baseline": false,
+      "diagnostic": false
     },
     {
       "id": "itslil",
       "name": "@itslil/marked",
-      "raw": 41832,
-      "gzip9": 12451,
-      "brotli11": 11147,
-      "note": "LilScript compiler-selected ESM, not post-minified",
-      "primary": true
+      "raw": 34015,
+      "gzip9": 10347,
+      "brotli11": 9318,
+      "note": "LilScript compiler-selected ESM, not post-minified. Same parse API; no extension system.",
+      "primary": true,
+      "baseline": false,
+      "diagnostic": false
+    },
+    {
+      "id": "full",
+      "name": "npm marked.esm.js (full)",
+      "raw": 43018,
+      "gzip9": 12992,
+      "brotli11": 11907,
+      "note": "Published marked@18.0.10, already esbuild-minified. Includes use(), Hooks, walkTokens, Marked class.",
+      "primary": false,
+      "baseline": false,
+      "diagnostic": true
     }
   ],
   "throughput": [
     {
-      "id": "official",
-      "name": "Official marked.esm.js",
+      "id": "parse",
+      "name": "Parse-only official",
       "primary": false,
-      "documentMs": 55.200000047683716,
-      "specMs": 69.5,
+      "documentMs": 52.5,
+      "specMs": 67.40000009536743,
       "htmlOk": true,
       "documentRatio": 1,
       "specRatio": 1
     },
     {
-      "id": "oxc-mangle",
-      "name": "Official · Oxc mangle on",
+      "id": "parse-oxc-mangle",
+      "name": "Parse-only · Oxc mangle on",
       "primary": false,
-      "documentMs": 55.89999985694885,
-      "specMs": 72.5,
+      "documentMs": 52.700000047683716,
+      "specMs": 67.89999985694885,
       "htmlOk": true,
-      "documentRatio": 1.0126811559539937,
-      "specRatio": 1.0431654676258992
+      "documentRatio": 1.0038095247177852,
+      "specRatio": 1.0074183940782484
     },
     {
-      "id": "oxc-nomangle",
-      "name": "Official · Oxc mangle off",
+      "id": "parse-oxc-nomangle",
+      "name": "Parse-only · Oxc mangle off",
       "primary": false,
-      "documentMs": 54,
-      "specMs": 69.90000009536743,
+      "documentMs": 52.5,
+      "specMs": 67.10000014305115,
       "htmlOk": true,
-      "documentRatio": 0.9782608687201609,
-      "specRatio": 1.0057553970556465
+      "documentRatio": 1,
+      "specRatio": 0.9955489621381038
     },
     {
-      "id": "terser-mangle",
-      "name": "Official · Terser mangle on",
+      "id": "parse-terser-mangle",
+      "name": "Parse-only · Terser mangle on",
       "primary": false,
-      "documentMs": 56.39999985694885,
-      "specMs": 70.30000019073486,
+      "documentMs": 52.39999985694885,
+      "specMs": 67.59999990463257,
       "htmlOk": true,
-      "documentRatio": 1.021739126960662,
-      "specRatio": 1.011510794111293
+      "documentRatio": 0.9980952353704543,
+      "specRatio": 1.0029673562163524
     },
     {
-      "id": "terser-nomangle",
-      "name": "Official · Terser mangle off",
+      "id": "parse-terser-nomangle",
+      "name": "Parse-only · Terser mangle off",
       "primary": false,
-      "documentMs": 57,
-      "specMs": 70.39999985694885,
+      "documentMs": 52.299999952316284,
+      "specMs": 68,
       "htmlOk": true,
-      "documentRatio": 1.03260869476017,
-      "specRatio": 1.0129496382294798
+      "documentRatio": 0.9961904752822149,
+      "specRatio": 1.0089020757237923
     },
     {
       "id": "itslil",
       "name": "@itslil/marked",
       "primary": true,
-      "documentMs": 49.90000009536743,
-      "specMs": 62.90000009536743,
+      "documentMs": 45.700000047683716,
+      "specMs": 62.09999990463257,
       "htmlOk": true,
-      "documentRatio": 0.9039855081931529,
-      "specRatio": 0.9050359725952148
+      "documentRatio": 0.8704761913844518,
+      "specRatio": 0.921364982444575
+    },
+    {
+      "id": "full",
+      "name": "npm marked.esm.js (full)",
+      "primary": false,
+      "documentMs": 51.799999952316284,
+      "specMs": 67.5,
+      "htmlOk": true,
+      "documentRatio": 0.9866666657584054,
+      "specRatio": 1.0014836781081762
     }
   ],
   "hero": {
-    "brotliRatio": 0.9714161220043573,
-    "officialBrotli": 11475,
-    "itslilBrotli": 11147
+    "brotliRatio": 0.9233055885850179,
+    "officialBrotli": 10092,
+    "itslilBrotli": 9318,
+    "parseRawBrotli": 12684
   }
 }

@@ -1,8 +1,15 @@
 import { Kind, Align, Token, Lexer } from "./types.lil";
-import { lex, lexInline, inlineTokens, blockTokens } from "./lexer.lil";
+import { lex, lexInline } from "./lexer.lil";
 import { escapeHtml, cleanUrl, slice, group0, execRe, matched } from "./str.lil";
 import { otherNotSpaceStart } from "./rules.lil";
-import { callRenderInline, callRenderTokens, setInline, setBlock, setRenderInline, setRenderTokens, wrapP, wrapHeading } from "./host.lil";
+
+string wrapP(string inner) {
+  return "<p>" + inner + "</p>\n";
+}
+
+string wrapHeading(string depth, string inner) {
+  return "<h" + depth + ">" + inner + "</h" + depth + ">\n";
+}
 
 string alignName(Align align) {
   if (align == Align.Left) {
@@ -19,7 +26,7 @@ string alignName(Align align) {
 
 string renderText(Token token, bool textOnly) {
   if (token.tokens.length > 0) {
-    return callRenderInline(token.tokens, textOnly);
+    return renderInline(token.tokens, textOnly);
   }
   if (token.escaped) {
     return token.text;
@@ -51,7 +58,7 @@ export string renderInline(Token[] tokens, bool textOnly) {
       if (textOnly) {
         out = out + token.text;
       } else {
-        string inner = callRenderInline(token.tokens, false);
+        string inner = renderInline(token.tokens, false);
         string? href = cleanUrl(token.href);
         if (href == null) {
           out = out + inner;
@@ -70,7 +77,7 @@ export string renderInline(Token[] tokens, bool textOnly) {
       } else {
         string alt = token.text;
         if (token.tokens.length > 0) {
-          alt = callRenderInline(token.tokens, true);
+          alt = renderInline(token.tokens, true);
         }
         string? href = cleanUrl(token.href);
         if (href == null) {
@@ -94,13 +101,13 @@ export string renderInline(Token[] tokens, bool textOnly) {
       if (textOnly) {
         out = out + token.text;
       } else {
-        out = out + "<strong>" + callRenderInline(token.tokens, false) + "</strong>";
+        out = out + "<strong>" + renderInline(token.tokens, false) + "</strong>";
       }
     } else if (token.kind == Kind.Em) {
       if (textOnly) {
         out = out + token.text;
       } else {
-        out = out + "<em>" + callRenderInline(token.tokens, false) + "</em>";
+        out = out + "<em>" + renderInline(token.tokens, false) + "</em>";
       }
     } else if (token.kind == Kind.Codespan) {
       if (textOnly) {
@@ -116,7 +123,7 @@ export string renderInline(Token[] tokens, bool textOnly) {
       if (textOnly) {
         out = out + token.text;
       } else {
-        out = out + "<del>" + callRenderInline(token.tokens, false) + "</del>";
+        out = out + "<del>" + renderInline(token.tokens, false) + "</del>";
       }
     } else if (token.kind == Kind.Text) {
       out = out + renderText(token, textOnly);
@@ -127,7 +134,7 @@ export string renderInline(Token[] tokens, bool textOnly) {
 }
 
 string renderListItem(Token item) {
-  return "<li>" + callRenderTokens(item.tokens) + "</li>\n";
+  return "<li>" + renderTokens(item.tokens) + "</li>\n";
 }
 
 string langClass(string lang) {
@@ -158,7 +165,7 @@ string replaceReEnding(string text) {
 }
 
 string renderTableCell(Token cell) {
-  string content = callRenderInline(cell.tokens, false);
+  string content = renderInline(cell.tokens, false);
   string type = "td";
   if (cell.header) {
     type = "th";
@@ -208,13 +215,13 @@ export string renderTokens(Token[] tokens) {
       out = out + "<hr>\n";
     } else if (token.kind == Kind.Heading) {
       string d = token.depth.toString();
-      out = out + wrapHeading(d, callRenderInline(token.tokens, false));
+      out = out + wrapHeading(d, renderInline(token.tokens, false));
     } else if (token.kind == Kind.Code) {
       out = out + renderCode(token);
     } else if (token.kind == Kind.Table) {
       out = out + renderTable(token);
     } else if (token.kind == Kind.Blockquote) {
-      out = out + "<blockquote>\n" + callRenderTokens(token.tokens) + "</blockquote>\n";
+      out = out + "<blockquote>\n" + renderTokens(token.tokens) + "</blockquote>\n";
     } else if (token.kind == Kind.List) {
       string body = "";
       int j = 0;
@@ -237,7 +244,7 @@ export string renderTokens(Token[] tokens) {
       out = out + token.text;
     } else if (token.kind == Kind.Def) {
     } else if (token.kind == Kind.Paragraph) {
-      out = out + wrapP(callRenderInline(token.tokens, false));
+      out = out + wrapP(renderInline(token.tokens, false));
     } else if (token.kind == Kind.Text) {
       out = out + renderText(token, false);
     }
@@ -258,24 +265,10 @@ export bool optionBool(JsValue opt, string key, bool fallback) {
 }
 
 export string parseTokens(Token[] tokens) {
-  return callRenderTokens(tokens);
-}
-
-bool recursionReady = false;
-
-void installRecursion() {
-  if (recursionReady) {
-    return;
-  }
-  setInline(inlineTokens);
-  setBlock(blockTokens);
-  setRenderInline(renderInline);
-  setRenderTokens(renderTokens);
-  recursionReady = true;
+  return renderTokens(tokens);
 }
 
 export string parseMarkdown(string src, bool block, JsValue opt) {
-  installRecursion();
   bool gfm = optionBool(opt, "gfm", true);
   bool breaks = optionBool(opt, "breaks", false);
   bool pedantic = optionBool(opt, "pedantic", false);
@@ -283,9 +276,9 @@ export string parseMarkdown(string src, bool block, JsValue opt) {
   Lexer lx = new Lexer(gfm, breaks, pedantic, silent);
   try {
     if (block) {
-      return callRenderTokens(lex(lx, src));
+      return renderTokens(lex(lx, src));
     }
-    return callRenderInline(lexInline(lx, src), false);
+    return renderInline(lexInline(lx, src), false);
   } catch (auto error) {
     string message = "parse error";
     if (error is string) {

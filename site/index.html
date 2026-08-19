@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="@itslil/marked: marked 18.0.10 reimplemented in LilScript. Size versus Oxc and Terser mangling on and off, plus a Playwright parse benchmark."
+      content="@itslil/marked: marked 18.0.10 parse API in LilScript. Fair size versus parse-only official Oxc and Terser, mangling on and off, plus a Playwright parse benchmark."
     />
     <meta name="theme-color" content="#c9a227" />
     <title>itslil/marked — marked 18.0.10 through LilScript</title>
@@ -33,8 +33,11 @@
           <p class="eyebrow"><span class="live-dot"></span> marked 18.0.10 · LilScript port · @itslil/marked</p>
           <h1>Markdown,<br /><em>compiled.</em></h1>
           <p class="lede">
-            The <code>marked@18.0.10</code> parse API, rewritten in LilScript. Official JavaScript is scored four ways:
-            Oxc and Terser, mangling on and off. The published artifact is the compiler-selected ESM — not a downstream minify of LilScript.
+            The <code>marked@18.0.10</code> parse API, rewritten in LilScript. This port has no
+            <code>use()</code>, Hooks, or Tokenizer subclassing. Official JavaScript is the
+            <strong>parse-only</strong> 18.0.10 sources — Lexer, Parser, Tokenizer, Renderer — then
+            Oxc and Terser, mangling on and off. npm’s full <code>marked.esm.js</code> still contains
+            the extension ABI and is not the size baseline.
           </p>
           <div class="install-row">
             <code>npm install @itslil/marked</code>
@@ -48,18 +51,18 @@
 
         <div class="scoreboard" aria-label="Compression and performance results">
           <div class="score-main">
-            <span class="score-label">Brotli-11 vs official Oxc mangle</span>
+            <span class="score-label">Brotli-11 vs parse-only Oxc mangle</span>
             <strong id="hero-ratio">—<span>×</span></strong>
             <p id="hero-bytes"></p>
           </div>
           <div class="score-grid">
-            <div><strong id="hero-vs-raw">—</strong><span>vs official unminified</span></div>
+            <div><strong id="hero-vs-raw">—</strong><span>vs parse-only unminified</span></div>
             <div><strong id="hero-spec">—</strong><span>spec HTML match</span></div>
-            <div><strong id="hero-lanes">6</strong><span>size / parse lanes</span></div>
+            <div><strong id="hero-lanes">7</strong><span>size / parse lanes</span></div>
             <div><strong id="hero-parse">—</strong><span>parse vs official</span></div>
           </div>
           <p class="score-note">
-            Canonical size is lilscript-codec gzip-9 / Brotli-11. Official minify lanes are Vite 8 Oxc and Terser, each with mangle on and off. Throughput is Chromium via Playwright, same markdown corpus, HTML checksummed against marked@18.0.10.
+            Canonical size is lilscript-codec gzip-9 / Brotli-11. The fair official artifact is parse-only marked@18.0.10, then Vite 8 Oxc and Terser with mangle on and off. Throughput is Chromium via Playwright. HTML is checksummed against that parse-only build and against npm marked@18.0.10.
           </p>
         </div>
       </section>
@@ -79,7 +82,7 @@
           </div>
           <p>
             HTML must match official <code>marked@18.0.10</code>. The document suite is the GFM+CommonMark
-            corpus repeated 32 times. The loop suite parses all 660 cases forty times. Ratio is lane / official unminified (lower is faster).
+            corpus repeated 32 times. The loop suite parses all 660 cases forty times. Ratio is lane / parse-only official (lower is faster).
           </p>
         </div>
         <div class="perf-cards" id="perf-cards"></div>
@@ -138,8 +141,8 @@
               <h2>Oxc, Terser,<br />mangle on and off.</h2>
             </div>
             <p>
-              Official unminified ESM, then the same file through Oxc and Terser with mangling enabled and disabled.
-              @itslil/marked is the LilScript compiler output. It is not post-minified.
+              Parse-only official 18.0.10 sources, then Oxc and Terser with mangling enabled and disabled.
+              @itslil/marked is the LilScript compiler output. It is not post-minified. The full npm file is listed last as a diagnostic.
             </p>
           </div>
           <div class="total-bar" id="total-bar"></div>
@@ -151,7 +154,7 @@
                   <th>Raw</th>
                   <th>gzip-9</th>
                   <th>Brotli-11</th>
-                  <th>vs Oxc mangle</th>
+                  <th>vs parse-only Oxc</th>
                 </tr>
               </thead>
               <tbody id="results-body"></tbody>
@@ -159,9 +162,10 @@
           </div>
           <div class="method-note">
             <p>
-              <strong>Why the official minify lanes exist.</strong> Comparing LilScript to uncompressed
-              <code>marked.esm.js</code> is not fair. Oxc and Terser, with and without mangling, are the same work the
-              JS ecosystem actually ships. The published LilScript artifact is still the compiler-selected module.
+              <strong>Why parse-only.</strong> LilScript cannot override methods, so this port has no
+              <code>use()</code> / Hooks / walkTokens. The published npm file still includes that ABI.
+              The fair fight is the 18.0.10 parse path, then the same Oxc and Terser work the JS ecosystem
+              actually ships. The published LilScript artifact is still the compiler-selected module.
             </p>
             <a href="https://github.com/yeargun/markedlil#size">README ↗</a>
           </div>

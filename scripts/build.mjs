@@ -60,26 +60,6 @@ function compileIfRequested() {
   ])
 }
 
-const apiWrap = `
-function marked(src, opt) {
-  if (typeof src !== "string") {
-    throw new TypeError("marked(): input must be a string")
-  }
-  return parse(src, opt)
-}
-marked.parse = marked
-marked.parseInline = parseInline
-marked.setOptions = function setMarkedOptions(opt) {
-  setOptions(opt)
-  marked.defaults = options()
-  return marked
-}
-marked.options = marked.setOptions
-marked.getDefaults = getDefaults
-marked.defaults = options()
-export { marked, parse, parseInline, setOptions, getDefaults, options }
-export default marked
-`
 
 compileIfRequested()
 mkdirSync(dist, { recursive: true })
@@ -89,32 +69,13 @@ if (!existsSync(rawPath)) {
   throw new Error("dist/marked.raw.js is missing. Run with --compile after building LilScript.")
 }
 
-const corePath = resolve(dist, "marked.core.js")
+// The shipped ESM is the compiler's own artifact. Re-bundling it costs bytes for
+// nothing: a bundler re-prints the compiler's chosen declaration layout as one
+// `var` per binding and cannot improve on names it must preserve.
 writeFileSync(
-  corePath,
-  readFileSync(rawPath, "utf8").replace(/from"\.\/host\.ts"/, 'from "../src/host.ts"'),
+  resolve(dist, "marked.esm.js"),
+  `${banner}${readFileSync(rawPath, "utf8").trimEnd()}\n`,
 )
-
-const wrapPath = resolve(dist, "marked.wrap.js")
-writeFileSync(
-  wrapPath,
-  `import { parse, parseInline, setOptions, getDefaults, options } from "./marked.core.js"\n${apiWrap}\n`,
-)
-
-await esbuild({
-  absWorkingDir: dist,
-  entryPoints: [wrapPath],
-  outfile: resolve(dist, "marked.esm.js"),
-  bundle: true,
-  format: "esm",
-  platform: "neutral",
-  legalComments: "none",
-  minifyWhitespace: true,
-  minifyIdentifiers: false,
-  minifySyntax: false,
-  banner: { js: banner },
-  logLevel: "error",
-})
 
 await esbuild({
   absWorkingDir: dist,
