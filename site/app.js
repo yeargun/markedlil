@@ -36,6 +36,33 @@ function times(value) {
   return `${value.toFixed(2)}×`
 }
 
+/// Ratios read the same whether they mean bytes or milliseconds, and a reader
+/// should not have to remember which direction is good. Every comparison on this
+/// page is spelled out instead: how much smaller, how much faster, or "baseline".
+function percentAgainst(value, baseline, better, worse) {
+  if (!baseline || value === baseline) {
+    return { text: "baseline", amount: "—", word: "baseline", state: "even" }
+  }
+  const change = (baseline - value) / baseline
+  const magnitude = Math.abs(change * 100)
+  const digits = magnitude < 10 ? 1 : 0
+  const word = change > 0 ? better : worse
+  return {
+    text: `${magnitude.toFixed(digits)}% ${word}`,
+    amount: `${magnitude.toFixed(digits)}%`,
+    word,
+    state: change > 0 ? "win" : "loss",
+  }
+}
+
+function smallerThan(value, baseline) {
+  return percentAgainst(value, baseline, "smaller", "larger")
+}
+
+function fasterThan(value, baseline) {
+  return percentAgainst(value, baseline, "faster", "slower")
+}
+
 function ms(value) {
   return `${value.toFixed(2)} ms`
 }
@@ -47,19 +74,26 @@ function renderHero() {
   const parseRaw = data.size.find((lane) => lane.id === "parse")
   const itslil = data.size.find((lane) => lane.primary)
   if (!oxc || !itslil) return
-  const ratio = itslil.brotli11 / oxc.brotli11
-  document.querySelector("#hero-ratio").innerHTML = `${ratio.toFixed(2)}<span>×</span>`
+  const smaller = smallerThan(itslil.brotli11, oxc.brotli11)
+  document.querySelector("#hero-ratio").innerHTML =
+    `${smaller.amount}<span>${smaller.word}</span>`
   document.querySelector("#hero-bytes").textContent =
-    `${formatter.format(oxc.brotli11)} B → ${formatter.format(itslil.brotli11)} B`
+    `${formatter.format(oxc.brotli11)} B → ${formatter.format(itslil.brotli11)} B over the wire`
+  document.querySelector("#hero-shipped").textContent = `${formatter.format(itslil.brotli11)} B`
   if (parseRaw) {
-    document.querySelector("#hero-vs-raw").textContent = times(itslil.brotli11 / parseRaw.brotli11)
+    document.querySelector("#hero-vs-raw").textContent =
+      smallerThan(itslil.brotli11, parseRaw.brotli11).text
   }
   if (data.spec) {
     document.querySelector("#hero-spec").textContent = `${data.spec.pass}/${data.spec.total}`
   }
   const suites = data.throughput ?? []
   const lil = suites.find((row) => row.id === "itslil")
-  if (lil) document.querySelector("#hero-parse").textContent = times(lil.documentRatio)
+  const official = suites.find((row) => row.id === "parse")
+  if (lil && official) {
+    document.querySelector("#hero-parse").textContent =
+      fasterThan(lil.documentMs, official.documentMs).text
+  }
 }
 
 function renderSize() {
@@ -75,7 +109,7 @@ function renderSize() {
       <td>${formatter.format(lane.raw)}</td>
       <td>${formatter.format(lane.gzip9)}</td>
       <td>${formatter.format(lane.brotli11)}</td>
-      <td><strong>${(lane.brotli11 / oxc.brotli11).toFixed(2)}×</strong></td>
+      <td class="verdict ${smallerThan(lane.brotli11, oxc.brotli11).state}"><strong>${smallerThan(lane.brotli11, oxc.brotli11).text}</strong></td>
     </tr>
   `,
     )
@@ -95,22 +129,28 @@ function renderPerf() {
   const suites = data.throughput ?? []
   if (suites.length === 0) return
   const lil = suites.find((row) => row.id === "itslil")
-  const faster = suites.filter((row) => row.documentRatio < 1).length
+  const official = suites.find((row) => row.id === "parse")
+  const document32 = lil && official ? fasterThan(lil.documentMs, official.documentMs) : null
+  const specLoop = lil && official ? fasterThan(lil.specMs, official.specMs) : null
   const cards = [
     {
-      label: "spec HTML match",
+      label: "parsing one big document, against official marked",
+      value: document32 ? document32.text : "—",
+      win: document32 ? document32.state === "win" : false,
+    },
+    {
+      label: "parsing all 660 spec cases, against official marked",
+      value: specLoop ? specLoop.text : "—",
+      win: specLoop ? specLoop.state === "win" : false,
+    },
+    {
+      label: "spec cases where the HTML is byte-identical",
       value: data.spec ? `${data.spec.pass}/${data.spec.total}` : "—",
       geo: true,
     },
     {
-      label: "parse vs official",
-      value: lil ? times(lil.documentRatio) : "—",
-      win: lil ? lil.documentRatio <= 1.05 : false,
-    },
-    { label: "lanes faster", value: String(faster) },
-    {
-      label: "worst document ratio",
-      value: times(Math.max(...suites.map((row) => row.documentRatio))),
+      label: "median time to parse the 32× document",
+      value: lil ? ms(lil.documentMs) : "—",
     },
   ]
   document.querySelector("#perf-cards").innerHTML = cards
@@ -124,16 +164,17 @@ function renderPerf() {
     )
     .join("")
   document.querySelector("#perf-body").innerHTML = suites
-    .map(
-      (row) => `
+    .map((row) => {
+      const verdict = official ? fasterThan(row.documentMs, official.documentMs) : null
+      return `
     <tr>
       <th scope="row">${row.name}</th>
       <td>${ms(row.documentMs)}</td>
       <td>${ms(row.specMs ?? row.inlineMs ?? 0)}</td>
-      <td><strong>${times(row.documentRatio)}</strong></td>
+      <td class="verdict ${verdict ? verdict.state : ""}"><strong>${verdict ? verdict.text : "—"}</strong></td>
     </tr>
-  `,
-    )
+  `
+    })
     .join("")
   document.querySelector("#perf-note").textContent =
     `${data.browser ?? "Playwright Chromium"}. ${data.codec}. Quiet median after discarding the first ${data.warmupDiscard} samples.`
@@ -202,7 +243,7 @@ function bindPlayground() {
     const lilMs = run((value) => lilMarked.parse(value))
     const officialMs = run((value) => officialMarked.parse(value))
     document.querySelector("#race-out").textContent =
-      `lil ${lilMs.toFixed(1)}ms · official ${officialMs.toFixed(1)}ms · ${(lilMs / officialMs).toFixed(2)}×`
+      `@itslil/marked ${lilMs.toFixed(1)} ms · official ${officialMs.toFixed(1)} ms · ${fasterThan(lilMs, officialMs).text}`
   })
   renderPreview()
 }

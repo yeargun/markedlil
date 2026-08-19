@@ -51,18 +51,22 @@
 
         <div class="scoreboard" aria-label="Compression and performance results">
           <div class="score-main">
-            <span class="score-label">Brotli-11 vs parse-only Oxc mangle</span>
-            <strong id="hero-ratio">—<span>×</span></strong>
+            <span class="score-label">Bytes over the wire, Brotli-11, against official marked minified by Oxc</span>
+            <strong id="hero-ratio">—<span>smaller</span></strong>
             <p id="hero-bytes"></p>
           </div>
           <div class="score-grid">
-            <div><strong id="hero-vs-raw">—</strong><span>vs parse-only unminified</span></div>
-            <div><strong id="hero-spec">—</strong><span>spec HTML match</span></div>
-            <div><strong id="hero-lanes">7</strong><span>size / parse lanes</span></div>
-            <div><strong id="hero-parse">—</strong><span>parse vs official</span></div>
+            <div><strong id="hero-shipped">—</strong><span>Brotli-11 bytes you ship</span></div>
+            <div><strong id="hero-parse">—</strong><span>parsing a document, vs official</span></div>
+            <div><strong id="hero-spec">—</strong><span>spec cases with identical HTML</span></div>
+            <div><strong id="hero-vs-raw">—</strong><span>vs official, unminified</span></div>
           </div>
           <p class="score-note">
-            Canonical size is lilscript-codec gzip-9 / Brotli-11. The fair official artifact is parse-only marked@18.0.10, then Vite 8 Oxc and Terser with mangle on and off. Throughput is Chromium via Playwright. HTML is checksummed against that parse-only build and against npm marked@18.0.10.
+            Two different things are measured, and both are written out rather than left as a ratio.
+            <strong>Size</strong> is the compressed file a browser downloads — lilscript-codec gzip-9 and Brotli-11,
+            compared against marked@18.0.10's own parse path put through Vite 8 Oxc and Terser, mangling on and off.
+            <strong>Speed</strong> is time spent parsing markdown in Chromium via Playwright. Every HTML output is
+            checked byte-for-byte against official marked before any number is reported.
           </p>
         </div>
       </section>
@@ -93,7 +97,7 @@
                 <th>Lane</th>
                 <th>32× document</th>
                 <th>660-case ×40</th>
-                <th>vs official</th>
+                <th>document speed vs official</th>
               </tr>
             </thead>
             <tbody id="perf-body"></tbody>
@@ -154,7 +158,7 @@
                   <th>Raw</th>
                   <th>gzip-9</th>
                   <th>Brotli-11</th>
-                  <th>vs parse-only Oxc</th>
+                  <th>Brotli size vs Oxc</th>
                 </tr>
               </thead>
               <tbody id="results-body"></tbody>

@@ -172,3 +172,14 @@ footer.shell { display: flex; justify-content: space-between; gap: 20px; padding
   html { scroll-behavior: auto; }
   .ticker div { animation: none; }
 }
+
+/* The headline is a percentage plus the direction it moved, so the word sits on
+   its own line instead of running into the number. */
+.score-main strong span { display: block; margin-top: 4px; font-size: .26em; letter-spacing: -.03em; }
+
+/* Verdict cells say how much smaller or faster, so they carry the colour that
+   a bare ratio could not: green when this lane wins, muted when it loses. */
+.verdict strong { font-variant-numeric: tabular-nums; }
+.verdict.win strong { color: #1f6b2a; }
+.verdict.loss strong { color: var(--muted); font-weight: 500; }
+.verdict.even strong { color: var(--muted); font-weight: 500; }
