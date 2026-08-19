@@ -1,0 +1,72 @@
+{
+  "name": "@itslil/marked",
+  "version": "18.0.10",
+  "description": "marked 18.0.10 reimplemented in LilScript. Drop-in ESM/CJS/UMD markdown parser.",
+  "keywords": [
+    "marked",
+    "markdown",
+    "parser",
+    "gfm",
+    "commonmark",
+    "lilscript",
+    "itslil"
+  ],
+  "homepage": "https://yeargun.github.io/markedlil/",
+  "bugs": "https://github.com/yeargun/markedlil/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeargun/markedlil.git"
+  },
+  "license": "MIT",
+  "author": "yeargun",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/marked.cjs",
+  "module": "./dist/marked.esm.js",
+  "types": "./dist/marked.d.ts",
+  "unpkg": "./dist/marked.umd.js",
+  "jsdelivr": "./dist/marked.umd.js",
+  "exports": {
+    ".": {
+      "types": "./dist/marked.d.ts",
+      "import": "./dist/marked.esm.js",
+      "require": "./dist/marked.cjs",
+      "default": "./dist/marked.esm.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "dist/marked.esm.js",
+    "dist/marked.cjs",
+    "dist/marked.umd.js",
+    "dist/marked.d.ts",
+    "LICENSE",
+    "NOTICE.md",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs --compile",
+    "build:site": "node scripts/build-site.mjs",
+    "test": "node --test test/compat.test.mjs",
+    "measure": "node scripts/measure.mjs",
+    "bench": "node e2e/run.mjs",
+    "check:site": "npm run build:site && node --test test/site.test.mjs",
+    "check:pack": "node scripts/check-pack.mjs",
+    "prepublishOnly": "node --test test/compat.test.mjs && npm run check:pack && npm run check:site"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1",
+    "marked": "18.0.10",
+    "playwright": "^1.54.2",
+    "terser": "^5.43.1",
+    "vite": "8.2.1"
+  }
+}

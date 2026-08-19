@@ -1,0 +1,302 @@
+import { Kind, Align, Token, Lexer } from "./types.lil";
+import { lex, lexInline, inlineTokens, blockTokens } from "./lexer.lil";
+import { escapeHtml, cleanUrl, slice, group0, execRe, matched } from "./str.lil";
+import { otherNotSpaceStart } from "./rules.lil";
+import { callRenderInline, callRenderTokens, setInline, setBlock, setRenderInline, setRenderTokens, wrapP, wrapHeading } from "./host.lil";
+
+string alignName(Align align) {
+  if (align == Align.Left) {
+    return "left";
+  }
+  if (align == Align.Center) {
+    return "center";
+  }
+  if (align == Align.Right) {
+    return "right";
+  }
+  return "";
+}
+
+string renderText(Token token, bool textOnly) {
+  if (token.tokens.length > 0) {
+    return callRenderInline(token.tokens, textOnly);
+  }
+  if (token.escaped) {
+    return token.text;
+  }
+  return escapeHtml(token.text, false);
+}
+
+string checkboxHtml(Token token) {
+  if (token.checked) {
+    return "<input checked=\"\" disabled=\"\" type=\"checkbox\"> ";
+  }
+  return "<input disabled=\"\" type=\"checkbox\"> ";
+}
+
+export string renderInline(Token[] tokens, bool textOnly) {
+  string out = "";
+  int i = 0;
+  while (i < tokens.length) {
+    Token token = tokens[i];
+    if (token.kind == Kind.Escape) {
+      if (textOnly) {
+        out = out + token.text;
+      } else {
+        out = out + escapeHtml(token.text, false);
+      }
+    } else if (token.kind == Kind.Html) {
+      out = out + token.text;
+    } else if (token.kind == Kind.Link) {
+      if (textOnly) {
+        out = out + token.text;
+      } else {
+        string inner = callRenderInline(token.tokens, false);
+        string? href = cleanUrl(token.href);
+        if (href == null) {
+          out = out + inner;
+        } else {
+          string html = "<a href=\"" + href + "\"";
+          if (token.title.length > 0) {
+            html = html + " title=\"" + escapeHtml(token.title, false) + "\"";
+          }
+          html = html + ">" + inner + "</a>";
+          out = out + html;
+        }
+      }
+    } else if (token.kind == Kind.Image) {
+      if (textOnly) {
+        out = out + token.text;
+      } else {
+        string alt = token.text;
+        if (token.tokens.length > 0) {
+          alt = callRenderInline(token.tokens, true);
+        }
+        string? href = cleanUrl(token.href);
+        if (href == null) {
+          out = out + escapeHtml(alt, false);
+        } else {
+          string html = "<img src=\"" + href + "\" alt=\"" + escapeHtml(alt, false) + "\"";
+          if (token.title.length > 0) {
+            html = html + " title=\"" + escapeHtml(token.title, false) + "\"";
+          }
+          html = html + ">";
+          out = out + html;
+        }
+      }
+    } else if (token.kind == Kind.Checkbox) {
+      if (textOnly) {
+        out = out + token.raw;
+      } else {
+        out = out + checkboxHtml(token);
+      }
+    } else if (token.kind == Kind.Strong) {
+      if (textOnly) {
+        out = out + token.text;
+      } else {
+        out = out + "<strong>" + callRenderInline(token.tokens, false) + "</strong>";
+      }
+    } else if (token.kind == Kind.Em) {
+      if (textOnly) {
+        out = out + token.text;
+      } else {
+        out = out + "<em>" + callRenderInline(token.tokens, false) + "</em>";
+      }
+    } else if (token.kind == Kind.Codespan) {
+      if (textOnly) {
+        out = out + token.text;
+      } else {
+        out = out + "<code>" + escapeHtml(token.text, true) + "</code>";
+      }
+    } else if (token.kind == Kind.Br) {
+      if (!textOnly) {
+        out = out + "<br>";
+      }
+    } else if (token.kind == Kind.Del) {
+      if (textOnly) {
+        out = out + token.text;
+      } else {
+        out = out + "<del>" + callRenderInline(token.tokens, false) + "</del>";
+      }
+    } else if (token.kind == Kind.Text) {
+      out = out + renderText(token, textOnly);
+    }
+    i = i + 1;
+  }
+  return out;
+}
+
+string renderListItem(Token item) {
+  return "<li>" + callRenderTokens(item.tokens) + "</li>\n";
+}
+
+string langClass(string lang) {
+  JsValue cap = execRe(otherNotSpaceStart, lang);
+  if (!matched(cap)) {
+    return "";
+  }
+  return group0(cap);
+}
+
+string renderCode(Token token) {
+  string langString = "";
+  if (token.hasLang) {
+    langString = langClass(token.lang);
+  }
+  string code = replaceReEnding(token.text) + "\n";
+  if (langString.length == 0) {
+    return "<pre><code>" + escapeHtml(code, true) + "</code></pre>\n";
+  }
+  return "<pre><code class=\"language-" + escapeHtml(langString, false) + "\">" + escapeHtml(code, true) + "</code></pre>\n";
+}
+
+string replaceReEnding(string text) {
+  if (text.endsWith("\n")) {
+    return slice(text, 0, text.length - 1);
+  }
+  return text;
+}
+
+string renderTableCell(Token cell) {
+  string content = callRenderInline(cell.tokens, false);
+  string type = "td";
+  if (cell.header) {
+    type = "th";
+  }
+  string align = alignName(cell.align);
+  string tag = "<" + type + ">";
+  if (align.length > 0) {
+    tag = "<" + type + " align=\"" + align + "\">";
+  }
+  return tag + content + "</" + type + ">\n";
+}
+
+string renderTable(Token token) {
+  string cell = "";
+  int j = 0;
+  while (j < token.headerCells.length) {
+    cell = cell + renderTableCell(token.headerCells[j]);
+    j = j + 1;
+  }
+  string header = "<tr>\n" + cell + "</tr>\n";
+  string body = "";
+  int r = 0;
+  while (r < token.rows.length) {
+    Token[] row = token.rows[r];
+    cell = "";
+    int k = 0;
+    while (k < row.length) {
+      cell = cell + renderTableCell(row[k]);
+      k = k + 1;
+    }
+    body = body + "<tr>\n" + cell + "</tr>\n";
+    r = r + 1;
+  }
+  if (body.length > 0) {
+    body = "<tbody>" + body + "</tbody>";
+  }
+  return "<table>\n<thead>\n" + header + "</thead>\n" + body + "</table>\n";
+}
+
+export string renderTokens(Token[] tokens) {
+  string out = "";
+  int i = 0;
+  while (i < tokens.length) {
+    Token token = tokens[i];
+    if (token.kind == Kind.Space) {
+    } else if (token.kind == Kind.Hr) {
+      out = out + "<hr>\n";
+    } else if (token.kind == Kind.Heading) {
+      string d = token.depth.toString();
+      out = out + wrapHeading(d, callRenderInline(token.tokens, false));
+    } else if (token.kind == Kind.Code) {
+      out = out + renderCode(token);
+    } else if (token.kind == Kind.Table) {
+      out = out + renderTable(token);
+    } else if (token.kind == Kind.Blockquote) {
+      out = out + "<blockquote>\n" + callRenderTokens(token.tokens) + "</blockquote>\n";
+    } else if (token.kind == Kind.List) {
+      string body = "";
+      int j = 0;
+      while (j < token.items.length) {
+        body = body + renderListItem(token.items[j]);
+        j = j + 1;
+      }
+      string type = "ul";
+      if (token.ordered) {
+        type = "ol";
+      }
+      string startAttr = "";
+      if (token.ordered && token.start != 1) {
+        startAttr = " start=\"" + token.start.toString() + "\"";
+      }
+      out = out + "<" + type + startAttr + ">\n" + body + "</" + type + ">\n";
+    } else if (token.kind == Kind.Checkbox) {
+      out = out + checkboxHtml(token);
+    } else if (token.kind == Kind.Html) {
+      out = out + token.text;
+    } else if (token.kind == Kind.Def) {
+    } else if (token.kind == Kind.Paragraph) {
+      out = out + wrapP(callRenderInline(token.tokens, false));
+    } else if (token.kind == Kind.Text) {
+      out = out + renderText(token, false);
+    }
+    i = i + 1;
+  }
+  return out;
+}
+
+export bool optionBool(JsValue opt, string key, bool fallback) {
+  if (JS.isUndefined(opt) || JS.isNullish(opt)) {
+    return fallback;
+  }
+  JsValue value = opt[key];
+  if (JS.isUndefined(value)) {
+    return fallback;
+  }
+  return value.truthy();
+}
+
+export string parseTokens(Token[] tokens) {
+  return callRenderTokens(tokens);
+}
+
+bool recursionReady = false;
+
+void installRecursion() {
+  if (recursionReady) {
+    return;
+  }
+  setInline(inlineTokens);
+  setBlock(blockTokens);
+  setRenderInline(renderInline);
+  setRenderTokens(renderTokens);
+  recursionReady = true;
+}
+
+export string parseMarkdown(string src, bool block, JsValue opt) {
+  installRecursion();
+  bool gfm = optionBool(opt, "gfm", true);
+  bool breaks = optionBool(opt, "breaks", false);
+  bool pedantic = optionBool(opt, "pedantic", false);
+  bool silent = optionBool(opt, "silent", false);
+  Lexer lx = new Lexer(gfm, breaks, pedantic, silent);
+  try {
+    if (block) {
+      return callRenderTokens(lex(lx, src));
+    }
+    return callRenderInline(lexInline(lx, src), false);
+  } catch (auto error) {
+    string message = "parse error";
+    if (error is string) {
+      message = error;
+    } else {
+      message = error.message ?? "parse error";
+    }
+    message = message + "\nPlease report this to https://github.com/markedjs/marked.";
+    if (silent) {
+      return "<p>An error occurred:</p><pre>" + escapeHtml(message, true) + "</pre>";
+    }
+    throw message;
+  }
+}

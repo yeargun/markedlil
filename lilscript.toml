@@ -1,0 +1,15 @@
+[javascript]
+priority = "size-first"
+optimization_level = 15
+cost_model = "brotli"
+assume_pristine_builtins = true
+strip_console = true
+local_name_reserve = 8
+candidate_search = "off"
+function_spelling = "arrow"
+
+[mangle]
+identifiers = true
+properties = true
+exports = false
+pool_strings = true

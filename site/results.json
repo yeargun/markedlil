@@ -1,0 +1,136 @@
+{
+  "pin": "marked@18.0.10",
+  "package": "@itslil/marked",
+  "node": "v22.21.1",
+  "codec": "lilscript-codec gzip-9 / brotli-11",
+  "browser": "playwright-chromium",
+  "warmupDiscard": 3,
+  "spec": {
+    "total": 660,
+    "pass": 660,
+    "fail": []
+  },
+  "size": [
+    {
+      "id": "official",
+      "name": "Official marked.esm.js",
+      "raw": 43018,
+      "gzip9": 12992,
+      "brotli11": 11907,
+      "note": "published unminified ESM from marked@18.0.10",
+      "primary": false
+    },
+    {
+      "id": "oxc-mangle",
+      "name": "Official · Oxc mangle on",
+      "raw": 42381,
+      "gzip9": 12469,
+      "brotli11": 11475,
+      "note": "Vite 8 Oxc minify, mangle: true",
+      "primary": false
+    },
+    {
+      "id": "oxc-nomangle",
+      "name": "Official · Oxc mangle off",
+      "raw": 42446,
+      "gzip9": 12681,
+      "brotli11": 11657,
+      "note": "Vite 8 Oxc minify, mangle: false",
+      "primary": false
+    },
+    {
+      "id": "terser-mangle",
+      "name": "Official · Terser mangle on",
+      "raw": 42757,
+      "gzip9": 12505,
+      "brotli11": 11437,
+      "note": "Terser compress + mangle: true",
+      "primary": false
+    },
+    {
+      "id": "terser-nomangle",
+      "name": "Official · Terser mangle off",
+      "raw": 42716,
+      "gzip9": 12715,
+      "brotli11": 11652,
+      "note": "Terser compress + mangle: false",
+      "primary": false
+    },
+    {
+      "id": "itslil",
+      "name": "@itslil/marked",
+      "raw": 41832,
+      "gzip9": 12451,
+      "brotli11": 11147,
+      "note": "LilScript compiler-selected ESM, not post-minified",
+      "primary": true
+    }
+  ],
+  "throughput": [
+    {
+      "id": "official",
+      "name": "Official marked.esm.js",
+      "primary": false,
+      "documentMs": 55.200000047683716,
+      "specMs": 69.5,
+      "htmlOk": true,
+      "documentRatio": 1,
+      "specRatio": 1
+    },
+    {
+      "id": "oxc-mangle",
+      "name": "Official · Oxc mangle on",
+      "primary": false,
+      "documentMs": 55.89999985694885,
+      "specMs": 72.5,
+      "htmlOk": true,
+      "documentRatio": 1.0126811559539937,
+      "specRatio": 1.0431654676258992
+    },
+    {
+      "id": "oxc-nomangle",
+      "name": "Official · Oxc mangle off",
+      "primary": false,
+      "documentMs": 54,
+      "specMs": 69.90000009536743,
+      "htmlOk": true,
+      "documentRatio": 0.9782608687201609,
+      "specRatio": 1.0057553970556465
+    },
+    {
+      "id": "terser-mangle",
+      "name": "Official · Terser mangle on",
+      "primary": false,
+      "documentMs": 56.39999985694885,
+      "specMs": 70.30000019073486,
+      "htmlOk": true,
+      "documentRatio": 1.021739126960662,
+      "specRatio": 1.011510794111293
+    },
+    {
+      "id": "terser-nomangle",
+      "name": "Official · Terser mangle off",
+      "primary": false,
+      "documentMs": 57,
+      "specMs": 70.39999985694885,
+      "htmlOk": true,
+      "documentRatio": 1.03260869476017,
+      "specRatio": 1.0129496382294798
+    },
+    {
+      "id": "itslil",
+      "name": "@itslil/marked",
+      "primary": true,
+      "documentMs": 49.90000009536743,
+      "specMs": 62.90000009536743,
+      "htmlOk": true,
+      "documentRatio": 0.9039855081931529,
+      "specRatio": 0.9050359725952148
+    }
+  ],
+  "hero": {
+    "brotliRatio": 0.9714161220043573,
+    "officialBrotli": 11475,
+    "itslilBrotli": 11147
+  }
+}

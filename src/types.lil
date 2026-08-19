@@ -1,0 +1,150 @@
+export enum Kind {
+  Space,
+  Hr,
+  Heading,
+  Code,
+  Table,
+  TableCell,
+  Blockquote,
+  List,
+  ListItem,
+  Checkbox,
+  Html,
+  Def,
+  Paragraph,
+  Text,
+  Escape,
+  Link,
+  Image,
+  Strong,
+  Em,
+  Codespan,
+  Br,
+  Del
+}
+
+export enum Align {
+  None,
+  Left,
+  Center,
+  Right
+}
+
+export class Token {
+  Kind kind;
+  string raw;
+  string text;
+  string href;
+  string title;
+  string lang;
+  string tag;
+  int depth;
+  int start;
+  Align align;
+  bool ordered;
+  bool loose;
+  bool task;
+  bool checked;
+  bool header;
+  bool escaped;
+  bool pre;
+  bool block;
+  bool hasTitle;
+  bool hasLang;
+  Token[] tokens;
+  Token[] items;
+  Token[] headerCells;
+  Token[][] rows;
+  Align[] aligns;
+
+  init() {
+    this.kind = Kind.Space;
+    this.raw = "";
+    this.text = "";
+    this.href = "";
+    this.title = "";
+    this.lang = "";
+    this.tag = "";
+    this.depth = 0;
+    this.start = 0;
+    this.align = Align.None;
+    this.ordered = false;
+    this.loose = false;
+    this.task = false;
+    this.checked = false;
+    this.header = false;
+    this.escaped = false;
+    this.pre = false;
+    this.block = false;
+    this.hasTitle = false;
+    this.hasLang = false;
+    this.tokens = [];
+    this.items = [];
+    this.headerCells = [];
+    this.rows = [];
+    this.aligns = [];
+  }
+}
+
+export class LinkDef {
+  string href;
+  string title;
+
+  init(string href = "", string title = "") {
+    this.href = href;
+    this.title = title;
+  }
+}
+
+export class InlineJob {
+  string src;
+  Token[] tokens;
+
+  init(string src, Token[] tokens) {
+    this.src = src;
+    this.tokens = tokens;
+  }
+}
+
+export class Lexer {
+  bool gfm;
+  bool pedantic;
+  bool breaks;
+  bool silent;
+  bool inLink;
+  bool inRawBlock;
+  bool linkEmitted;
+  bool top;
+  Token[] tokens;
+  Map<string, LinkDef> links;
+  InlineJob[] inlineQueue;
+
+  init(bool gfm = true, bool breaks = false, bool pedantic = false, bool silent = false) {
+    this.gfm = gfm;
+    this.breaks = breaks;
+    this.pedantic = pedantic;
+    this.silent = silent;
+    this.inLink = false;
+    this.inRawBlock = false;
+    this.linkEmitted = false;
+    this.top = true;
+    this.tokens = [];
+    this.links = new Map<string, LinkDef>();
+    this.inlineQueue = [];
+  }
+}
+
+export Token makeToken(Kind kind, string raw) {
+  Token token = new Token();
+  token.kind = kind;
+  token.raw = raw;
+  return token;
+}
+
+export Token lastToken(Token[] tokens) {
+  return tokens[tokens.length - 1];
+}
+
+export bool hasTokens(Token[] tokens) {
+  return tokens.length > 0;
+}

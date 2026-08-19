@@ -1,0 +1,12 @@
+node_modules/
+_site/
+*.log
+.DS_Store
+*.tgz
+.tmp/
+reports/
+e2e-out/
+vendor/
+dist/marked.raw.js
+dist/marked.core.js
+dist/marked.wrap.js

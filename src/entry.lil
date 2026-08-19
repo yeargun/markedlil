@@ -1,0 +1,59 @@
+import { parseMarkdown, optionBool } from "./parse.lil";
+
+bool defaultGfm = true;
+bool defaultBreaks = false;
+bool defaultPedantic = false;
+bool defaultSilent = false;
+
+JsValue mergeOpt(JsValue opt) {
+  if (JS.isUndefined(opt) || JS.isNullish(opt)) {
+    JsValue next = JS.object();
+    next["gfm"] = defaultGfm;
+    next["breaks"] = defaultBreaks;
+    next["pedantic"] = defaultPedantic;
+    next["silent"] = defaultSilent;
+    return next;
+  }
+  JsValue next = JS.object();
+  next["gfm"] = optionBool(opt, "gfm", defaultGfm);
+  next["breaks"] = optionBool(opt, "breaks", defaultBreaks);
+  next["pedantic"] = optionBool(opt, "pedantic", defaultPedantic);
+  next["silent"] = optionBool(opt, "silent", defaultSilent);
+  return next;
+}
+
+export string parse(string src, JsValue opt) {
+  return parseMarkdown(src, true, mergeOpt(opt));
+}
+
+export string parseInline(string src, JsValue opt) {
+  return parseMarkdown(src, false, mergeOpt(opt));
+}
+
+export JsValue setOptions(JsValue opt) {
+  defaultGfm = optionBool(opt, "gfm", defaultGfm);
+  defaultBreaks = optionBool(opt, "breaks", defaultBreaks);
+  defaultPedantic = optionBool(opt, "pedantic", defaultPedantic);
+  defaultSilent = optionBool(opt, "silent", defaultSilent);
+  return getDefaults();
+}
+
+export JsValue getDefaults() {
+  JsValue opt = JS.object();
+  opt["gfm"] = true;
+  opt["breaks"] = false;
+  opt["pedantic"] = false;
+  opt["silent"] = false;
+  opt["async"] = false;
+  return opt;
+}
+
+export JsValue options() {
+  JsValue opt = JS.object();
+  opt["gfm"] = defaultGfm;
+  opt["breaks"] = defaultBreaks;
+  opt["pedantic"] = defaultPedantic;
+  opt["silent"] = defaultSilent;
+  opt["async"] = false;
+  return opt;
+}

@@ -1,0 +1,1331 @@
+import { Kind, Align, Token, LinkDef, InlineJob, Lexer, makeToken, lastToken, hasTokens } from "./types.lil";
+import {
+  newline, blockCode, fences, hr, heading, lheading, lheadingGfm, def, list, html,
+  paragraph, blockquote, gfmTable, paragraphGfm, blockText,
+  htmlPed, defPed, headingPed, lheadingPed, paragraphPed,
+  escapeRe, inlineCode, br, inlineText, punctuation, blockSkip,
+  emStrongLDelim, emStrongLDelimGfm, emStrongLDelimPedantic,
+  emStrongRDelimAst, emStrongRDelimAstGfm, emStrongRDelimAstPedantic,
+  emStrongRDelimUnd, emStrongRDelimUndPedantic,
+  delLDelim, delRDelim, anyPunctuation, autolink, tag, link, reflink, nolink,
+  reflinkSearch, urlRe, backpedal, delRe, textGfm, brBreaks, textBreaks,
+  linkPed, reflinkPed,
+  otherEndingHash, otherEndingSpaceChar, otherNonSpaceChar, otherNewLineCharGlobal,
+  otherTabCharGlobal, otherMultipleSpaceGlobal, otherBlankLine, otherDoubleBlankLine,
+  otherBlockquoteStart, otherBlockquoteSetextReplace, otherBlockquoteSetextReplace2,
+  otherListReplaceNesting, otherListIsTask, otherListReplaceTask, otherListTaskCheckbox,
+  otherAnyLine, otherHrefBrackets, otherTableDelimiter, otherTableAlignChars,
+  otherTableRowBlankLine, otherTableAlignRight, otherTableAlignCenter, otherTableAlignLeft,
+  otherStartATag, otherEndATag, otherStartPreScriptTag, otherEndPreScriptTag,
+  otherStartAngleBracket, otherEndAngleBracket, otherPedanticHrefTitle,
+  otherUnicodeAlphaNumeric, otherCarriageReturn, otherSpaceLine, otherOutputLinkReplace,
+  otherStartingSpaceChar,
+  nextBulletRegex, hrIndentRegex, fencesBeginRegex, headingBeginRegex, htmlBeginRegex,
+  blockquoteBeginRegex, listItemRegex
+} from "./rules.lil";
+import {
+  slice, sliceFrom, replaceRe, execRe, matched, group0, groupN, hasGroup, matchIndex,
+  joinLines, splitLines, firstLine, rtrimChar, rtrimNl, trimTrailingBlankLines,
+  findClosingBracket, expandTabs, splitCells, splitCellsCount, indentCodeCompensation,
+  removeCodeIndent, searchRe, points, firstPointSize, parseStart, repeatA, repeatPlus
+} from "./str.lil";
+import { stringTrim, stringTrimEnd, stringTrimStart, regexSetLastIndex, intMinusOne, readHref, readTitle, parseBulletStart, callInline, callBlock, pickRegex, pickRegex3, queueJob, appendRaw, setLastInlineSrc, backpedalUrl, unshiftToken } from "./host.lil";
+
+bool groupOn(JsValue cap, int index) {
+  return hasGroup(cap, index) && groupN(cap, index).length > 0;
+}
+
+string pickDelim(JsValue cap) {
+  int i = 1;
+  while (i <= 6) {
+    if (groupOn(cap, i)) {
+      return groupN(cap, i);
+    }
+    i = i + 1;
+  }
+  return "";
+}
+
+void failLoop(Lexer lx, int byte) {
+  string err = "Infinite loop on byte: " + byte.toString();
+  if (lx.silent) {
+    print(err);
+    return;
+  }
+  throw err + "\nPlease report this to https://github.com/markedjs/marked.";
+}
+
+Token[] queueInline(Lexer lx, string src) {
+  Token[] tokens = [];
+  return queueJob(lx, src, tokens);
+}
+
+Token? outputLink(JsValue cap, string href, string title, string raw, Lexer lx, bool isImage) {
+  string text = replaceRe(groupN(cap, 1), otherOutputLinkReplace, "$1");
+  lx.inLink = true;
+  bool outerLinkEmitted = lx.linkEmitted;
+  bool outerInRawBlock = lx.inRawBlock;
+  lx.linkEmitted = false;
+  Token[] tokens = callInline(lx, text, []);
+  lx.linkEmitted = true;
+  lx.inLink = false;
+  Kind kind = Kind.Link;
+  if (isImage) {
+    kind = Kind.Image;
+    lx.linkEmitted = outerLinkEmitted;
+    lx.inRawBlock = outerInRawBlock;
+  }
+  Token token = makeToken(kind, raw);
+  token.href = href;
+  token.title = title;
+  token.hasTitle = title.length > 0;
+  token.text = text;
+  token.tokens = tokens;
+  return token;
+}
+
+Token? tokSpace(Lexer lx, string src) {
+  JsValue cap = execRe(newline, src);
+  if (matched(cap) && group0(cap).length > 0) {
+    return makeToken(Kind.Space, group0(cap));
+  }
+  return null;
+}
+
+Token? tokCode(Lexer lx, string src) {
+  JsValue cap = execRe(blockCode, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string raw = group0(cap);
+  if (!lx.pedantic) {
+    raw = trimTrailingBlankLines(raw);
+  }
+  Token token = makeToken(Kind.Code, raw);
+  token.text = removeCodeIndent(raw);
+  return token;
+}
+
+Token? tokFences(Lexer lx, string src) {
+  if (lx.pedantic) {
+    return null;
+  }
+  JsValue cap = execRe(fences, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string raw = group0(cap);
+  string fenceBody = "";
+  if (hasGroup(cap, 3)) {
+    fenceBody = groupN(cap, 3);
+  }
+  string text = indentCodeCompensation(raw, fenceBody);
+  Token token = makeToken(Kind.Code, raw);
+  if (groupOn(cap, 2)) {
+    token.lang = replaceRe(stringTrim(groupN(cap, 2)), anyPunctuation, "$1");
+    token.hasLang = true;
+  }
+  token.text = text;
+  return token;
+}
+
+Token? tokHeading(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex(lx.pedantic, headingPed, heading), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string text = stringTrim(groupN(cap, 2));
+  if (otherEndingHash.test(text)) {
+    string trimmed = rtrimChar(text, "#", false);
+    if (lx.pedantic) {
+      text = stringTrim(trimmed);
+    } else if (trimmed.length == 0 || otherEndingSpaceChar.test(trimmed)) {
+      text = stringTrim(trimmed);
+    }
+  }
+  Token token = makeToken(Kind.Heading, rtrimNl(group0(cap)));
+  token.depth = groupN(cap, 1).length;
+  token.text = text;
+  token.tokens = queueInline(lx, text);
+  return token;
+}
+
+Token? tokHr(Lexer lx, string src) {
+  JsValue cap = execRe(hr, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  return makeToken(Kind.Hr, rtrimNl(group0(cap)));
+}
+
+Token? tokBlockquote(Lexer lx, string src) {
+  JsValue cap = execRe(blockquote, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string[] lines = splitLines(rtrimNl(group0(cap)));
+  string raw = "";
+  string text = "";
+  Token[] tokens = [];
+  while (lines.length > 0) {
+    bool inBlockquote = false;
+    string[] currentLines = [];
+    int i = 0;
+    while (i < lines.length) {
+      if (otherBlockquoteStart.test(lines[i])) {
+        currentLines.push(lines[i]);
+        inBlockquote = true;
+      } else if (!inBlockquote) {
+        currentLines.push(lines[i]);
+      } else {
+        break;
+      }
+      i = i + 1;
+    }
+    string[] rest = [];
+    int k = i;
+    while (k < lines.length) {
+      rest.push(lines[k]);
+      k = k + 1;
+    }
+    lines = rest;
+    string currentRaw = joinLines(currentLines);
+    string currentText = replaceRe(
+      replaceRe(currentRaw, otherBlockquoteSetextReplace, "\n    $1"),
+      otherBlockquoteSetextReplace2,
+      ""
+    );
+    if (raw.length > 0) {
+      raw = raw + "\n" + currentRaw;
+      text = text + "\n" + currentText;
+    } else {
+      raw = currentRaw;
+      text = currentText;
+    }
+    bool top = lx.top;
+    lx.top = true;
+    callBlock(lx, currentText, tokens, true);
+    lx.top = top;
+    if (lines.length == 0) {
+      break;
+    }
+    if (!hasTokens(tokens)) {
+      break;
+    }
+    Token last = lastToken(tokens);
+    if (last.kind == Kind.Code) {
+      break;
+    } else if (last.kind == Kind.Blockquote) {
+      string continuation = joinLines(lines);
+      string newText = last.raw + "\n" + replaceRe(continuation, otherBlockquoteSetextReplace2, "");
+      Token? nested = tokBlockquote(lx, newText);
+      if (nested != null) {
+        tokens[tokens.length - 1] = nested;
+        raw = raw + "\n" + continuation;
+        text = slice(text, 0, text.length - last.text.length) + nested.text;
+      }
+      break;
+    } else if (last.kind == Kind.List) {
+      string newText = last.raw + "\n" + joinLines(lines);
+      Token? nestedList = tokList(lx, newText);
+      if (nestedList != null) {
+        tokens[tokens.length - 1] = nestedList;
+        raw = slice(raw, 0, raw.length - last.raw.length) + nestedList.raw;
+        text = slice(text, 0, text.length - last.raw.length) + nestedList.raw;
+        lines = splitLines(sliceFrom(newText, lastToken(tokens).raw.length));
+        continue;
+      }
+    }
+  }
+  Token token = makeToken(Kind.Blockquote, raw);
+  token.tokens = tokens;
+  token.text = text;
+  return token;
+}
+
+Token? tokList(Lexer lx, string src) {
+  JsValue cap = execRe(list, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string bull = stringTrim(groupN(cap, 1));
+  bool isordered = bull.length > 1;
+  Token listTok = makeToken(Kind.List, "");
+  listTok.ordered = isordered;
+  if (isordered) {
+    listTok.start = parseBulletStart(bull).toInt();
+  } else {
+    listTok.start = 0;
+  }
+  string bullPat = "";
+  if (isordered) {
+    bullPat = "\\d{1,9}\\" + sliceFrom(bull, bull.length - 1);
+  } else if (lx.pedantic) {
+    bullPat = "[*+-]";
+  } else {
+    bullPat = "\\" + bull;
+  }
+  Regex itemRe = listItemRegex(bullPat);
+  bool endsWithBlankLine = false;
+  string remaining = src;
+  while (remaining.length > 0) {
+    JsValue itemCap = execRe(itemRe, remaining);
+    if (!matched(itemCap)) {
+      break;
+    }
+    if (hr.test(remaining)) {
+      break;
+    }
+    string raw = group0(itemCap);
+    remaining = sliceFrom(remaining, raw.length);
+    string line = expandTabs(firstLine(groupN(itemCap, 2)), groupN(itemCap, 1).length);
+    string nextLine = firstLine(remaining);
+    bool blankLine = stringTrim(line).length == 0;
+    int indent = 0;
+    string itemContents = "";
+    bool endEarly = false;
+    if (lx.pedantic) {
+      indent = 2;
+      itemContents = stringTrimStart(line);
+    } else if (blankLine) {
+      indent = groupN(itemCap, 1).length + 1;
+    } else {
+      indent = searchRe(line, otherNonSpaceChar);
+      if (indent > 4) {
+        indent = 1;
+      }
+      itemContents = sliceFrom(line, indent);
+      indent = indent + groupN(itemCap, 1).length;
+    }
+    if (blankLine && otherBlankLine.test(nextLine)) {
+      raw = raw + nextLine + "\n";
+      remaining = sliceFrom(remaining, nextLine.length + 1);
+      endEarly = true;
+    }
+    if (!endEarly) {
+      Regex nextBullet = nextBulletRegex(indent);
+      Regex hrAt = hrIndentRegex(indent);
+      Regex fencesAt = fencesBeginRegex(indent);
+      Regex headingAt = headingBeginRegex(indent);
+      Regex htmlAt = htmlBeginRegex(indent);
+      Regex quoteAt = blockquoteBeginRegex(indent);
+      while (remaining.length > 0) {
+        string rawLine = firstLine(remaining);
+        nextLine = rawLine;
+        string nextLineWithoutTabs = "";
+        if (lx.pedantic) {
+          nextLine = replaceRe(nextLine, otherListReplaceNesting, "  ");
+          nextLineWithoutTabs = nextLine;
+        } else {
+          nextLineWithoutTabs = replaceRe(nextLine, otherTabCharGlobal, "    ");
+        }
+        if (fencesAt.test(nextLine)) {
+          break;
+        }
+        if (headingAt.test(nextLine)) {
+          break;
+        }
+        if (htmlAt.test(nextLine)) {
+          break;
+        }
+        if (quoteAt.test(nextLine)) {
+          break;
+        }
+        if (nextBullet.test(nextLine)) {
+          break;
+        }
+        if (hrAt.test(nextLine)) {
+          break;
+        }
+        int nest = searchRe(nextLineWithoutTabs, otherNonSpaceChar);
+        if (nest >= indent || stringTrim(nextLine).length == 0) {
+          itemContents = itemContents + "\n" + sliceFrom(nextLineWithoutTabs, indent);
+        } else {
+          if (blankLine) {
+            break;
+          }
+          if (searchRe(replaceRe(line, otherTabCharGlobal, "    "), otherNonSpaceChar) >= 4) {
+            break;
+          }
+          if (fencesAt.test(line)) {
+            break;
+          }
+          if (headingAt.test(line)) {
+            break;
+          }
+          if (hrAt.test(line)) {
+            break;
+          }
+          itemContents = itemContents + "\n" + nextLine;
+        }
+        blankLine = stringTrim(nextLine).length == 0;
+        raw = raw + rawLine + "\n";
+        remaining = sliceFrom(remaining, rawLine.length + 1);
+        line = sliceFrom(nextLineWithoutTabs, indent);
+      }
+    }
+    if (!listTok.loose) {
+      if (endsWithBlankLine) {
+        listTok.loose = true;
+      } else if (otherDoubleBlankLine.test(raw)) {
+        endsWithBlankLine = true;
+      }
+    }
+    Token item = makeToken(Kind.ListItem, raw);
+    item.task = lx.gfm && otherListIsTask.test(itemContents);
+    item.text = itemContents;
+    listTok.items.push(item);
+    listTok.raw = listTok.raw + raw;
+    src = remaining;
+  }
+  if (listTok.items.length == 0) {
+    return null;
+  }
+  Token lastItem = lastToken(listTok.items);
+  lastItem.raw = stringTrimEnd(lastItem.raw);
+  lastItem.text = stringTrimEnd(lastItem.text);
+  listTok.raw = stringTrimEnd(listTok.raw);
+  int itemIndex = 0;
+  while (itemIndex < listTok.items.length) {
+    Token item = listTok.items[itemIndex];
+    lx.top = false;
+    item.tokens = [];
+    callBlock(lx, item.text, item.tokens, false);
+    if (!listTok.loose) {
+      bool hasMultipleLineBreaks = false;
+      int t = 0;
+      while (t < item.tokens.length) {
+        Token child = item.tokens[t];
+        if (child.kind == Kind.Space && otherAnyLine.test(child.raw)) {
+          hasMultipleLineBreaks = true;
+        }
+        t = t + 1;
+      }
+      listTok.loose = hasMultipleLineBreaks;
+    }
+    itemIndex = itemIndex + 1;
+  }
+  itemIndex = 0;
+  while (itemIndex < listTok.items.length) {
+    Token item = listTok.items[itemIndex];
+    if (item.task && item.tokens.length > 0) {
+      Token itemToken = item.tokens[0];
+      if (itemToken.kind == Kind.Text || itemToken.kind == Kind.Paragraph) {
+        item.text = replaceRe(item.text, otherListReplaceTask, "");
+        itemToken.raw = replaceRe(itemToken.raw, otherListReplaceTask, "");
+        itemToken.text = replaceRe(itemToken.text, otherListReplaceTask, "");
+        int q = lx.inlineQueue.length - 1;
+        while (q >= 0) {
+          if (otherListIsTask.test(lx.inlineQueue[q].src)) {
+            lx.inlineQueue[q].src = replaceRe(lx.inlineQueue[q].src, otherListReplaceTask, "");
+            break;
+          }
+          q = q - 1;
+        }
+        JsValue taskRaw = execRe(otherListTaskCheckbox, item.raw);
+        if (matched(taskRaw)) {
+          Token checkbox = makeToken(Kind.Checkbox, group0(taskRaw) + " ");
+          checkbox.checked = group0(taskRaw) != "[ ]";
+          item.checked = checkbox.checked;
+          if (listTok.loose) {
+            if (
+              item.tokens.length > 0 &&
+              (item.tokens[0].kind == Kind.Paragraph || item.tokens[0].kind == Kind.Text)
+            ) {
+              item.tokens[0].raw = checkbox.raw + item.tokens[0].raw;
+              item.tokens[0].text = checkbox.raw + item.tokens[0].text;
+              unshiftToken(item.tokens[0].tokens, checkbox);
+            } else {
+              Token para = makeToken(Kind.Paragraph, checkbox.raw);
+              para.text = checkbox.raw;
+              para.tokens.push(checkbox);
+              Token[] next = [];
+              next.push(para);
+              int c = 0;
+              while (c < item.tokens.length) {
+                next.push(item.tokens[c]);
+                c = c + 1;
+              }
+              item.tokens = next;
+            }
+          } else {
+            Token[] next = [];
+            next.push(checkbox);
+            int c = 0;
+            while (c < item.tokens.length) {
+              next.push(item.tokens[c]);
+              c = c + 1;
+            }
+            item.tokens = next;
+          }
+        }
+      } else {
+        item.task = false;
+      }
+    } else if (item.task) {
+      item.task = false;
+    }
+    itemIndex = itemIndex + 1;
+  }
+  if (listTok.loose) {
+    itemIndex = 0;
+    while (itemIndex < listTok.items.length) {
+      Token item = listTok.items[itemIndex];
+      item.loose = true;
+      int t = 0;
+      while (t < item.tokens.length) {
+        if (item.tokens[t].kind == Kind.Text) {
+          item.tokens[t].kind = Kind.Paragraph;
+        }
+        t = t + 1;
+      }
+      itemIndex = itemIndex + 1;
+    }
+  }
+  return listTok;
+}
+
+Token? tokHtml(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex(lx.pedantic, htmlPed, html), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string raw = trimTrailingBlankLines(group0(cap));
+  Token token = makeToken(Kind.Html, raw);
+  token.block = true;
+  string first = groupN(cap, 1);
+  token.pre = first == "pre" || first == "script" || first == "style";
+  token.text = raw;
+  return token;
+}
+
+Token? tokDef(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex(lx.pedantic, defPed, def), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string tagName = replaceRe(groupN(cap, 1).toLowerCase(), otherMultipleSpaceGlobal, " ");
+  string href = "";
+  if (groupOn(cap, 2)) {
+    href = replaceRe(replaceRe(groupN(cap, 2), otherHrefBrackets, "$1"), anyPunctuation, "$1");
+  }
+  string title = "";
+  if (groupOn(cap, 3)) {
+    string wrapped = groupN(cap, 3);
+    title = replaceRe(slice(wrapped, 1, wrapped.length - 1), anyPunctuation, "$1");
+  }
+  Token token = makeToken(Kind.Def, rtrimNl(group0(cap)));
+  token.tag = tagName;
+  token.href = href;
+  token.title = title;
+  token.hasTitle = title.length > 0;
+  return token;
+}
+
+Token? tokTable(Lexer lx, string src) {
+  if (!lx.gfm || lx.pedantic) {
+    return null;
+  }
+  JsValue cap = execRe(gfmTable, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  if (!otherTableDelimiter.test(groupN(cap, 2))) {
+    return null;
+  }
+  string[] headers = splitCells(groupN(cap, 1));
+  string[] aligns = JS.stringSplit(replaceRe(groupN(cap, 2), otherTableAlignChars, ""), "|");
+  string[] rows = [];
+  if (groupOn(cap, 3) && stringTrim(groupN(cap, 3)).length > 0) {
+    rows = splitLines(replaceRe(groupN(cap, 3), otherTableRowBlankLine, ""));
+  }
+  if (headers.length != aligns.length) {
+    return null;
+  }
+  Token item = makeToken(Kind.Table, rtrimNl(group0(cap)));
+  int a = 0;
+  while (a < aligns.length) {
+    string align = aligns[a];
+    if (otherTableAlignRight.test(align)) {
+      item.aligns.push(Align.Right);
+    } else if (otherTableAlignCenter.test(align)) {
+      item.aligns.push(Align.Center);
+    } else if (otherTableAlignLeft.test(align)) {
+      item.aligns.push(Align.Left);
+    } else {
+      item.aligns.push(Align.None);
+    }
+    a = a + 1;
+  }
+  int h = 0;
+  while (h < headers.length) {
+    Token cell = makeToken(Kind.TableCell, headers[h]);
+    cell.text = headers[h];
+    cell.tokens = queueInline(lx, headers[h]);
+    cell.header = true;
+    cell.align = item.aligns[h];
+    item.headerCells.push(cell);
+    h = h + 1;
+  }
+  int r = 0;
+  while (r < rows.length) {
+    string[] cells = splitCellsCount(rows[r], item.headerCells.length);
+    Token[] row = [];
+    int c = 0;
+    while (c < cells.length) {
+      Token cell = makeToken(Kind.TableCell, cells[c]);
+      cell.text = cells[c];
+      cell.tokens = queueInline(lx, cells[c]);
+      cell.header = false;
+      cell.align = item.aligns[c];
+      row.push(cell);
+      c = c + 1;
+    }
+    item.rows.push(row);
+    r = r + 1;
+  }
+  return item;
+}
+
+Token? tokLheading(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex3(lx.pedantic, lheadingPed, lx.gfm, lheadingGfm, lheading), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string text = stringTrim(groupN(cap, 1));
+  Token token = makeToken(Kind.Heading, rtrimNl(group0(cap)));
+  if (groupN(cap, 2).charAt(0) == "=") {
+    token.depth = 1;
+  } else {
+    token.depth = 2;
+  }
+  token.text = text;
+  token.tokens = queueInline(lx, text);
+  return token;
+}
+
+Token? tokParagraph(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex3(lx.pedantic, paragraphPed, lx.gfm, paragraphGfm, paragraph), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string body = groupN(cap, 1);
+  string text = body;
+  if (body.charAt(body.length - 1) == "\n") {
+    text = slice(body, 0, body.length - 1);
+  }
+  Token token = makeToken(Kind.Paragraph, group0(cap));
+  token.text = text;
+  token.tokens = queueInline(lx, text);
+  return token;
+}
+
+Token? tokText(Lexer lx, string src) {
+  JsValue cap = execRe(blockText, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  Token token = makeToken(Kind.Text, group0(cap));
+  token.text = group0(cap);
+  token.tokens = queueInline(lx, group0(cap));
+  return token;
+}
+
+Token? tokEscape(Lexer lx, string src) {
+  JsValue cap = execRe(escapeRe, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  Token token = makeToken(Kind.Escape, group0(cap));
+  token.text = groupN(cap, 1);
+  return token;
+}
+
+Token? tokTag(Lexer lx, string src) {
+  JsValue cap = execRe(tag, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string raw = group0(cap);
+  if (!lx.inLink && otherStartATag.test(raw)) {
+    lx.inLink = true;
+  } else if (lx.inLink && otherEndATag.test(raw)) {
+    lx.inLink = false;
+  }
+  if (!lx.inRawBlock && otherStartPreScriptTag.test(raw)) {
+    lx.inRawBlock = true;
+  } else if (lx.inRawBlock && otherEndPreScriptTag.test(raw)) {
+    lx.inRawBlock = false;
+  }
+  Token token = makeToken(Kind.Html, raw);
+  token.block = false;
+  token.text = raw;
+  return token;
+}
+
+Token? tokLink(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex(lx.pedantic, linkPed, link), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string cap0 = group0(cap);
+  string cap1 = groupN(cap, 1);
+  string cap2 = groupN(cap, 2);
+  string cap3 = groupN(cap, 3);
+  string trimmedUrl = stringTrim(cap2);
+  if (!lx.pedantic && otherStartAngleBracket.test(trimmedUrl)) {
+    if (!otherEndAngleBracket.test(trimmedUrl)) {
+      return null;
+    }
+    string rtrimSlash = rtrimChar(slice(trimmedUrl, 0, trimmedUrl.length - 1), "\\", false);
+    if ((trimmedUrl.length - rtrimSlash.length) % 2 == 0) {
+      return null;
+    }
+  } else {
+    int lastParenIndex = findClosingBracket(cap2, "(", ")");
+    if (lastParenIndex == -2) {
+      return null;
+    }
+    if (lastParenIndex > -1) {
+      int start = 4;
+      if (cap0.indexOf("!") == 0) {
+        start = 5;
+      }
+      int linkLen = start + cap1.length + lastParenIndex;
+      cap2 = slice(cap2, 0, lastParenIndex);
+      cap0 = stringTrim(slice(cap0, 0, linkLen));
+      cap3 = "";
+    }
+  }
+  string href = cap2;
+  string title = "";
+  if (lx.pedantic) {
+    JsValue ped = execRe(otherPedanticHrefTitle, href);
+    if (matched(ped)) {
+      href = groupN(ped, 1);
+      title = groupN(ped, 3);
+    }
+  } else if (cap3.length > 0) {
+    title = slice(cap3, 1, cap3.length - 1);
+  }
+  href = stringTrim(href);
+  if (otherStartAngleBracket.test(href)) {
+    if (lx.pedantic && !otherEndAngleBracket.test(trimmedUrl)) {
+      href = sliceFrom(href, 1);
+    } else {
+      href = slice(href, 1, href.length - 1);
+    }
+  }
+  if (href.length > 0) {
+    href = replaceRe(href, anyPunctuation, "$1");
+  }
+  if (title.length > 0) {
+    title = replaceRe(title, anyPunctuation, "$1");
+  }
+  return outputLink(cap, href, title, cap0, lx, cap0.charAt(0) == "!");
+}
+
+Token? tokReflink(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex(lx.pedantic, reflinkPed, reflink), src);
+  if (!matched(cap)) {
+    cap = execRe(nolink, src);
+  }
+  if (!matched(cap)) {
+    return null;
+  }
+  string linkKey = groupN(cap, 1);
+  if (groupOn(cap, 2)) {
+    linkKey = groupN(cap, 2);
+  }
+  string linkString = replaceRe(
+    linkKey,
+    otherMultipleSpaceGlobal,
+    " "
+  );
+  LinkDef? defn = lx.links.get(linkString.toLowerCase());
+  if (defn == null) {
+    string text = group0(cap).charAt(0);
+    Token token = makeToken(Kind.Text, text);
+    token.text = text;
+    return token;
+  }
+  string href = readHref(defn);
+  string title = readTitle(defn);
+  return outputLink(cap, href, title, group0(cap), lx, group0(cap).charAt(0) == "!");
+}
+
+Token? tokEmStrong(Lexer lx, string src, string maskedSrc, string prevChar) {
+  JsValue cap = execRe(pickRegex3(lx.pedantic, emStrongLDelimPedantic, lx.gfm, emStrongLDelimGfm, emStrongLDelim), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  if (!groupOn(cap, 1) && !groupOn(cap, 2) && !groupOn(cap, 3) && !groupOn(cap, 4)) {
+    return null;
+  }
+  if (groupOn(cap, 4) && otherUnicodeAlphaNumeric.test(prevChar)) {
+    return null;
+  }
+  string nextChar = "";
+  if (groupOn(cap, 1)) {
+    nextChar = groupN(cap, 1);
+  } else if (groupOn(cap, 3)) {
+    nextChar = groupN(cap, 3);
+  }
+  if (nextChar.length == 0 || prevChar.length == 0 || matched(execRe(punctuation, prevChar))) {
+    int lLength = intMinusOne(points(group0(cap))).toInt();
+    int delimTotal = lLength;
+    int midDelimTotal = 0;
+    string delimChar = group0(cap).charAt(0);
+    bool midRun = prevChar == delimChar;
+    Regex endReg = pickRegex(lx.pedantic, emStrongRDelimUndPedantic, emStrongRDelimUnd);
+    if (delimChar == "*") {
+      endReg = pickRegex3(lx.pedantic, emStrongRDelimAstPedantic, lx.gfm, emStrongRDelimAstGfm, emStrongRDelimAst);
+    }
+    regexSetLastIndex(endReg, 0.0);
+    int clip = maskedSrc.length - src.length + lLength;
+    if (clip < 0) {
+      clip = 0;
+    }
+    string masked = sliceFrom(maskedSrc, clip);
+    while (true) {
+      JsValue endMatch = execRe(endReg, masked);
+      if (!matched(endMatch)) {
+        break;
+      }
+      string rDelim = pickDelim(endMatch);
+      if (rDelim.length == 0) {
+        continue;
+      }
+      int rLength = points(rDelim);
+      if (groupOn(endMatch, 3) || groupOn(endMatch, 4)) {
+        delimTotal = delimTotal + rLength;
+        continue;
+      } else if (groupOn(endMatch, 5) || groupOn(endMatch, 6)) {
+        if ((lLength % 3 != 0) && ((lLength + rLength) % 3 == 0)) {
+          midDelimTotal = midDelimTotal + rLength;
+          continue;
+        }
+        if (midRun) {
+          break;
+        }
+      }
+      delimTotal = delimTotal - rLength;
+      if (delimTotal > 0) {
+        continue;
+      }
+      int take = rLength;
+      int extra = rLength + delimTotal + midDelimTotal;
+      if (extra < take) {
+        take = extra;
+      }
+      int lastCharLength = firstPointSize(group0(endMatch));
+      string raw = slice(src, 0, lLength + matchIndex(endMatch) + lastCharLength + take);
+      int odd = lLength;
+      if (take < odd) {
+        odd = take;
+      }
+      if (odd % 2 != 0) {
+        string text = slice(raw, 1, raw.length - 1);
+        Token token = makeToken(Kind.Em, raw);
+        token.text = text;
+        token.tokens = callInline(lx, text, []);
+        return token;
+      }
+      string text = slice(raw, 2, raw.length - 2);
+      Token token = makeToken(Kind.Strong, raw);
+      token.text = text;
+      token.tokens = callInline(lx, text, []);
+      return token;
+    }
+  }
+  return null;
+}
+
+Token? tokCodespan(Lexer lx, string src) {
+  JsValue cap = execRe(inlineCode, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string text = replaceRe(groupN(cap, 2), otherNewLineCharGlobal, " ");
+  bool hasNonSpaceChars = otherNonSpaceChar.test(text);
+  bool hasSpaceCharsOnBothEnds = otherStartingSpaceChar.test(text) && otherEndingSpaceChar.test(text);
+  if (hasNonSpaceChars && hasSpaceCharsOnBothEnds) {
+    text = slice(text, 1, text.length - 1);
+  }
+  Token token = makeToken(Kind.Codespan, group0(cap));
+  token.text = text;
+  return token;
+}
+
+Token? tokBr(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex(lx.gfm && lx.breaks, brBreaks, br), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  return makeToken(Kind.Br, group0(cap));
+}
+
+Token? tokDel(Lexer lx, string src, string maskedSrc, string prevChar) {
+  if (!lx.gfm || lx.pedantic) {
+    return null;
+  }
+  JsValue cap = execRe(delLDelim, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string nextChar = "";
+  if (groupOn(cap, 1)) {
+    nextChar = groupN(cap, 1);
+  }
+  if (nextChar.length == 0 || prevChar.length == 0 || matched(execRe(punctuation, prevChar))) {
+    int lLength = intMinusOne(points(group0(cap))).toInt();
+    int delimTotal = lLength;
+    regexSetLastIndex(delRDelim, 0.0);
+    int clip = maskedSrc.length - src.length + lLength;
+    if (clip < 0) {
+      clip = 0;
+    }
+    string masked = sliceFrom(maskedSrc, clip);
+    while (true) {
+      JsValue endMatch = execRe(delRDelim, masked);
+      if (!matched(endMatch)) {
+        break;
+      }
+      string rDelim = pickDelim(endMatch);
+      if (rDelim.length == 0) {
+        continue;
+      }
+      int rLength = points(rDelim);
+      if (rLength != lLength) {
+        continue;
+      }
+      if (groupOn(endMatch, 3) || groupOn(endMatch, 4)) {
+        delimTotal = delimTotal + rLength;
+        continue;
+      }
+      delimTotal = delimTotal - rLength;
+      if (delimTotal > 0) {
+        continue;
+      }
+      int take = rLength;
+      int extra = rLength + delimTotal;
+      if (extra < take) {
+        take = extra;
+      }
+      int lastCharLength = firstPointSize(group0(endMatch));
+      string raw = slice(src, 0, lLength + matchIndex(endMatch) + lastCharLength + take);
+      string text = slice(raw, lLength, raw.length - lLength);
+      Token token = makeToken(Kind.Del, raw);
+      token.text = text;
+      token.tokens = callInline(lx, text, []);
+      return token;
+    }
+  }
+  return null;
+}
+
+Token? tokAutolink(Lexer lx, string src) {
+  JsValue cap = execRe(autolink, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string text = groupN(cap, 1);
+  string href = text;
+  if (groupN(cap, 2) == "@") {
+    href = "mailto:" + text;
+  }
+  Token token = makeToken(Kind.Link, group0(cap));
+  token.text = text;
+  token.href = href;
+  Token child = makeToken(Kind.Text, text);
+  child.text = text;
+  token.tokens.push(child);
+  return token;
+}
+
+Token? tokUrl(Lexer lx, string src) {
+  if (!lx.gfm || lx.pedantic) {
+    return null;
+  }
+  JsValue cap = execRe(urlRe, src);
+  if (!matched(cap)) {
+    return null;
+  }
+  string text = "";
+  string href = "";
+  if (groupN(cap, 2) == "@") {
+    text = group0(cap);
+    href = "mailto:" + text;
+  } else {
+    string current = backpedalUrl(backpedal, group0(cap));
+    text = current;
+    if (groupN(cap, 1) == "www.") {
+      href = "http://" + current;
+    } else {
+      href = current;
+    }
+    cap[0] = current;
+  }
+  Token token = makeToken(Kind.Link, text);
+  token.text = text;
+  token.href = href;
+  Token child = makeToken(Kind.Text, text);
+  child.text = text;
+  token.tokens.push(child);
+  return token;
+}
+
+Token? tokInlineText(Lexer lx, string src) {
+  JsValue cap = execRe(pickRegex3(lx.gfm && lx.breaks, textBreaks, lx.gfm, textGfm, inlineText), src);
+  if (!matched(cap)) {
+    return null;
+  }
+  Token token = makeToken(Kind.Text, group0(cap));
+  token.text = group0(cap);
+  token.escaped = lx.inRawBlock;
+  return token;
+}
+
+string maskReflinks(Lexer lx, string maskedSrc) {
+  if (lx.links.size == 0) {
+    return maskedSrc;
+  }
+  regexSetLastIndex(reflinkSearch, 0.0);
+  string out = "";
+  int last = 0;
+  while (true) {
+    JsValue m = execRe(reflinkSearch, maskedSrc);
+    if (!matched(m)) {
+      break;
+    }
+    int idx = matchIndex(m);
+    string raw = group0(m);
+    out = out + slice(maskedSrc, last, idx);
+    int open = raw.lastIndexOf("[");
+    string key = "";
+    if (open >= 0 && raw.length > 1) {
+      key = slice(raw, open + 1, raw.length - 1);
+    }
+    if (lx.links.has(key)) {
+      out = out + "[" + repeatA(raw.length - 2) + "]";
+    } else {
+      out = out + raw;
+    }
+    last = idx + raw.length;
+    if (raw.length == 0) {
+      regexSetLastIndex(reflinkSearch, last + 1);
+    }
+  }
+  return out + sliceFrom(maskedSrc, last);
+}
+
+string maskPunctuation(string maskedSrc) {
+  regexSetLastIndex(anyPunctuation, 0.0);
+  string out = "";
+  int last = 0;
+  while (true) {
+    JsValue m = execRe(anyPunctuation, maskedSrc);
+    if (!matched(m)) {
+      break;
+    }
+    int idx = matchIndex(m);
+    string raw = group0(m);
+    out = out + slice(maskedSrc, last, idx) + repeatPlus(raw.length);
+    last = idx + raw.length;
+    if (raw.length == 0) {
+      regexSetLastIndex(anyPunctuation, last + 1);
+    }
+  }
+  return out + sliceFrom(maskedSrc, last);
+}
+
+string maskBlockSkip(string maskedSrc) {
+  regexSetLastIndex(blockSkip, 0.0);
+  string out = "";
+  int last = 0;
+  while (true) {
+    JsValue m = execRe(blockSkip, maskedSrc);
+    if (!matched(m)) {
+      break;
+    }
+    int idx = matchIndex(m);
+    string raw = group0(m);
+    string context = "";
+    if (groupOn(m, 2)) {
+      context = groupN(m, 2);
+    }
+    int offset = context.length;
+    out = out + slice(maskedSrc, last, idx) + slice(raw, 0, offset) + "[" + repeatA(raw.length - offset - 2) + "]";
+    last = idx + raw.length;
+    if (raw.length == 0) {
+      regexSetLastIndex(blockSkip, last + 1);
+    }
+  }
+  return out + sliceFrom(maskedSrc, last);
+}
+
+export Token[] blockTokens(Lexer lx, string src, Token[] tokens, bool lastParagraphClipped) {
+  if (lx.pedantic) {
+    src = replaceRe(replaceRe(src, otherTabCharGlobal, "    "), otherSpaceLine, "");
+  }
+  int srcLength = 2147483647;
+  while (src.length > 0) {
+    if (src.length < srcLength) {
+      srcLength = src.length;
+    } else {
+      failLoop(lx, src.charCodeAt(0));
+      break;
+    }
+    Token? token = tokSpace(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      if (token.raw.length == 1 && hasTokens(tokens)) {
+        lastToken(tokens).raw = lastToken(tokens).raw + "\n";
+      } else {
+        tokens.push(token);
+      }
+      continue;
+    }
+    token = tokCode(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      if (hasTokens(tokens)) {
+        Token last = lastToken(tokens);
+        if (last.kind == Kind.Paragraph || last.kind == Kind.Text) {
+          appendRaw(last, token.raw);
+          last.text = last.text + "\n" + token.text;
+          setLastInlineSrc(lx, last.text);
+          continue;
+        }
+      }
+      tokens.push(token);
+      continue;
+    }
+    token = tokFences(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokHeading(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokHr(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokBlockquote(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokList(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokHtml(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokDef(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      if (hasTokens(tokens)) {
+        Token last = lastToken(tokens);
+        if (last.kind == Kind.Paragraph || last.kind == Kind.Text) {
+          appendRaw(last, token.raw);
+          last.text = last.text + "\n" + token.raw;
+          setLastInlineSrc(lx, last.text);
+          continue;
+        }
+      }
+      if (!lx.links.has(token.tag)) {
+        lx.links.set(token.tag, new LinkDef(token.href, token.title));
+        tokens.push(token);
+      }
+      continue;
+    }
+    token = tokTable(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokLheading(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    if (lx.top) {
+      token = tokParagraph(lx, src);
+      if (token != null) {
+        if (lastParagraphClipped && hasTokens(tokens) && lastToken(tokens).kind == Kind.Paragraph) {
+          Token last = lastToken(tokens);
+          appendRaw(last, token.raw);
+          last.text = last.text + "\n" + token.text;
+          lx.inlineQueue.pop();
+          setLastInlineSrc(lx, last.text);
+        } else {
+          tokens.push(token);
+        }
+        lastParagraphClipped = false;
+        src = sliceFrom(src, token.raw.length);
+        continue;
+      }
+    }
+    token = tokText(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      if (hasTokens(tokens) && lastToken(tokens).kind == Kind.Text) {
+        Token last = lastToken(tokens);
+        appendRaw(last, token.raw);
+        last.text = last.text + "\n" + token.text;
+        lx.inlineQueue.pop();
+        setLastInlineSrc(lx, last.text);
+      } else {
+        tokens.push(token);
+      }
+      continue;
+    }
+    if (src.length > 0) {
+      failLoop(lx, src.charCodeAt(0));
+      break;
+    }
+  }
+  lx.top = true;
+  return tokens;
+}
+
+export Token[] inlineTokens(Lexer lx, string src, Token[] tokens) {
+  string maskedSrc = maskBlockSkip(maskPunctuation(maskReflinks(lx, src)));
+  bool keepPrevChar = false;
+  string prevChar = "";
+  int srcLength = 2147483647;
+  while (src.length > 0) {
+    if (src.length < srcLength) {
+      srcLength = src.length;
+    } else {
+      failLoop(lx, src.charCodeAt(0));
+      break;
+    }
+    if (!keepPrevChar) {
+      prevChar = "";
+    }
+    keepPrevChar = false;
+    Token? token = tokEscape(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokTag(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokLink(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokReflink(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      if (token.kind == Kind.Text && hasTokens(tokens) && lastToken(tokens).kind == Kind.Text) {
+        lastToken(tokens).raw = lastToken(tokens).raw + token.raw;
+        lastToken(tokens).text = lastToken(tokens).text + token.text;
+      } else {
+        tokens.push(token);
+      }
+      continue;
+    }
+    token = tokEmStrong(lx, src, maskedSrc, prevChar);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokCodespan(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokBr(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokDel(lx, src, maskedSrc, prevChar);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    token = tokAutolink(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      tokens.push(token);
+      continue;
+    }
+    if (!lx.inLink) {
+      token = tokUrl(lx, src);
+      if (token != null) {
+        src = sliceFrom(src, token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+    }
+    token = tokInlineText(lx, src);
+    if (token != null) {
+      src = sliceFrom(src, token.raw.length);
+      if (!token.raw.endsWith("_")) {
+        prevChar = token.raw.charAt(token.raw.length - 1);
+      }
+      keepPrevChar = true;
+      if (hasTokens(tokens) && lastToken(tokens).kind == Kind.Text) {
+        lastToken(tokens).raw = lastToken(tokens).raw + token.raw;
+        lastToken(tokens).text = lastToken(tokens).text + token.text;
+      } else {
+        tokens.push(token);
+      }
+      continue;
+    }
+    if (src.length > 0) {
+      failLoop(lx, src.charCodeAt(0));
+      break;
+    }
+  }
+  return tokens;
+}
+
+export Token[] lex(Lexer lx, string src) {
+  src = replaceRe(src, otherCarriageReturn, "\n");
+  callBlock(lx, src, lx.tokens, false);
+  int i = 0;
+  while (i < lx.inlineQueue.length) {
+    InlineJob job = lx.inlineQueue[i];
+    callInline(lx, job.src, job.tokens);
+    i = i + 1;
+  }
+  lx.inlineQueue = [];
+  return lx.tokens;
+}
+
+export Token[] lexInline(Lexer lx, string src) {
+  return callInline(lx, src, []);
+}

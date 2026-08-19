@@ -1,0 +1,64 @@
+import { Token, Lexer } from "./types.lil";
+import extern {
+  regexSetLastIndex,
+  encodeURIValue,
+  stringTrim,
+  stringTrimEnd,
+  stringTrimStart,
+  stringSearch,
+  codePointCount,
+  firstCodePointSize,
+  intMinusOne,
+  readHref,
+  readTitle,
+  runRegexExec,
+  backpedalUrl,
+  parseBulletStart,
+  pickRegex,
+  pickRegex3,
+  queueJob,
+  wrapP,
+  wrapHeading,
+  appendRaw,
+  setLastInlineSrc,
+  unshiftToken,
+  setInline,
+  setBlock,
+  setRenderInline,
+  setRenderTokens,
+  callInline,
+  callBlock,
+  callRenderInline,
+  callRenderTokens
+} from "./host.ts";
+
+export extern void regexSetLastIndex(Regex re, float value);
+export extern string encodeURIValue(string s);
+export extern string stringTrim(string s);
+export extern string stringTrimEnd(string s);
+export extern string stringTrimStart(string s);
+export extern float stringSearch(string s, Regex re);
+export extern float codePointCount(string s);
+export extern float firstCodePointSize(string s);
+export extern float intMinusOne(float n);
+export extern string readHref(JsValue link);
+export extern string readTitle(JsValue link);
+export extern JsValue runRegexExec(Regex re, string src);
+export extern string backpedalUrl(Regex re, string src);
+export extern float parseBulletStart(string bull);
+export extern Regex pickRegex(bool flag, Regex whenTrue, Regex whenFalse);
+export extern Regex pickRegex3(bool a, Regex ra, bool b, Regex rb, Regex rc);
+export extern Token[] queueJob(Lexer lx, string src, Token[] tokens);
+export extern string wrapP(string inner);
+export extern string wrapHeading(string depth, string inner);
+export extern void appendRaw(Token token, string extra);
+export extern void setLastInlineSrc(Lexer lx, string src);
+export extern void unshiftToken(Token[] tokens, Token token);
+export extern void setInline(JsValue fn);
+export extern void setBlock(JsValue fn);
+export extern void setRenderInline(JsValue fn);
+export extern void setRenderTokens(JsValue fn);
+export extern Token[] callInline(Lexer lx, string src, Token[] tokens);
+export extern Token[] callBlock(Lexer lx, string src, Token[] tokens, bool lastParagraphClipped);
+export extern string callRenderInline(Token[] tokens, bool textOnly);
+export extern string callRenderTokens(Token[] tokens);

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="@itslil/marked: marked 18.0.10 reimplemented in LilScript. Size versus Oxc and Terser mangling on and off, plus a Playwright parse benchmark."
+    />
+    <meta name="theme-color" content="#c9a227" />
+    <title>itslil/marked — marked 18.0.10 through LilScript</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div class="progress" aria-hidden="true"></div>
+    <header class="nav shell">
+      <a class="wordmark" href="#top" aria-label="itslil/marked home">
+        <span class="mark">md</span>
+        <span>itslil/marked</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#performance">performance</a>
+        <a href="#lab">playground</a>
+        <a href="#evidence">size</a>
+        <a href="https://github.com/yeargun/markedlil">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero shell">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="live-dot"></span> marked 18.0.10 · LilScript port · @itslil/marked</p>
+          <h1>Markdown,<br /><em>compiled.</em></h1>
+          <p class="lede">
+            The <code>marked@18.0.10</code> parse API, rewritten in LilScript. Official JavaScript is scored four ways:
+            Oxc and Terser, mangling on and off. The published artifact is the compiler-selected ESM — not a downstream minify of LilScript.
+          </p>
+          <div class="install-row">
+            <code>npm install @itslil/marked</code>
+            <button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
+          </div>
+          <div class="hero-actions">
+            <a class="button primary" href="#performance">Playwright</a>
+            <a class="button secondary" href="https://www.npmjs.com/package/@itslil/marked">npm ↗</a>
+          </div>
+        </div>
+
+        <div class="scoreboard" aria-label="Compression and performance results">
+          <div class="score-main">
+            <span class="score-label">Brotli-11 vs official Oxc mangle</span>
+            <strong id="hero-ratio">—<span>×</span></strong>
+            <p id="hero-bytes"></p>
+          </div>
+          <div class="score-grid">
+            <div><strong id="hero-vs-raw">—</strong><span>vs official unminified</span></div>
+            <div><strong id="hero-spec">—</strong><span>spec HTML match</span></div>
+            <div><strong id="hero-lanes">6</strong><span>size / parse lanes</span></div>
+            <div><strong id="hero-parse">—</strong><span>parse vs official</span></div>
+          </div>
+          <p class="score-note">
+            Canonical size is lilscript-codec gzip-9 / Brotli-11. Official minify lanes are Vite 8 Oxc and Terser, each with mangle on and off. Throughput is Chromium via Playwright, same markdown corpus, HTML checksummed against marked@18.0.10.
+          </p>
+        </div>
+      </section>
+
+      <section class="ticker" aria-label="Supported features">
+        <div>
+          gfm <span>✦</span> commonmark <span>✦</span> tables <span>✦</span> task lists <span>✦</span> fences
+          <span>✦</span> autolinks <span>✦</span> parse <span>✦</span> parseInline <span>✦</span> setOptions
+        </div>
+      </section>
+
+      <section class="performance shell" id="performance">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Measured in Chromium</p>
+            <h2>Playwright,<br />not inferred.</h2>
+          </div>
+          <p>
+            HTML must match official <code>marked@18.0.10</code>. The document suite is the GFM+CommonMark
+            corpus repeated 32 times. The loop suite parses all 660 cases forty times. Ratio is lane / official unminified (lower is faster).
+          </p>
+        </div>
+        <div class="perf-cards" id="perf-cards"></div>
+        <div class="table-wrap light">
+          <table>
+            <thead>
+              <tr>
+                <th>Lane</th>
+                <th>32× document</th>
+                <th>660-case ×40</th>
+                <th>vs official</th>
+              </tr>
+            </thead>
+            <tbody id="perf-body"></tbody>
+          </table>
+        </div>
+        <p class="perf-note" id="perf-note"></p>
+      </section>
+
+      <section class="lab shell" id="lab">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">The compiled runtime, in the browser</p>
+            <h2>Live<br />markdown.</h2>
+          </div>
+          <p>
+            Left is the editor. Right is HTML from <code>@itslil/marked</code> or official <code>marked@18.0.10</code>.
+            Marked does not sanitize HTML. Do not paste untrusted markdown.
+          </p>
+        </div>
+        <div class="playground">
+          <div class="play-toolbar">
+            <label>
+              <input type="radio" name="engine" value="lil" checked />
+              @itslil/marked
+            </label>
+            <label>
+              <input type="radio" name="engine" value="official" />
+              marked@18.0.10
+            </label>
+            <button type="button" id="race">race 10×</button>
+            <span id="race-out"></span>
+          </div>
+          <div class="play-grid">
+            <textarea id="source" spellcheck="false" aria-label="Markdown source"></textarea>
+            <iframe id="preview" title="Rendered markdown" sandbox="allow-same-origin"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="evidence" id="evidence">
+        <div class="shell">
+          <div class="section-heading inverse">
+            <div>
+              <p class="eyebrow">The receipts</p>
+              <h2>Oxc, Terser,<br />mangle on and off.</h2>
+            </div>
+            <p>
+              Official unminified ESM, then the same file through Oxc and Terser with mangling enabled and disabled.
+              @itslil/marked is the LilScript compiler output. It is not post-minified.
+            </p>
+          </div>
+          <div class="total-bar" id="total-bar"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Lane</th>
+                  <th>Raw</th>
+                  <th>gzip-9</th>
+                  <th>Brotli-11</th>
+                  <th>vs Oxc mangle</th>
+                </tr>
+              </thead>
+              <tbody id="results-body"></tbody>
+            </table>
+          </div>
+          <div class="method-note">
+            <p>
+              <strong>Why the official minify lanes exist.</strong> Comparing LilScript to uncompressed
+              <code>marked.esm.js</code> is not fair. Oxc and Terser, with and without mangling, are the same work the
+              JS ecosystem actually ships. The published LilScript artifact is still the compiler-selected module.
+            </p>
+            <a href="https://github.com/yeargun/markedlil#size">README ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing shell">
+        <p class="eyebrow">Zero runtime dependencies</p>
+        <h2>Install the<br />current port.</h2>
+        <div class="install-row large">
+          <code>npm install @itslil/marked</code>
+          <button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <span>@itslil/marked · MIT</span>
+      <span>Independent LilScript reimplementation of marked@18.0.10</span>
+      <a href="https://github.com/yeargun/markedlil">source ↗</a>
+    </footer>
+  </body>
+</html>
