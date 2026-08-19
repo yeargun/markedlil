@@ -5,7 +5,7 @@ cost_model = "brotli"
 assume_pristine_builtins = true
 strip_console = true
 local_name_reserve = 4
-candidate_search = "production"
+candidate_search = "off"
 function_spelling = "arrow"
 
 [mangle]

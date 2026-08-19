@@ -3,7 +3,7 @@
   "package": "@itslil/marked",
   "node": "v24.11.1",
   "codec": "lilscript-codec gzip-9 / brotli-11",
-  "comparison": "Fair size lanes are parse-only marked@18.0.10 sources (no use/Hooks/walkTokens), then Oxc and Terser with mangling on and off. npm marked.esm.js is diagnostic: it still contains the extension ABI.",
+  "comparison": "Every size and speed lane is the same surface: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer (no use/Hooks/walkTokens), then Oxc or Terser, versus this port. The published npm file is not a lane — it still contains the extension system.",
   "browser": "playwright-chromium",
   "warmupDiscard": 3,
   "spec": {
@@ -70,24 +70,13 @@
     {
       "id": "itslil",
       "name": "@itslil/marked",
-      "raw": 34015,
-      "gzip9": 10347,
-      "brotli11": 9318,
+      "raw": 36978,
+      "gzip9": 11274,
+      "brotli11": 10179,
       "note": "LilScript compiler-selected ESM, not post-minified. Same parse API; no extension system.",
       "primary": true,
       "baseline": false,
       "diagnostic": false
-    },
-    {
-      "id": "full",
-      "name": "npm marked.esm.js (full)",
-      "raw": 43018,
-      "gzip9": 12992,
-      "brotli11": 11907,
-      "note": "Published marked@18.0.10, already esbuild-minified. Includes use(), Hooks, walkTokens, Marked class.",
-      "primary": false,
-      "baseline": false,
-      "diagnostic": true
     }
   ],
   "throughput": [
@@ -150,22 +139,12 @@
       "htmlOk": true,
       "documentRatio": 0.8704761913844518,
       "specRatio": 0.921364982444575
-    },
-    {
-      "id": "full",
-      "name": "npm marked.esm.js (full)",
-      "primary": false,
-      "documentMs": 51.799999952316284,
-      "specMs": 67.5,
-      "htmlOk": true,
-      "documentRatio": 0.9866666657584054,
-      "specRatio": 1.0014836781081762
     }
   ],
   "hero": {
-    "brotliRatio": 0.9233055885850179,
+    "brotliRatio": 1.0086206896551724,
     "officialBrotli": 10092,
-    "itslilBrotli": 9318,
+    "itslilBrotli": 10179,
     "parseRawBrotli": 12684
   }
 }

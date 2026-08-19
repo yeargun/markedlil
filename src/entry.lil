@@ -1,5 +1,13 @@
 import { parseMarkdown, optionBool } from "./parse.lil";
 
+extern class MarkedOptions {
+  JsValue gfm;
+  JsValue breaks;
+  JsValue pedantic;
+  JsValue silent;
+  JsValue async;
+}
+
 bool defaultGfm = true;
 bool defaultBreaks = false;
 bool defaultPedantic = false;
@@ -39,22 +47,22 @@ export JsValue setOptions(JsValue opt) {
 }
 
 export JsValue getDefaults() {
-  JsValue opt = JS.object();
-  opt["gfm"] = true;
-  opt["breaks"] = false;
-  opt["pedantic"] = false;
-  opt["silent"] = false;
-  opt["async"] = false;
+  MarkedOptions opt = JS.assume(JS.object());
+  opt.gfm = true;
+  opt.breaks = false;
+  opt.pedantic = false;
+  opt.silent = false;
+  opt.async = false;
   return opt;
 }
 
 export JsValue options() {
-  JsValue opt = JS.object();
-  opt["gfm"] = defaultGfm;
-  opt["breaks"] = defaultBreaks;
-  opt["pedantic"] = defaultPedantic;
-  opt["silent"] = defaultSilent;
-  opt["async"] = false;
+  MarkedOptions opt = JS.assume(JS.object());
+  opt.gfm = defaultGfm;
+  opt.breaks = defaultBreaks;
+  opt.pedantic = defaultPedantic;
+  opt.silent = defaultSilent;
+  opt.async = false;
   return opt;
 }
 

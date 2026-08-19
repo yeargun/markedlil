@@ -1,7 +1,7 @@
 {
   "name": "@itslil/marked",
   "version": "18.0.11",
-  "description": "marked 18.0.10 reimplemented in LilScript. Drop-in ESM/CJS/UMD markdown parser.",
+  "description": "marked 18.0.10 parse path reimplemented in LilScript. parse / parseInline / setOptions — not the extension ABI.",
   "keywords": [
     "marked",
     "markdown",

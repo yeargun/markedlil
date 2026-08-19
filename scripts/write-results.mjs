@@ -26,18 +26,20 @@ const results = {
   browser: bench.browser ?? null,
   warmupDiscard: bench.warmupDiscard ?? 2,
   spec: bench.spec ?? null,
-  size: sizes.lanes.map((lane) => ({
-    id: lane.id,
-    name: lane.name,
-    raw: lane.raw,
-    gzip9: lane.gzip9,
-    brotli11: lane.brotli11,
-    note: lane.note,
-    primary: lane.primary,
-    baseline: lane.baseline,
-    diagnostic: lane.diagnostic,
-  })),
-  throughput: bench.suites ?? [],
+  size: sizes.lanes
+    .filter((lane) => !lane.diagnostic && lane.id !== "full")
+    .map((lane) => ({
+      id: lane.id,
+      name: lane.name,
+      raw: lane.raw,
+      gzip9: lane.gzip9,
+      brotli11: lane.brotli11,
+      note: lane.note,
+      primary: lane.primary,
+      baseline: lane.baseline,
+      diagnostic: lane.diagnostic,
+    })),
+  throughput: (bench.suites ?? []).filter((row) => row.id !== "full"),
   hero: {
     brotliRatio: itslil && officialOxc ? itslil.brotli11 / officialOxc.brotli11 : null,
     officialBrotli: officialOxc?.brotli11 ?? null,

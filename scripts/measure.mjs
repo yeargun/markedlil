@@ -6,7 +6,6 @@ import { minifyLanes } from "./minify-lanes.mjs"
 import { bundleOfficialParseOnly } from "./official-parse-bundle.mjs"
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
-const officialFullPath = join(root, "node_modules/marked/lib/marked.esm.js")
 const lilPath = join(root, "dist/marked.esm.js")
 const lanesDir = join(root, ".tmp", "lanes")
 const parseOnlyPath = join(root, ".tmp", "official-parse-only.js")
@@ -54,16 +53,9 @@ const artifacts = [
   {
     id: "itslil",
     name: "@itslil/marked",
-    note: "LilScript compiler-selected ESM, not post-minified. Same parse API; no extension system.",
+    note: "LilScript compiler-selected ESM, not post-minified. parse / parseInline only — no extension system.",
     sourcePath: lilPath,
     primary: true,
-  },
-  {
-    id: "full",
-    name: "npm marked.esm.js (full)",
-    note: "Published marked@18.0.10, already esbuild-minified. Includes use(), Hooks, walkTokens, Marked class.",
-    sourcePath: officialFullPath,
-    diagnostic: true,
   },
 ]
 
@@ -94,7 +86,7 @@ const report = {
   package: "@itslil/marked",
   codec: "lilscript-codec gzip-9 / brotli-11",
   comparison:
-    "Fair size lanes are parse-only marked@18.0.10 sources (no use/Hooks/walkTokens), then Oxc and Terser with mangling on and off. npm marked.esm.js is diagnostic: it still contains the extension ABI.",
+    "Every size and speed lane is the same surface: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer (no use/Hooks/walkTokens), then Oxc or Terser, versus this port. The published npm file is not a lane — it still contains the extension system.",
   lanes: measured,
 }
 

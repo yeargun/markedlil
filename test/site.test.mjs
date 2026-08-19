@@ -28,8 +28,18 @@ describe("github pages artifact", () => {
     assert.match(html, /Oxc/)
     assert.match(html, /Terser/)
     assert.match(html, /mangle/)
-    assert.match(html, /parse-only/)
+    assert.match(html, /parse path/)
     assert.match(html, /use\(\)/)
+    assert.doesNotMatch(html, /npm’s full/)
+    assert.doesNotMatch(html, /listed last as a diagnostic/)
+  })
+
+  it("races the official parse path, not published marked.esm.js", () => {
+    const official = readFileSync(resolve(site, "marked-official.js"), "utf8")
+    assert.match(official, /export/)
+    assert.doesNotMatch(official, /function use\(/)
+    assert.doesNotMatch(official, /\.use\s*=/)
+    assert.doesNotMatch(official, /class Marked/)
   })
 
   it("does not point the playground at the repo-root dist path", () => {

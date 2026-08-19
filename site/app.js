@@ -18,7 +18,7 @@ A [marked](https://github.com/markedjs/marked) 18.0.10 port in **LilScript**.
 
 | Lane | Tool | Mangle |
 | --- | --- | --- |
-| official | — | — |
+| official parse path | — | — |
 | oxc | Vite 8 | on / off |
 | terser | Terser | on / off |
 
@@ -63,6 +63,10 @@ function fasterThan(value, baseline) {
   return percentAgainst(value, baseline, "faster", "slower")
 }
 
+function parsePathLanes(rows) {
+  return (rows ?? []).filter((row) => !row.diagnostic && row.id !== "full")
+}
+
 function ms(value) {
   return `${value.toFixed(2)} ms`
 }
@@ -87,7 +91,7 @@ function renderHero() {
   if (data.spec) {
     document.querySelector("#hero-spec").textContent = `${data.spec.pass}/${data.spec.total}`
   }
-  const suites = data.throughput ?? []
+  const suites = parsePathLanes(data.throughput)
   const lil = suites.find((row) => row.id === "itslil")
   const official = suites.find((row) => row.id === "parse")
   if (lil && official) {
@@ -101,7 +105,8 @@ function renderSize() {
     data.size.find((lane) => lane.id === "parse-oxc-mangle") ??
     data.size.find((lane) => lane.baseline)
   if (!oxc) return
-  document.querySelector("#results-body").innerHTML = data.size
+  const sizeLanes = parsePathLanes(data.size)
+  document.querySelector("#results-body").innerHTML = sizeLanes
     .map(
       (lane) => `
     <tr>
@@ -115,8 +120,8 @@ function renderSize() {
     )
     .join("")
 
-  const max = Math.max(...data.size.map((lane) => lane.brotli11))
-  document.querySelector("#total-bar").innerHTML = data.size
+  const max = Math.max(...sizeLanes.map((lane) => lane.brotli11))
+  document.querySelector("#total-bar").innerHTML = sizeLanes
     .map((lane) => {
       const width = Math.max(18, (lane.brotli11 / max) * 100)
       const cls = lane.primary ? "bar-lil" : "bar-official"
@@ -126,7 +131,7 @@ function renderSize() {
 }
 
 function renderPerf() {
-  const suites = data.throughput ?? []
+  const suites = parsePathLanes(data.throughput)
   if (suites.length === 0) return
   const lil = suites.find((row) => row.id === "itslil")
   const official = suites.find((row) => row.id === "parse")
@@ -134,12 +139,12 @@ function renderPerf() {
   const specLoop = lil && official ? fasterThan(lil.specMs, official.specMs) : null
   const cards = [
     {
-      label: "parsing one big document, against official marked",
+      label: "parsing one big document, against the official parse path",
       value: document32 ? document32.text : "—",
       win: document32 ? document32.state === "win" : false,
     },
     {
-      label: "parsing all 660 spec cases, against official marked",
+      label: "parsing all 660 spec cases, against the official parse path",
       value: specLoop ? specLoop.text : "—",
       win: specLoop ? specLoop.state === "win" : false,
     },
@@ -243,7 +248,7 @@ function bindPlayground() {
     const lilMs = run((value) => lilMarked.parse(value))
     const officialMs = run((value) => officialMarked.parse(value))
     document.querySelector("#race-out").textContent =
-      `@itslil/marked ${lilMs.toFixed(1)} ms · official ${officialMs.toFixed(1)} ms · ${fasterThan(lilMs, officialMs).text}`
+      `@itslil/marked ${lilMs.toFixed(1)} ms · official parse path ${officialMs.toFixed(1)} ms · ${fasterThan(lilMs, officialMs).text}`
   })
   renderPreview()
 }

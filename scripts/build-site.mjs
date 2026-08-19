@@ -1,3 +1,4 @@
+import { bundleOfficialParseOnly } from "./official-parse-bundle.mjs"
 import { cp, mkdir, rm, writeFile } from "node:fs/promises"
 import { existsSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
@@ -36,6 +37,6 @@ await rm(output, { recursive: true, force: true })
 await mkdir(output, { recursive: true })
 await cp(join(root, "site"), output, { recursive: true })
 await cp(join(root, "dist", "marked.esm.js"), join(output, "marked.js"))
-await cp(join(root, "node_modules", "marked", "lib", "marked.esm.js"), join(output, "marked-official.js"))
+await writeFile(join(output, "marked-official.js"), await bundleOfficialParseOnly(root))
 await writeFile(join(output, ".nojekyll"), "")
 console.log(`Built GitHub Pages site at ${output}`)
