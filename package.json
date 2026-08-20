@@ -1,6 +1,6 @@
 {
   "name": "@itslil/marked",
-  "version": "18.0.12",
+  "version": "18.0.13",
   "description": "marked 18.0.10 parse path reimplemented in LilScript. parse / parseInline / setOptions — not the extension ABI.",
   "keywords": [
     "marked",
