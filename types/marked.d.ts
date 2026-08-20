@@ -18,8 +18,9 @@ export interface Marked {
 
 export function parse(src: string, options?: MarkedOptions | null): string
 export function parseInline(src: string, options?: MarkedOptions | null): string
-export function setOptions(options: MarkedOptions): MarkedOptions
+export function setOptions(options: MarkedOptions): Marked
+export const options: typeof setOptions
 export function getDefaults(): MarkedOptions
-export function options(): MarkedOptions
+export const defaults: MarkedOptions
 export const marked: Marked
 export default marked

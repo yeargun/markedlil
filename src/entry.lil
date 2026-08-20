@@ -29,18 +29,6 @@ export string parseInline(string src, JsValue opt) {
   return parseMarkdown(src, false, mergeOpt(opt));
 }
 
-export JsValue setOptions(JsValue opt) {
-  if (!(JS.isUndefined(opt) || JS.isNullish(opt))) {
-    MarkedOptions current = JS.assume(liveDefaults);
-    MarkedOptions incoming = JS.assume(opt);
-    current.gfm = optionFlag(incoming.gfm, optionFlag(current.gfm, true));
-    current.breaks = optionFlag(incoming.breaks, optionFlag(current.breaks, false));
-    current.pedantic = optionFlag(incoming.pedantic, optionFlag(current.pedantic, false));
-    current.silent = optionFlag(incoming.silent, optionFlag(current.silent, false));
-  }
-  return getDefaults();
-}
-
 export JsValue getDefaults() {
   MarkedOptions opt = JS.assume(JS.object());
   opt.gfm = true;
@@ -49,10 +37,6 @@ export JsValue getDefaults() {
   opt.silent = false;
   opt.async = false;
   return opt;
-}
-
-export JsValue options() {
-  return copyOptions(JS.assume(liveDefaults), true, false, false, false);
 }
 
 extern JsValue TypeError;
@@ -66,11 +50,28 @@ JsValue markedCall(JsValue self, JsValue src, JsValue opt) {
 
 export JsValue marked = JS.method2(markedCall);
 
-JsValue setOptionsCall(JsValue self, JsValue opt) {
-  setOptions(opt);
+export JsValue defaults = liveDefaults;
+
+export JsValue setOptions(JsValue opt) {
+  if (!(JS.isUndefined(opt) || JS.isNullish(opt))) {
+    MarkedOptions current = JS.assume(liveDefaults);
+    MarkedOptions incoming = JS.assume(opt);
+    current.gfm = optionFlag(incoming.gfm, optionFlag(current.gfm, true));
+    current.breaks = optionFlag(incoming.breaks, optionFlag(current.breaks, false));
+    current.pedantic = optionFlag(incoming.pedantic, optionFlag(current.pedantic, false));
+    current.silent = optionFlag(incoming.silent, optionFlag(current.silent, false));
+  }
   MarkedApi api = JS.assume(marked);
   api.defaults = liveDefaults;
   return marked;
+}
+
+export JsValue options(JsValue opt) {
+  return setOptions(opt);
+}
+
+JsValue setOptionsCall(JsValue self, JsValue opt) {
+  return setOptions(opt);
 }
 
 JsValue attachApi() {

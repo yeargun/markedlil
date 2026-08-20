@@ -1,0 +1,16 @@
+[javascript]
+priority = "size-first"
+optimization_level = 15
+cost_model = "raw"
+assume_pristine_builtins = true
+strip_console = true
+local_name_reserve = 48
+candidate_search = "production"
+function_spelling = "arrow"
+
+[mangle]
+identifiers = true
+properties = true
+exports = false
+extern_fields = true
+pool_strings = true

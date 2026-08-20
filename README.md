@@ -1,6 +1,6 @@
 # @itslil/marked
 
-This is **not** the official [`marked`](https://github.com/markedjs/marked) package. It is the **parse path** of `marked@18.0.10` — `parse`, `parseInline`, `setOptions`, `getDefaults` — rewritten in [LilScript](https://github.com/yeargun/lilscript).
+This is **not** the official [`marked`](https://github.com/markedjs/marked) package. It is the **parse path** of `marked@18.0.10` — `parse`, `parseInline`, `setOptions` / `options`, `getDefaults`, `defaults`, and `marked()` — rewritten in [LilScript](https://github.com/yeargun/lilscript).
 
 It matches `marked@18.0.10` HTML on the GFM + CommonMark corpus (**660 / 660**). It does **not** have `use()`, Hooks, `walkTokens`, Renderer/Tokenizer subclassing, or the `Marked` class.
 
@@ -32,26 +32,29 @@ Every size and speed number on this page is the **same surface**: official `mark
 
 The published npm `marked.esm.js` still contains `use()`, Hooks, `walkTokens`, and the `Marked` class. It is not a lane. Comparing this port to that file would be a different product against a subset.
 
-Two LilScript artifacts are measured. They are the same program.
+LilScript scores a different artifact for each `javascript.cost_model`. Official Oxc/Terser rows are one file measured three ways. The LilScript **library** numbers below take raw from the raw compile, gzip from the gzip compile, and Brotli from the Brotli compile. The npm file is the Brotli compile.
 
-- **JS library** (`[mangle] extern_fields = true`, the npm file). `extern class MarkedOptions` / `MarkedApi` pin `gfm`, `breaks`, `pedantic`, `silent`, `async`, `parse`, `parseInline`, `setOptions`, `options`, `getDefaults`, and `defaults`. A JavaScript caller can pass `{ breaks: true }` and read `marked.defaults.gfm`. Those spellings cannot enter the property mangler.
-- **Closed LilScript** (`lilscript.closed.toml`, `extern_fields = false`). Not published. If this parser were only called from LilScript, those keys would not be a JavaScript ABI and would mangle with everything else. Host members such as `string.length` stay exact. Default `parse("# hi")` still matches; a JS options object does not.
+- **JS library** (`[mangle] extern_fields = true`). `extern class MarkedOptions` / `MarkedApi` pin `gfm`, `breaks`, `pedantic`, `silent`, `async`, `parse`, `parseInline`, `setOptions`, `options`, `getDefaults`, and `defaults`.
+- **Closed LilScript** (`lilscript.closed.toml`, `extern_fields = false`, Brotli compile). Not published. Host members such as `string.length` stay exact.
 
-Measured with `lilscript-codec` gzip-9 / Brotli-11. Both LilScript lanes include the same license banner.
+Measured with `lilscript-codec` gzip-9 / Brotli-11. LilScript lanes include the same license banner.
 
-| Lane | Raw | gzip-9 | Brotli-11 | vs parse-only Oxc |
+| Lane | Raw | gzip-9 | Brotli-11 | vs Oxc on that codec |
 | --- | ---: | ---: | ---: | ---: |
-| Official parse path | 67,247 | 14,064 | 12,684 | 1.26× |
-| Official parse path · Oxc mangle on | 37,022 | 10,930 | 10,092 | 1.00× |
-| Official parse path · Oxc mangle off | 47,547 | 12,153 | 11,279 | 1.12× |
-| Official parse path · Terser mangle on | 37,725 | 11,045 | 10,138 | 1.00× |
-| Official parse path · Terser mangle off | 48,444 | 12,302 | 11,339 | 1.12× |
-| **`@itslil/marked` · JS library** | **36,003** | **10,762** | **9,580** | **0.95×** |
-| `@itslil/marked` · closed LilScript | 36,130 | 10,710 | 9,537 | 0.94× |
+| Official parse path | 67,247 | 14,064 | 12,684 | — |
+| Official parse path · Oxc mangle on | 37,022 | 10,930 | 10,092 | baseline |
+| Official parse path · Oxc mangle off | 47,547 | 12,153 | 11,279 | — |
+| Official parse path · Terser mangle on | 37,725 | 11,045 | 10,138 | — |
+| Official parse path · Terser mangle off | 48,444 | 12,302 | 11,339 | — |
+| **`@itslil/marked` · matched compiles** | **33,632** | **10,727** | **9,589** | **0.91× / 0.98× / 0.95×** |
+| `@itslil/marked` · cost_model brotli (npm) | 35,985 | 10,766 | 9,589 | 0.95× Brotli |
+| `@itslil/marked` · cost_model gzip | 36,304 | 10,727 | 9,603 | 0.98× gzip |
+| `@itslil/marked` · cost_model raw | 33,632 | 10,605 | 9,504 | 0.91× raw |
+| `@itslil/marked` · closed LilScript | 35,705 | 10,730 | 9,533 | 0.94× Brotli |
 
-The npm file is **5.1% smaller on Brotli-11**, **1.5% smaller on gzip-9**, and **2.8% smaller raw** than the official parse path · Oxc mangle on. Same 660-case HTML.
+Against official parse path · Oxc mangle on, the matched library compiles are **5.0% smaller on Brotli-11**, **1.9% smaller on gzip-9**, and **9.2% smaller raw**. Same 660-case HTML.
 
-Turning the extern pin off does not win raw (the library is 127 bytes smaller uncompressed). It wins the codecs: **43 Brotli bytes** and **52 gzip bytes** versus the library. That is the tax of keeping a JavaScript options object. A program written entirely in LilScript would not pay it.
+The closed Brotli compile is **56 Brotli bytes** smaller than the npm file: the tax of keeping a JavaScript options object. A program written entirely in LilScript would not pay it.
 
 ## Performance
 
@@ -78,6 +81,24 @@ npm run bench
 Oxc minify uses Vite 8 and needs Node `^20.19 || >=22.12`.
 
 ## Compatibility
+
+The **JS library** (the npm file) is the only artifact that must keep these names readable after mangling. `test/api.test.mjs` locks the spellings in the compiler output and calls every entry on ESM, CJS, and UMD.
+
+| Name | What it is |
+| --- | --- |
+| `parse(src, opt?)` | block markdown → HTML |
+| `parseInline(src, opt?)` | inline markdown → HTML |
+| `marked(src, opt?)` | same as `parse`; throws if `src` is not a string |
+| `marked.parse` | the `marked` function |
+| `marked.parseInline` | same as `parseInline` |
+| `setOptions(opt)` / `options(opt)` | mutate live defaults; return `marked` |
+| `marked.setOptions` / `marked.options` | the same pair |
+| `getDefaults()` | a fresh factory object (`gfm: true`, others false) |
+| `defaults` / `marked.defaults` | the live options object |
+
+Option keys stay exact: `gfm`, `breaks`, `pedantic`, `silent`, `async`. `async` is present and always `false` — this port does not return a Promise. `silent` is accepted; on a thrown parse it matches official's error HTML.
+
+The closed LilScript lane turns `[mangle] extern_fields` off. Those keys mangle. It is not the npm file.
 
 - ESM, CJS, and UMD artifacts
 - GFM on by default (`breaks: false`, `pedantic: false`)

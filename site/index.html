@@ -38,8 +38,7 @@
             LilScript. No <code>use()</code>, Hooks, or Tokenizer subclassing: LilScript cannot
             override methods, and it is not trying to become JavaScript. Every number on this page
             compares that same official parse path, then Oxc and Terser, mangling on and off.
-            The npm file keeps the marked option keys exact. A second lane shows the size if
-            callers were LilScript and those keys could mangle.
+            The npm file is the Brotli-scored compile. gzip and raw each have their own compile.
           </p>
           <div class="install-row">
             <code>npm install @itslil/marked</code>
@@ -58,18 +57,16 @@
             <p id="hero-bytes"></p>
           </div>
           <div class="score-grid">
-            <div><strong id="hero-shipped">—</strong><span>Brotli-11 bytes you ship</span></div>
-            <div><strong id="hero-parse">—</strong><span>parsing a document, vs official parse path</span></div>
+            <div><strong id="hero-shipped">—</strong><span>Brotli-11 you ship, vs Oxc</span></div>
+            <div><strong id="hero-gzip">—</strong><span>gzip-9, gzip-scored compile vs Oxc</span></div>
+            <div><strong id="hero-raw">—</strong><span>raw, raw-scored compile vs Oxc</span></div>
             <div><strong id="hero-spec">—</strong><span>spec cases with identical HTML</span></div>
-            <div><strong id="hero-vs-raw">—</strong><span>vs official parse path, unminified</span></div>
           </div>
           <p class="score-note">
-            Two different things are measured, and both are written out rather than left as a ratio.
-            <strong>Size</strong> is the compressed file a browser downloads — lilscript-codec gzip-9 and Brotli-11 —
-            against marked@18.0.10 Lexer/Parser/Tokenizer/Renderer put through Vite 8 Oxc and Terser.
-            The published official npm file is not in this table: it still has the extension system.
-            Two LilScript rows are in the size table: the JS library you install, and a closed-world
-            compile that releases <code>extern class</code> member names.
+            Official rows are one parse-path file, then Oxc or Terser, measured three ways.
+            LilScript searches a different artifact for each <code>cost_model</code>, so the gzip
+            and raw numbers come from those compiles — not from compressing the Brotli npm file.
+            Brotli is still the headline. The published official marked package is not a lane.
             <strong>Speed</strong> is time spent parsing in Chromium. HTML is checked byte-for-byte
             against that same official parse path before any number is reported.
           </p>
@@ -148,41 +145,102 @@
           <div class="section-heading inverse">
             <div>
               <p class="eyebrow">The receipts</p>
-              <h2>Oxc, Terser,<br />mangle on and off.</h2>
+              <h2>Raw, gzip,<br />and Brotli.</h2>
             </div>
             <p>
               Official 18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc and Terser with mangling on and off.
-              @itslil/marked is the LilScript compiler output. It is not post-minified.
-              The JS-library row keeps <code>gfm</code> / <code>breaks</code> / <code>parse</code> exact
-              (<code>[mangle] extern_fields = true</code>). The closed LilScript row turns that pin off —
-              the size if this program were only called from LilScript. That row is not the npm file.
+              LilScript is not post-minified. Each codec below uses the LilScript compile scored for that
+              codec (<code>cost_model = raw | gzip | brotli</code>). The npm file is the Brotli compile.
+              Closed LilScript is Brotli with <code>extern_fields = false</code>.
             </p>
           </div>
-          <div class="total-bar" id="total-bar"></div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Lane</th>
-                  <th>Raw</th>
-                  <th>gzip-9</th>
-                  <th>Brotli-11</th>
-                  <th>Brotli size vs Oxc</th>
-                </tr>
-              </thead>
-              <tbody id="results-body"></tbody>
-            </table>
+
+          <div class="codec-block">
+            <h3>Brotli-11</h3>
+            <p class="codec-lead">The wire number. LilScript row is <code>cost_model = brotli</code>, the npm file.</p>
+            <div class="total-bar" id="bar-brotli"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lane</th>
+                    <th>Brotli-11</th>
+                    <th>vs Oxc</th>
+                  </tr>
+                </thead>
+                <tbody id="body-brotli"></tbody>
+              </table>
+            </div>
           </div>
+
+          <div class="codec-block">
+            <h3>gzip-9</h3>
+            <p class="codec-lead">LilScript row is a separate compile: <code>cost_model = gzip</code>.</p>
+            <div class="total-bar" id="bar-gzip"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lane</th>
+                    <th>gzip-9</th>
+                    <th>vs Oxc</th>
+                  </tr>
+                </thead>
+                <tbody id="body-gzip"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="codec-block">
+            <h3>Raw</h3>
+            <p class="codec-lead">LilScript row is a separate compile: <code>cost_model = raw</code>.</p>
+            <div class="total-bar" id="bar-raw"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lane</th>
+                    <th>Raw</th>
+                    <th>vs Oxc</th>
+                  </tr>
+                </thead>
+                <tbody id="body-raw"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="codec-block">
+            <h3>All three, matched compiles</h3>
+            <p class="codec-lead">
+              Official rows are one file measured three ways. The LilScript library row takes raw from the
+              raw compile, gzip from the gzip compile, and Brotli from the Brotli compile.
+            </p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lane</th>
+                    <th>Raw</th>
+                    <th>gzip-9</th>
+                    <th>Brotli-11</th>
+                    <th>Brotli vs Oxc</th>
+                  </tr>
+                </thead>
+                <tbody id="body-matched"></tbody>
+              </table>
+            </div>
+          </div>
+
           <div class="method-note">
             <p>
               <strong>Why this surface.</strong> LilScript cannot override methods, so this port has no
               <code>use()</code> / Hooks / walkTokens — and there is no plan to grow the language into
               JavaScript to get them. Comparing against published <code>marked.esm.js</code> would put
               the extension system on one side only. The fair fight is the 18.0.10 parse path, then the
-              same Oxc and Terser work the JS ecosystem actually ships. The closed LilScript row is the
-              other honest comparison: no JavaScript options object, so those property names mangle.
+              same Oxc and Terser work the JS ecosystem actually ships. Closed LilScript is the other
+              honest comparison: no JavaScript options object, so those property names mangle.
             </p>
-            <a href="https://github.com/yeargun/markedlil#size">README ↗</a>
+            <a href="https://github.com/yeargun/markedlil#what-is-compared">README ↗</a>
           </div>
         </div>
       </section>

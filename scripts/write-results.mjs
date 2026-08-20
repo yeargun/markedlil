@@ -16,6 +16,8 @@ const officialOxc =
   sizes.lanes.find((lane) => lane.baseline)
 const parseRaw = sizes.lanes.find((lane) => lane.id === "parse")
 const itslil = sizes.lanes.find((lane) => lane.primary)
+const itslilGzip = sizes.lanes.find((lane) => lane.id === "itslil-gzip")
+const itslilBytes = sizes.lanes.find((lane) => lane.id === "itslil-bytes")
 
 const results = {
   pin: sizes.pin,
@@ -38,12 +40,20 @@ const results = {
       primary: lane.primary,
       baseline: lane.baseline,
       diagnostic: lane.diagnostic,
+      costModel: lane.costModel ?? null,
     })),
+  matched: sizes.matched ?? null,
   throughput: (bench.suites ?? []).filter((row) => row.id !== "full"),
   hero: {
     brotliRatio: itslil && officialOxc ? itslil.brotli11 / officialOxc.brotli11 : null,
     officialBrotli: officialOxc?.brotli11 ?? null,
     itslilBrotli: itslil?.brotli11 ?? null,
+    gzipRatio: itslilGzip && officialOxc ? itslilGzip.gzip9 / officialOxc.gzip9 : null,
+    officialGzip: officialOxc?.gzip9 ?? null,
+    itslilGzip: itslilGzip?.gzip9 ?? null,
+    rawRatio: itslilBytes && officialOxc ? itslilBytes.raw / officialOxc.raw : null,
+    officialRaw: officialOxc?.raw ?? null,
+    itslilRaw: itslilBytes?.raw ?? null,
     parseRawBrotli: parseRaw?.brotli11 ?? null,
   },
 }

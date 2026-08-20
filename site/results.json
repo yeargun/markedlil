@@ -3,7 +3,7 @@
   "package": "@itslil/marked",
   "node": "v22.21.1",
   "codec": "lilscript-codec gzip-9 / brotli-11",
-  "comparison": "Every size and speed lane is the same surface: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer (no use/Hooks/walkTokens), then Oxc or Terser, versus this port. @itslil/marked is the JS library (extern fields on). The closed LilScript lane turns that pin off. The published npm marked file is not a lane — it still contains the extension system.",
+  "comparison": "Same parse path on every official row: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc or Terser. LilScript ships three compiles — cost_model raw, gzip, and brotli — because the search scores a different artifact for each codec. The npm file is the Brotli compile. The published official marked package is not a lane.",
   "browser": "playwright-chromium",
   "warmupDiscard": 3,
   "spec": {
@@ -21,7 +21,8 @@
       "note": "marked@18.0.10 Lexer/Parser/Tokenizer/Renderer only — no use(), Hooks, or walkTokens",
       "primary": false,
       "baseline": false,
-      "diagnostic": false
+      "diagnostic": false,
+      "costModel": null
     },
     {
       "id": "parse-oxc-mangle",
@@ -32,7 +33,8 @@
       "note": "Vite 8 Oxc minify of the parse-only 18.0.10 sources, mangle: true",
       "primary": false,
       "baseline": true,
-      "diagnostic": false
+      "diagnostic": false,
+      "costModel": null
     },
     {
       "id": "parse-oxc-nomangle",
@@ -43,7 +45,8 @@
       "note": "Vite 8 Oxc minify of the parse-only 18.0.10 sources, mangle: false",
       "primary": false,
       "baseline": false,
-      "diagnostic": false
+      "diagnostic": false,
+      "costModel": null
     },
     {
       "id": "parse-terser-mangle",
@@ -54,7 +57,8 @@
       "note": "Terser compress of the parse-only 18.0.10 sources, mangle: true",
       "primary": false,
       "baseline": false,
-      "diagnostic": false
+      "diagnostic": false,
+      "costModel": null
     },
     {
       "id": "parse-terser-nomangle",
@@ -65,31 +69,68 @@
       "note": "Terser compress of the parse-only 18.0.10 sources, mangle: false",
       "primary": false,
       "baseline": false,
-      "diagnostic": false
+      "diagnostic": false,
+      "costModel": null
     },
     {
       "id": "itslil",
-      "name": "@itslil/marked",
-      "raw": 36003,
-      "gzip9": 10762,
-      "brotli11": 9580,
-      "note": "JS library: extern class pins gfm / breaks / parse and the rest of the marked 18.0.10 object shape. Compiler-selected ESM, not post-minified.",
+      "name": "@itslil/marked · cost_model brotli",
+      "raw": 35985,
+      "gzip9": 10766,
+      "brotli11": 9589,
+      "note": "JS library compiled for Brotli. This is the npm ESM. extern class pins the marked 18.0.10 option keys.",
       "primary": true,
       "baseline": false,
-      "diagnostic": false
+      "diagnostic": false,
+      "costModel": "brotli"
+    },
+    {
+      "id": "itslil-gzip",
+      "name": "@itslil/marked · cost_model gzip",
+      "raw": 36304,
+      "gzip9": 10727,
+      "brotli11": 9603,
+      "note": "Same library, compiled with javascript.cost_model = gzip. Not the npm file.",
+      "primary": false,
+      "baseline": false,
+      "diagnostic": false,
+      "costModel": "gzip"
+    },
+    {
+      "id": "itslil-bytes",
+      "name": "@itslil/marked · cost_model raw",
+      "raw": 33632,
+      "gzip9": 10605,
+      "brotli11": 9504,
+      "note": "Same library, compiled with javascript.cost_model = raw. Not the npm file.",
+      "primary": false,
+      "baseline": false,
+      "diagnostic": false,
+      "costModel": "raw"
     },
     {
       "id": "itslil-closed",
       "name": "@itslil/marked · closed LilScript",
-      "raw": 36130,
-      "gzip9": 10710,
-      "brotli11": 9537,
-      "note": "Same program with [mangle] extern_fields = false. Those public JS keys mangle. This is the size if callers were LilScript, not a JS options object. Not the npm file.",
+      "raw": 35705,
+      "gzip9": 10730,
+      "brotli11": 9533,
+      "note": "Brotli compile with [mangle] extern_fields = false. Public JS keys mangle. Not the npm file.",
       "primary": false,
       "baseline": false,
-      "diagnostic": false
+      "diagnostic": false,
+      "costModel": "brotli"
     }
   ],
+  "matched": {
+    "raw": 33632,
+    "gzip9": 10727,
+    "brotli11": 9589,
+    "vsOxc": {
+      "raw": 0.908432823726433,
+      "gzip9": 0.981427264409881,
+      "brotli11": 0.9501585414189457
+    }
+  },
   "throughput": [
     {
       "id": "parse",
@@ -153,9 +194,15 @@
     }
   ],
   "hero": {
-    "brotliRatio": 0.9492667459373761,
+    "brotliRatio": 0.9501585414189457,
     "officialBrotli": 10092,
-    "itslilBrotli": 9580,
+    "itslilBrotli": 9589,
+    "gzipRatio": 0.981427264409881,
+    "officialGzip": 10930,
+    "itslilGzip": 10727,
+    "rawRatio": 0.908432823726433,
+    "officialRaw": 37022,
+    "itslilRaw": 33632,
     "parseRawBrotli": 12684
   }
 }

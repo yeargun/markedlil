@@ -119,7 +119,13 @@ h1 em { color: var(--purple); font-style: normal; }
 .evidence { padding-block: 120px; background: var(--ink); color: white; }
 .section-heading.inverse > p { color: #e8d7b0; }
 .section-heading.inverse a, .section-heading.inverse code { color: var(--acid); }
-.total-bar { display: grid; gap: 9px; margin-block: 48px; }
+.codec-block { margin-top: 56px; }
+.codec-block h3 {
+  margin: 0 0 8px; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.04em;
+}
+.codec-lead { margin: 0 0 22px; color: #e8d7b0; font: 500 13px/1.6 "Manrope", sans-serif; max-width: 720px; }
+.codec-lead code { color: var(--acid); }
+.total-bar { display: grid; gap: 9px; margin-block: 18px 28px; }
 .total-bar > div { display: flex; justify-content: space-between; align-items: center; height: 58px; padding-inline: 18px; color: var(--ink); font: 500 12px "DM Mono", monospace; }
 .bar-official { width: 100%; background: #cbb892; }
 .bar-lil { background: var(--acid); }

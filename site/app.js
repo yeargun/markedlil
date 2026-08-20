@@ -71,61 +71,117 @@ function ms(value) {
   return `${value.toFixed(2)} ms`
 }
 
+const OFFICIAL_SIZE_IDS = [
+  "parse",
+  "parse-oxc-nomangle",
+  "parse-terser-nomangle",
+  "parse-terser-mangle",
+  "parse-oxc-mangle",
+]
+
+function laneById(id) {
+  return data.size.find((lane) => lane.id === id)
+}
+
+function barClass(id) {
+  if (id === "itslil" || id === "itslil-gzip" || id === "itslil-bytes") return "bar-lil"
+  if (id === "itslil-closed") return "bar-closed"
+  return "bar-official"
+}
+
+function renderCodec(metric, lilId, extras, barId, bodyId) {
+  const oxc = laneById("parse-oxc-mangle")
+  if (!oxc) return
+  const lanes = [...OFFICIAL_SIZE_IDS, lilId, ...extras]
+    .map(laneById)
+    .filter(Boolean)
+  const max = Math.max(...lanes.map((lane) => lane[metric]))
+  document.querySelector(barId).innerHTML = lanes
+    .map((lane) => {
+      const width = Math.max(18, (lane[metric] / max) * 100)
+      return `<div class="${barClass(lane.id)}" style="width:${width}%"><span>${lane.name}</span><strong>${formatter.format(lane[metric])} B</strong></div>`
+    })
+    .join("")
+  document.querySelector(bodyId).innerHTML = lanes
+    .map((lane) => {
+      const verdict = smallerThan(lane[metric], oxc[metric])
+      return `
+    <tr>
+      <th scope="row">${lane.name}</th>
+      <td>${formatter.format(lane[metric])}</td>
+      <td class="verdict ${verdict.state}"><strong>${verdict.text}</strong></td>
+    </tr>`
+    })
+    .join("")
+}
+
+function matchedLibraryRow() {
+  const brotli = laneById("itslil")
+  const gzip = laneById("itslil-gzip")
+  const bytes = laneById("itslil-bytes")
+  if (!brotli || !gzip || !bytes) return null
+  return {
+    id: "itslil-matched",
+    name: "@itslil/marked · matched compiles",
+    raw: bytes.raw,
+    gzip9: gzip.gzip9,
+    brotli11: brotli.brotli11,
+  }
+}
+
 function renderHero() {
-  const oxc =
-    data.size.find((lane) => lane.id === "parse-oxc-mangle") ??
-    data.size.find((lane) => lane.baseline)
-  const parseRaw = data.size.find((lane) => lane.id === "parse")
-  const itslil = data.size.find((lane) => lane.primary)
+  const oxc = laneById("parse-oxc-mangle")
+  const itslil = laneById("itslil")
+  const gzip = laneById("itslil-gzip")
+  const bytes = laneById("itslil-bytes")
   if (!oxc || !itslil) return
   const smaller = smallerThan(itslil.brotli11, oxc.brotli11)
   document.querySelector("#hero-ratio").innerHTML =
     `${smaller.amount}<span>${smaller.word}</span>`
   document.querySelector("#hero-bytes").textContent =
-    `${formatter.format(oxc.brotli11)} B → ${formatter.format(itslil.brotli11)} B over the wire`
-  document.querySelector("#hero-shipped").textContent = `${formatter.format(itslil.brotli11)} B`
-  if (parseRaw) {
-    document.querySelector("#hero-vs-raw").textContent =
-      smallerThan(itslil.brotli11, parseRaw.brotli11).text
+    `${formatter.format(oxc.brotli11)} B → ${formatter.format(itslil.brotli11)} B Brotli-11`
+  document.querySelector("#hero-shipped").textContent = smallerThan(
+    itslil.brotli11,
+    oxc.brotli11,
+  ).text
+  if (gzip) {
+    document.querySelector("#hero-gzip").textContent = smallerThan(gzip.gzip9, oxc.gzip9).text
+  }
+  if (bytes) {
+    document.querySelector("#hero-raw").textContent = smallerThan(bytes.raw, oxc.raw).text
   }
   if (data.spec) {
     document.querySelector("#hero-spec").textContent = `${data.spec.pass}/${data.spec.total}`
   }
-  const suites = parsePathLanes(data.throughput)
-  const lil = suites.find((row) => row.id === "itslil")
-  const official = suites.find((row) => row.id === "parse")
-  if (lil && official) {
-    document.querySelector("#hero-parse").textContent =
-      fasterThan(lil.documentMs, official.documentMs).text
-  }
 }
 
 function renderSize() {
-  const oxc =
-    data.size.find((lane) => lane.id === "parse-oxc-mangle") ??
-    data.size.find((lane) => lane.baseline)
+  const oxc = laneById("parse-oxc-mangle")
   if (!oxc) return
-  const sizeLanes = parsePathLanes(data.size)
-  document.querySelector("#results-body").innerHTML = sizeLanes
-    .map(
-      (lane) => `
+  renderCodec("brotli11", "itslil", ["itslil-closed"], "#bar-brotli", "#body-brotli")
+  renderCodec("gzip9", "itslil-gzip", [], "#bar-gzip", "#body-gzip")
+  renderCodec("raw", "itslil-bytes", [], "#bar-raw", "#body-raw")
+
+  const matched = matchedLibraryRow()
+  const rows = [
+    ...OFFICIAL_SIZE_IDS.map(laneById),
+    matched,
+    laneById("itslil"),
+    laneById("itslil-gzip"),
+    laneById("itslil-bytes"),
+    laneById("itslil-closed"),
+  ].filter(Boolean)
+  document.querySelector("#body-matched").innerHTML = rows
+    .map((lane) => {
+      const verdict = smallerThan(lane.brotli11, oxc.brotli11)
+      return `
     <tr>
       <th scope="row">${lane.name}</th>
       <td>${formatter.format(lane.raw)}</td>
       <td>${formatter.format(lane.gzip9)}</td>
       <td>${formatter.format(lane.brotli11)}</td>
-      <td class="verdict ${smallerThan(lane.brotli11, oxc.brotli11).state}"><strong>${smallerThan(lane.brotli11, oxc.brotli11).text}</strong></td>
-    </tr>
-  `,
-    )
-    .join("")
-
-  const max = Math.max(...sizeLanes.map((lane) => lane.brotli11))
-  document.querySelector("#total-bar").innerHTML = sizeLanes
-    .map((lane) => {
-      const width = Math.max(18, (lane.brotli11 / max) * 100)
-      const cls = lane.primary ? "bar-lil" : lane.id === "itslil-closed" ? "bar-closed" : "bar-official"
-      return `<div class="${cls}" style="width:${width}%"><span>${lane.name}</span><strong>${formatter.format(lane.brotli11)} B</strong></div>`
+      <td class="verdict ${verdict.state}"><strong>${verdict.text}</strong></td>
+    </tr>`
     })
     .join("")
 }

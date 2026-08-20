@@ -63,6 +63,8 @@ function compileIfRequested() {
   mkdirSync(dist, { recursive: true })
   compileLil(compiler, "lilscript.toml", "marked.raw.js")
   compileLil(compiler, "lilscript.closed.toml", "marked.closed.js")
+  compileLil(compiler, "lilscript.gzip.toml", "marked.gzip.js")
+  compileLil(compiler, "lilscript.bytes.toml", "marked.bytes.js")
 }
 
 
