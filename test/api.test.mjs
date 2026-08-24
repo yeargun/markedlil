@@ -69,7 +69,8 @@ describe("@itslil/marked JS library API", () => {
       assert.match(exports, new RegExp(` as ${name}[},]`), `export ${name}`)
     }
     for (const name of ["gfm", "breaks", "pedantic", "silent", "async", ...apiNames]) {
-      assert.match(source, new RegExp(`\\.${name}\\s*=`), `.${name} must stay a real member`)
+      const member = new RegExp(`(?:\\.${name}\\s*=|[,{]${name}\\s*:)`)
+      assert.match(source, member, `.${name} must stay a real member`)
     }
   })
 
