@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { spawnSync } from "node:child_process"
 import { existsSync, readFileSync } from "node:fs"
 import { describe, it } from "node:test"
 import { dirname, resolve } from "node:path"
@@ -13,6 +14,7 @@ describe("github pages artifact", () => {
       "index.html",
       "styles.css",
       "app.js",
+      "compiler-comparison.js",
       "results.json",
       "marked.js",
       "marked-official.js",
@@ -79,5 +81,21 @@ describe("github pages artifact", () => {
     const app = readFileSync(resolve(site, "app.js"), "utf8")
     assert.match(app, /from ["']\.\/marked\.js["']/)
     assert.doesNotMatch(app, /\/dist\/marked/)
+  })
+
+  it("publishes a frozen compiler baseline with provenance", () => {
+    const results = JSON.parse(readFileSync(resolve(site, "results.json"), "utf8"))
+    const comparison = results.compilerComparison
+    const before = comparison.runs.find((run) => run.role === "before")
+    assert.equal(comparison.schemaVersion, 1)
+    assert.equal(comparison.objective, "brotli11")
+    assert.deepEqual(before.artifact.sizes, { raw: 35985, gzip9: 10766, brotli11: 9589 })
+    assert.match(before.source.revision, /^[0-9a-f]{40}$/)
+    assert.match(before.artifact.sha256, /^[0-9a-f]{64}$/)
+    assert.deepEqual(before.timing.samples, [])
+    assert.match(readFileSync(resolve(site, "index.html"), "utf8"), /id="compiler-comparison"/)
+    assert.match(readFileSync(resolve(root, "scripts/write-results.mjs"), "utf8"), /compilerComparison/)
+    const checked = spawnSync(process.execPath, ["--check", resolve(site, "compiler-comparison.js")], { encoding: "utf8" })
+    assert.equal(checked.status, 0, checked.stderr)
   })
 })

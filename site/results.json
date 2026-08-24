@@ -204,5 +204,58 @@
     "officialRaw": 37022,
     "itslilRaw": 33632,
     "parseRawBrotli": 12684
+  },
+  "compilerComparison": {
+    "schemaVersion": 1,
+    "objective": "brotli11",
+    "runs": [
+      {
+        "id": "published-before",
+        "role": "before",
+        "label": "Published Brotli-scored ESM before compiler work",
+        "recordedAt": "2026-08-24T00:00:00.000Z",
+        "source": {
+          "revision": "3a540ac8d6961aaf8eb060b5eae5368939b8981c",
+          "tree": "ea0041325559c67e5ebcd0115ec729d302670304",
+          "entrySha256": "b1f71341712881346d2271eeb8e9ad915529b72699a8c9a798edffec6d073ca5",
+          "packageLockSha256": "89432f687ae5dd6c4c29af04da368bc149fa4ddf2c16975fb9f80443c1b399f3"
+        },
+        "config": {
+          "path": "lilscript.toml",
+          "sha256": "21f9665c6dc35c5a8c6bd663ceaf00b5a6ae2f5a15740f03df3b68cfd778537a",
+          "derivation": {
+            "kind": "identity"
+          }
+        },
+        "compiler": {
+          "revision": null,
+          "binarySha256": null
+        },
+        "codec": {
+          "binarySha256": "b3d93da88e4516f3b22e5e67b288bb2504868f1c438010e0ac9492ec33de2063",
+          "gzipLevel": 9,
+          "brotliQuality": 11
+        },
+        "artifact": {
+          "path": "dist/marked.esm.js",
+          "sha256": "ccc36b473a78f08ff4af8bac05b8bd044291a9aa8d6c446c73409e817fb37109",
+          "sizes": {
+            "raw": 35985,
+            "gzip9": 10766,
+            "brotli11": 9589
+          }
+        },
+        "timing": {
+          "scope": "compile",
+          "samples": [],
+          "unavailableReason": "published artifact has no reproducible compiler timing"
+        },
+        "semantic": {
+          "status": "passed",
+          "command": "node --test test/compat.test.mjs test/options.test.mjs test/official-parse.test.mjs test/api.test.mjs test/closed.test.mjs",
+          "summary": "29 Node test blocks passed, including all 660 loaded spec cases"
+        }
+      }
+    ]
   }
 }

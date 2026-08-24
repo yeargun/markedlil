@@ -1,5 +1,6 @@
 import { marked as officialMarked } from "./marked-official.js"
 import { marked as lilMarked } from "./marked.js"
+import { renderCompilerComparison } from "./compiler-comparison.js"
 
 const data = await fetch("./results.json").then((response) => {
   if (!response.ok) throw new Error(`Unable to load results: ${response.status}`)
@@ -312,6 +313,7 @@ function bindPlayground() {
 renderHero()
 renderPerf()
 renderSize()
+renderCompilerComparison(data)
 bindCopy()
 bindProgress()
 bindPlayground()

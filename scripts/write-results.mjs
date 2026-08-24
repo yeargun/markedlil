@@ -10,6 +10,14 @@ try {
 } catch {
   // Playwright bench is optional until e2e/run.mjs has been run.
 }
+let compilerComparison = null
+try {
+  compilerComparison = JSON.parse(
+    readFileSync(join(root, "site", "results.json"), "utf8"),
+  ).compilerComparison ?? null
+} catch {
+  // Compiler history is additive and may not exist in a fresh checkout.
+}
 
 const officialOxc =
   sizes.lanes.find((lane) => lane.id === "parse-oxc-mangle") ??
@@ -56,6 +64,7 @@ const results = {
     itslilRaw: itslilBytes?.raw ?? null,
     parseRawBrotli: parseRaw?.brotli11 ?? null,
   },
+  ...(compilerComparison ? { compilerComparison } : {}),
 }
 
 writeFileSync(join(root, "site", "results.json"), `${JSON.stringify(results, null, 2)}\n`)
