@@ -3,7 +3,7 @@
   "package": "@itslil/marked",
   "node": "v22.21.1",
   "codec": "lilscript-codec gzip-9 / brotli-11",
-  "comparison": "Same parse path on every official row: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc or Terser. LilScript ships three compiles — cost_model raw, gzip, and brotli — because the search scores a different artifact for each codec. The npm file is the Brotli compile. The published official marked package is not a lane.",
+  "comparison": "Same parse path on every official row: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc or Terser. LilScript ships three compiles \u2014 cost_model raw, gzip, and brotli \u2014 because the search scores a different artifact for each codec. The npm file is the Brotli compile. The published official marked package is not a lane.",
   "browser": "playwright-chromium",
   "warmupDiscard": 3,
   "spec": {
@@ -18,7 +18,7 @@
       "raw": 67247,
       "gzip9": 14064,
       "brotli11": 12684,
-      "note": "marked@18.0.10 Lexer/Parser/Tokenizer/Renderer only — no use(), Hooks, or walkTokens",
+      "note": "marked@18.0.10 Lexer/Parser/Tokenizer/Renderer only \u2014 no use(), Hooks, or walkTokens",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
@@ -26,7 +26,7 @@
     },
     {
       "id": "parse-oxc-mangle",
-      "name": "Parse-only · Oxc mangle on",
+      "name": "Parse-only \u00b7 Oxc mangle on",
       "raw": 37022,
       "gzip9": 10930,
       "brotli11": 10092,
@@ -38,7 +38,7 @@
     },
     {
       "id": "parse-oxc-nomangle",
-      "name": "Parse-only · Oxc mangle off",
+      "name": "Parse-only \u00b7 Oxc mangle off",
       "raw": 47547,
       "gzip9": 12153,
       "brotli11": 11279,
@@ -50,7 +50,7 @@
     },
     {
       "id": "parse-terser-mangle",
-      "name": "Parse-only · Terser mangle on",
+      "name": "Parse-only \u00b7 Terser mangle on",
       "raw": 37725,
       "gzip9": 11045,
       "brotli11": 10138,
@@ -62,7 +62,7 @@
     },
     {
       "id": "parse-terser-nomangle",
-      "name": "Parse-only · Terser mangle off",
+      "name": "Parse-only \u00b7 Terser mangle off",
       "raw": 48444,
       "gzip9": 12302,
       "brotli11": 11339,
@@ -74,10 +74,10 @@
     },
     {
       "id": "itslil",
-      "name": "@itslil/marked · cost_model brotli",
-      "raw": 35985,
-      "gzip9": 10766,
-      "brotli11": 9589,
+      "name": "@itslil/marked \u00b7 cost_model brotli",
+      "raw": 34553,
+      "gzip9": 10627,
+      "brotli11": 9515,
       "note": "JS library compiled for Brotli. This is the npm ESM. extern class pins the marked 18.0.10 option keys.",
       "primary": true,
       "baseline": false,
@@ -86,10 +86,10 @@
     },
     {
       "id": "itslil-gzip",
-      "name": "@itslil/marked · cost_model gzip",
-      "raw": 36304,
-      "gzip9": 10727,
-      "brotli11": 9603,
+      "name": "@itslil/marked \u00b7 cost_model gzip",
+      "raw": 34742,
+      "gzip9": 10714,
+      "brotli11": 9549,
       "note": "Same library, compiled with javascript.cost_model = gzip. Not the npm file.",
       "primary": false,
       "baseline": false,
@@ -98,10 +98,10 @@
     },
     {
       "id": "itslil-bytes",
-      "name": "@itslil/marked · cost_model raw",
-      "raw": 33632,
-      "gzip9": 10605,
-      "brotli11": 9504,
+      "name": "@itslil/marked \u00b7 cost_model raw",
+      "raw": 34107,
+      "gzip9": 11121,
+      "brotli11": 9944,
       "note": "Same library, compiled with javascript.cost_model = raw. Not the npm file.",
       "primary": false,
       "baseline": false,
@@ -110,10 +110,10 @@
     },
     {
       "id": "itslil-closed",
-      "name": "@itslil/marked · closed LilScript",
-      "raw": 35705,
-      "gzip9": 10730,
-      "brotli11": 9533,
+      "name": "@itslil/marked \u00b7 closed LilScript",
+      "raw": 34553,
+      "gzip9": 10627,
+      "brotli11": 9515,
       "note": "Brotli compile with [mangle] extern_fields = false. Public JS keys mangle. Not the npm file.",
       "primary": false,
       "baseline": false,
@@ -122,13 +122,13 @@
     }
   ],
   "matched": {
-    "raw": 33632,
-    "gzip9": 10727,
-    "brotli11": 9589,
+    "raw": 34107,
+    "gzip9": 10714,
+    "brotli11": 9515,
     "vsOxc": {
-      "raw": 0.908432823726433,
-      "gzip9": 0.981427264409881,
-      "brotli11": 0.9501585414189457
+      "raw": 0.9212630327913133,
+      "gzip9": 0.9802378774016468,
+      "brotli11": 0.9428260007927071
     }
   },
   "throughput": [
@@ -144,7 +144,7 @@
     },
     {
       "id": "parse-oxc-mangle",
-      "name": "Parse-only · Oxc mangle on",
+      "name": "Parse-only \u00b7 Oxc mangle on",
       "primary": false,
       "documentMs": 52.700000047683716,
       "specMs": 67.89999985694885,
@@ -154,7 +154,7 @@
     },
     {
       "id": "parse-oxc-nomangle",
-      "name": "Parse-only · Oxc mangle off",
+      "name": "Parse-only \u00b7 Oxc mangle off",
       "primary": false,
       "documentMs": 52.5,
       "specMs": 67.10000014305115,
@@ -164,7 +164,7 @@
     },
     {
       "id": "parse-terser-mangle",
-      "name": "Parse-only · Terser mangle on",
+      "name": "Parse-only \u00b7 Terser mangle on",
       "primary": false,
       "documentMs": 52.39999985694885,
       "specMs": 67.59999990463257,
@@ -174,7 +174,7 @@
     },
     {
       "id": "parse-terser-nomangle",
-      "name": "Parse-only · Terser mangle off",
+      "name": "Parse-only \u00b7 Terser mangle off",
       "primary": false,
       "documentMs": 52.299999952316284,
       "specMs": 68,
@@ -194,15 +194,15 @@
     }
   ],
   "hero": {
-    "brotliRatio": 0.9501585414189457,
+    "brotliRatio": 0.9428260007927071,
     "officialBrotli": 10092,
-    "itslilBrotli": 9589,
-    "gzipRatio": 0.981427264409881,
+    "itslilBrotli": 9515,
+    "gzipRatio": 0.9802378774016468,
     "officialGzip": 10930,
-    "itslilGzip": 10727,
-    "rawRatio": 0.908432823726433,
+    "itslilGzip": 10714,
+    "rawRatio": 0.9212630327913133,
     "officialRaw": 37022,
-    "itslilRaw": 33632,
+    "itslilRaw": 34107,
     "parseRawBrotli": 12684
   },
   "compilerComparison": {

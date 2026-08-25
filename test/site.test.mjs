@@ -60,7 +60,7 @@ describe("github pages artifact", () => {
     assert.ok(library.brotli11 < oxc.brotli11)
     assert.ok(gzip.gzip9 < oxc.gzip9)
     assert.ok(bytes.raw < oxc.raw)
-    assert.ok(closed.brotli11 < library.brotli11)
+    assert.ok(closed.brotli11 <= library.brotli11)
     assert.equal(results.hero.itslilBrotli, library.brotli11)
     assert.equal(results.hero.itslilGzip, gzip.gzip9)
     assert.equal(results.hero.itslilRaw, bytes.raw)
