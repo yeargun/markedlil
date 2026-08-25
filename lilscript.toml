@@ -1,3 +1,7 @@
+# Candidate search runs to convergence rather than the production slice.
+# `production` caps the proposal budget at 384 and then scales it by artifact
+# size, so a large module exhausts the beam before it reaches the naming and
+# class-shape families. Measured on this port with `lilscript-codec`:
 [javascript]
 priority = "size-first"
 optimization_level = 15
@@ -5,7 +9,9 @@ cost_model = "brotli"
 assume_pristine_builtins = true
 strip_console = true
 local_name_reserve = 48
-candidate_search = "production"
+candidate_search = "always"
+candidate_proposal_limit = 1536
+terminal_codec_probe_limit = 1536
 function_spelling = "arrow"
 
 [mangle]
