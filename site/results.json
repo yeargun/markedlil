@@ -1,16 +1,12 @@
 {
   "pin": "marked@18.0.10",
   "package": "@itslil/marked",
-  "node": "v22.21.1",
+  "node": "v20.19.0",
   "codec": "lilscript-codec gzip-9 / brotli-11",
   "comparison": "Same parse path on every official row: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc or Terser. LilScript ships three compiles — cost_model raw, gzip, and brotli — because the search scores a different artifact for each codec. The npm file is the Brotli compile. The published official marked package is not a lane.",
-  "browser": "playwright-chromium",
-  "warmupDiscard": 3,
-  "spec": {
-    "total": 660,
-    "pass": 660,
-    "fail": []
-  },
+  "browser": null,
+  "warmupDiscard": 2,
+  "spec": null,
   "size": [
     {
       "id": "parse",
@@ -75,9 +71,9 @@
     {
       "id": "itslil",
       "name": "@itslil/marked · cost_model brotli",
-      "raw": 34860,
-      "gzip9": 10644,
-      "brotli11": 9517,
+      "raw": 34798,
+      "gzip9": 10595,
+      "brotli11": 9444,
       "note": "JS library compiled for Brotli. This is the npm ESM. extern class pins the marked 18.0.10 option keys.",
       "primary": true,
       "baseline": false,
@@ -87,9 +83,9 @@
     {
       "id": "itslil-gzip",
       "name": "@itslil/marked · cost_model gzip",
-      "raw": 36304,
-      "gzip9": 10727,
-      "brotli11": 9603,
+      "raw": 34598,
+      "gzip9": 10557,
+      "brotli11": 9474,
       "note": "Same library, compiled with javascript.cost_model = gzip. Not the npm file.",
       "primary": false,
       "baseline": false,
@@ -99,9 +95,9 @@
     {
       "id": "itslil-bytes",
       "name": "@itslil/marked · cost_model raw",
-      "raw": 33632,
-      "gzip9": 10605,
-      "brotli11": 9504,
+      "raw": 33621,
+      "gzip9": 11122,
+      "brotli11": 9932,
       "note": "Same library, compiled with javascript.cost_model = raw. Not the npm file.",
       "primary": false,
       "baseline": false,
@@ -111,9 +107,9 @@
     {
       "id": "itslil-closed",
       "name": "@itslil/marked · closed LilScript",
-      "raw": 34712,
-      "gzip9": 10636,
-      "brotli11": 9517,
+      "raw": 34092,
+      "gzip9": 10454,
+      "brotli11": 9367,
       "note": "Brotli compile with [mangle] extern_fields = false. Public JS keys mangle. Not the npm file.",
       "primary": false,
       "baseline": false,
@@ -122,87 +118,26 @@
     }
   ],
   "matched": {
-    "raw": 33632,
-    "gzip9": 10727,
-    "brotli11": 9589,
+    "raw": 33621,
+    "gzip9": 10557,
+    "brotli11": 9444,
     "vsOxc": {
-      "raw": 0.908432823726433,
-      "gzip9": 0.981427264409881,
-      "brotli11": 0.9501585414189457
+      "raw": 0.9081357030954568,
+      "gzip9": 0.9658737419945105,
+      "brotli11": 0.9357907253269917
     }
   },
-  "throughput": [
-    {
-      "id": "parse",
-      "name": "Parse-only official",
-      "primary": false,
-      "documentMs": 52.5,
-      "specMs": 67.40000009536743,
-      "htmlOk": true,
-      "documentRatio": 1,
-      "specRatio": 1
-    },
-    {
-      "id": "parse-oxc-mangle",
-      "name": "Parse-only · Oxc mangle on",
-      "primary": false,
-      "documentMs": 52.700000047683716,
-      "specMs": 67.89999985694885,
-      "htmlOk": true,
-      "documentRatio": 1.0038095247177852,
-      "specRatio": 1.0074183940782484
-    },
-    {
-      "id": "parse-oxc-nomangle",
-      "name": "Parse-only · Oxc mangle off",
-      "primary": false,
-      "documentMs": 52.5,
-      "specMs": 67.10000014305115,
-      "htmlOk": true,
-      "documentRatio": 1,
-      "specRatio": 0.9955489621381038
-    },
-    {
-      "id": "parse-terser-mangle",
-      "name": "Parse-only · Terser mangle on",
-      "primary": false,
-      "documentMs": 52.39999985694885,
-      "specMs": 67.59999990463257,
-      "htmlOk": true,
-      "documentRatio": 0.9980952353704543,
-      "specRatio": 1.0029673562163524
-    },
-    {
-      "id": "parse-terser-nomangle",
-      "name": "Parse-only · Terser mangle off",
-      "primary": false,
-      "documentMs": 52.299999952316284,
-      "specMs": 68,
-      "htmlOk": true,
-      "documentRatio": 0.9961904752822149,
-      "specRatio": 1.0089020757237923
-    },
-    {
-      "id": "itslil",
-      "name": "@itslil/marked",
-      "primary": true,
-      "documentMs": 45.700000047683716,
-      "specMs": 62.09999990463257,
-      "htmlOk": true,
-      "documentRatio": 0.8704761913844518,
-      "specRatio": 0.921364982444575
-    }
-  ],
+  "throughput": [],
   "hero": {
-    "brotliRatio": 0.9501585414189457,
+    "brotliRatio": 0.9357907253269917,
     "officialBrotli": 10092,
-    "itslilBrotli": 9589,
-    "gzipRatio": 0.981427264409881,
+    "itslilBrotli": 9444,
+    "gzipRatio": 0.9658737419945105,
     "officialGzip": 10930,
-    "itslilGzip": 10727,
-    "rawRatio": 0.908432823726433,
+    "itslilGzip": 10557,
+    "rawRatio": 0.9081357030954568,
     "officialRaw": 37022,
-    "itslilRaw": 33632,
+    "itslilRaw": 33621,
     "parseRawBrotli": 12684
   },
   "compilerComparison": {
