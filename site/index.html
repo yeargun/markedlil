@@ -21,6 +21,7 @@
       </a>
       <nav aria-label="Main navigation">
         <a href="#performance">performance</a>
+        <a href="#verify">verify</a>
         <a href="#lab">playground</a>
         <a href="#evidence">size</a>
         <a href="https://github.com/yeargun/markedlil">GitHub ↗</a>
@@ -88,18 +89,69 @@
           </div>
           <p>
             HTML must match the official parse path of <code>marked@18.0.10</code>. The document suite is the GFM+CommonMark
-            corpus repeated 32 times. The loop suite parses all 660 cases forty times. Ratio is lane / official parse path (lower is faster).
+            corpus repeated 32 times. The loop suite parses all 660 cases forty times. The four official rows are the same
+            program through different minifiers, so the distance between them is the noise floor — a lane is only called
+            faster when it clears its own sample range.
           </p>
         </div>
         <div class="perf-cards" id="perf-cards"></div>
+
+        <div class="verify" id="verify">
+          <div class="verify-head">
+            <div>
+              <h3>Don't take the number. Run it.</h3>
+              <p>
+                The table below is a recording. This button is the same benchmark on
+                <strong>your</strong> machine: the same corpus, the same two suites, the same
+                warmup-discard median as
+                <a href="https://github.com/yeargun/markedlil/blob/main/e2e/run.mjs">e2e/run.mjs</a>.
+                Both engines parse all 660 spec cases first, and no timing is reported unless
+                every byte of HTML matches.
+              </p>
+            </div>
+            <button type="button" id="verify-run">run the benchmark</button>
+          </div>
+          <p class="verify-status" id="verify-status">
+            Keep this tab in front while it runs — a background tab is throttled and the numbers
+            are meaningless. Takes a few seconds.
+          </p>
+          <div class="verify-out" id="verify-out" aria-live="polite"></div>
+        </div>
+
+        <ul class="source-links">
+          <li>
+            <span>the harness</span>
+            <a href="https://github.com/yeargun/markedlil/blob/main/e2e/run.mjs">e2e/run.mjs</a>
+            <small>Playwright Chromium. Produced the recorded table.</small>
+          </li>
+          <li>
+            <span>the same thing, in your browser</span>
+            <a href="https://github.com/yeargun/markedlil/blob/main/site/bench.js">site/bench.js</a>
+            <small>What the button above runs.</small>
+          </li>
+          <li>
+            <span>the corpus</span>
+            <a href="https://github.com/yeargun/markedlil/blob/main/scripts/spec.mjs">scripts/spec.mjs</a>
+            <small>GFM 0.29 and CommonMark 0.31.2 fixtures, joined.</small>
+          </li>
+          <li>
+            <span>the recorded run</span>
+            <a href="https://github.com/yeargun/markedlil/blob/main/reports/bench.json">reports/bench.json</a>
+            <small>Every sample behind the table, not just the median.</small>
+          </li>
+        </ul>
+
         <div class="table-wrap light">
           <table>
             <thead>
               <tr>
                 <th>Lane</th>
                 <th>32× document</th>
+                <th>range</th>
+                <th>document vs official</th>
                 <th>660-case ×40</th>
-                <th>document speed vs official parse path</th>
+                <th>range</th>
+                <th>spec loop vs official</th>
               </tr>
             </thead>
             <tbody id="perf-body"></tbody>

@@ -181,7 +181,7 @@ tbody td:last-child strong { color: var(--acid); }
 .compiler-provenance dl div { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; padding-block: 8px; border-top: 1px solid var(--line); }
 .compiler-provenance dt { color: var(--muted); font: 500 10px/1.5 "DM Mono", monospace; text-transform: uppercase; }
 .compiler-provenance dd { min-width: 0; margin: 0; overflow-wrap: anywhere; font: 500 11px/1.5 "DM Mono", monospace; }
-+
+
 .closing { padding-block: 130px; text-align: center; }
 .closing h2 { font-size: clamp(60px, 8.5vw, 112px); }
 .install-row.large { margin: 48px auto 0; text-align: left; }
@@ -233,3 +233,72 @@ footer.shell { display: flex; justify-content: space-between; gap: 20px; padding
 .verdict.win strong { color: #1f6b2a; }
 .verdict.loss strong { color: var(--muted); font-weight: 500; }
 .verdict.even strong { color: var(--muted); font-weight: 500; }
+
+/* The claim on this page is a recording, and a recording is only worth what a
+   reader can reproduce. This panel is where they do it, so it gets the weight
+   of the scoreboard rather than the quiet of a footnote. */
+.verify {
+  margin-block: 34px;
+  border: 2px solid var(--ink);
+  background: #fff;
+  box-shadow: 10px 10px 0 var(--ink);
+}
+.verify-head {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: center;
+  padding: 26px; border-bottom: 1px solid var(--ink);
+}
+.verify-head h3 { margin: 0 0 10px; font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -.05em; }
+.verify-head p { margin: 0; max-width: 720px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.verify-head a { color: var(--purple); text-decoration: underline; }
+#verify-run {
+  border: 2px solid var(--ink); background: var(--acid); cursor: pointer;
+  padding: 16px 22px; white-space: nowrap;
+  font: 700 13px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .06em;
+}
+#verify-run:hover:not(:disabled) { background: #edc45a; }
+#verify-run:disabled { cursor: progress; background: var(--paper); color: var(--muted); }
+.verify-status {
+  margin: 0; padding: 14px 26px; border-bottom: 1px solid var(--line);
+  color: var(--muted); font: 500 11px/1.6 "DM Mono", monospace;
+}
+.verify-out:empty { display: none; }
+.verify-pass, .verify-fail { margin: 0; padding: 18px 26px; font: 500 12px/1.6 "DM Mono", monospace; }
+.verify-pass { background: var(--acid); color: var(--ink); }
+.verify-pass strong { font-size: 15px; }
+.verify-fail { background: #ffd8ce; }
+.verify-fail a { text-decoration: underline; }
+.verify-out .table-wrap { border-top: 0; }
+.verify-out th:first-child, .verify-out td:first-child { padding-left: 26px; }
+.verify-out th:last-child, .verify-out td:last-child { padding-right: 26px; }
+.verify-foot { margin: 0; padding: 16px 26px; color: var(--muted); font: 500 10px/1.6 "DM Mono", monospace; }
+
+/* Every number in this section comes from a file. These are those files. */
+.source-links {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0; margin: 0 0 34px; padding: 0; list-style: none;
+  border: 1px solid var(--ink);
+}
+.source-links li { display: grid; gap: 7px; align-content: start; padding: 18px 20px; }
+.source-links li + li { border-left: 1px solid var(--ink); }
+.source-links span { color: var(--muted); font: 500 10px "DM Mono", monospace; letter-spacing: .1em; text-transform: uppercase; }
+.source-links a { font: 700 13px "DM Mono", monospace; color: var(--purple); text-decoration: underline; }
+.source-links small { color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+@media (max-width: 900px) {
+  .verify-head { grid-template-columns: 1fr; }
+  #verify-run { justify-self: start; }
+  .source-links { grid-template-columns: 1fr 1fr; }
+  .source-links li:nth-child(odd) { border-left: 0; }
+  .source-links li:nth-child(n + 3) { border-top: 1px solid var(--ink); }
+}
+
+@media (max-width: 620px) {
+  .source-links { grid-template-columns: 1fr; }
+  .source-links li + li { border-left: 0; border-top: 1px solid var(--ink); }
+}
+
+/* A tie must not wear the colour of a win. The light tables tint their last
+   column by default; a verdict that says "within the noise" opts back out. */
+.table-wrap.light tbody td.verdict.even strong,
+.table-wrap.light tbody td.verdict.loss strong { color: var(--muted); font-weight: 500; }
+.table-wrap.light tbody td.verdict.win strong { color: #1f6b2a; }

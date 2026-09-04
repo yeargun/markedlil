@@ -58,18 +58,44 @@ The closed Brotli compile is **56 Brotli bytes** smaller than the npm file: the 
 
 ## Performance
 
-Playwright Chromium. HTML checksummed against the official parse path and against published `marked@18.0.10` on the spec corpus. Quiet median of 10 samples after discarding the first 3. Ratio is lane / official parse path (lower is faster).
+Run it yourself: **<https://yeargun.github.io/markedlil/#verify>** runs this benchmark in your own
+browser, on the same corpus with the same statistics, and prints the numbers your machine produces.
+Nothing below has to be taken on trust.
 
-| Lane | 32× document | 660-case ×40 | vs official parse path |
-| --- | ---: | ---: | ---: |
-| Official parse path | 52.5 ms | 67.4 ms | 1.00× |
-| Official parse path · Oxc mangle on | 52.7 ms | 67.9 ms | 1.00× |
-| Official parse path · Oxc mangle off | 52.5 ms | 67.1 ms | 1.00× |
-| Official parse path · Terser mangle on | 52.4 ms | 67.6 ms | 1.00× |
-| Official parse path · Terser mangle off | 52.3 ms | 68.0 ms | 1.00× |
-| **`@itslil/marked`** | **45.7 ms** | **62.1 ms** | **0.87×** |
+Playwright Chromium ([`e2e/run.mjs`](e2e/run.mjs)). HTML checksummed against the official parse path
+and against published `marked@18.0.10` on the spec corpus. Quiet median of 10 samples after
+discarding the first 3, lanes sampled round-robin with the order alternating each round.
 
-The document suite is the joined GFM+CommonMark markdown repeated 32 times (~537 kB); the loop suite parses all 660 spec cases forty times. `@itslil/marked` is **13% faster** than the official parse path on documents and **8% faster** on the spec loop.
+The four official rows are the same program through different minifiers. However far apart *they*
+land is the noise floor, and no other row is called faster until it clears its own sample range.
+
+| Lane | 32× document | range | document | 660-case ×40 | range | spec loop |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Official parse path | 125.7 ms | 121.6 – 144.7 | baseline | 173.3 ms | 171.3 – 182.7 | baseline |
+| Official parse path · Oxc mangle on | 129.5 ms | 122.0 – 135.7 | within noise | 172.8 ms | 170.1 – 176.6 | within noise |
+| Official parse path · Oxc mangle off | 127.5 ms | 122.9 – 133.0 | within noise | 171.7 ms | 169.1 – 172.9 | within noise |
+| Official parse path · Terser mangle on | 126.7 ms | 122.2 – 147.9 | within noise | 173.8 ms | 171.7 – 175.2 | within noise |
+| Official parse path · Terser mangle off | 130.6 ms | 125.7 – 154.6 | within noise | 177.0 ms | 175.6 – 182.7 | within noise |
+| **`@itslil/marked`** | **137.3 ms** | **129.0 – 154.9** | **within noise** | **159.0 ms** | **156.3 – 160.4** | **8.3% faster** |
+
+The document suite is the joined GFM+CommonMark markdown repeated 32 times (~537 kB); the loop suite
+parses all 660 spec cases forty times.
+
+**Spec loop: a real win.** `@itslil/marked` is **8.3% faster**, and its sample range does not touch
+the baseline's. Two consecutive runs put it at 7.8% and 8.3%.
+
+**Single large document: no win, and possibly a small loss.** The median is ~9% *slower* in both
+runs — reproducible, not a fluke — but the baseline's own spread covers it, so the ranges overlap and
+neither lane can claim the suite. The table says "within noise" rather than picking a side. If you
+want the answer for your machine, press the button on the page.
+
+> Earlier releases reported 13% *faster* on the document suite. That number came from a harness that
+> measured each lane in its own block, minutes apart, on a burstable host, so drift in the machine
+> landed on whichever lane held the floor. The tell was that official lanes which are the *same
+> program through different minifiers* disagreed with each other by up to 30% — more than the result
+> being claimed. `e2e/run.mjs` now samples the lanes round-robin with the order alternating, the
+> official rows agree to within 4%, and the document win does not survive it. The loop-suite win
+> does, and is now outside the noise instead of inside it.
 
 ```sh
 npm test
@@ -78,7 +104,9 @@ npx playwright install chromium
 npm run bench
 ```
 
-Oxc minify uses Vite 8 and needs Node `^20.19 || >=22.12`.
+Oxc minify uses Vite 8 and needs Node `^20.19 || >=22.12`. Numbers move with the machine — the
+absolute milliseconds above are from a burstable Azure VM and mean nothing on their own; the
+distance between lanes is the result.
 
 ## Compatibility
 

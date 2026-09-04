@@ -1,6 +1,7 @@
 import { marked as officialMarked } from "./marked-official.js"
 import { marked as lilMarked } from "./marked.js"
 import { renderCompilerComparison } from "./compiler-comparison.js"
+import { HARNESS, loadCorpus, median, runBenchmark } from "./bench.js"
 
 const data = await fetch("./results.json").then((response) => {
   if (!response.ok) throw new Error(`Unable to load results: ${response.status}`)
@@ -187,13 +188,23 @@ function renderSize() {
     .join("")
 }
 
+function recordedVerdict(row, baseline, suite) {
+  if (!row || !baseline) return null
+  const range = row[`${suite}Range`]
+  const baseRange = baseline[`${suite}Range`]
+  if (range && baseRange && range[0] <= baseRange[1] && baseRange[0] <= range[1]) {
+    return { text: "within the noise", state: "even" }
+  }
+  return fasterThan(row[`${suite}Ms`], baseline[`${suite}Ms`])
+}
+
 function renderPerf() {
   const suites = parsePathLanes(data.throughput)
   if (suites.length === 0) return
   const lil = suites.find((row) => row.id === "itslil")
   const official = suites.find((row) => row.id === "parse")
-  const document32 = lil && official ? fasterThan(lil.documentMs, official.documentMs) : null
-  const specLoop = lil && official ? fasterThan(lil.specMs, official.specMs) : null
+  const document32 = recordedVerdict(lil, official, "document")
+  const specLoop = recordedVerdict(lil, official, "spec")
   const cards = [
     {
       label: "parsing one big document, against the official parse path",
@@ -227,19 +238,127 @@ function renderPerf() {
     .join("")
   document.querySelector("#perf-body").innerHTML = suites
     .map((row) => {
-      const verdict = official ? fasterThan(row.documentMs, official.documentMs) : null
+      const cells = ["document", "spec"].map((suite) => {
+        const verdict = row === official ? null : recordedVerdict(row, official, suite)
+        const range = row[`${suite}Range`]
+        return `
+      <td>${ms(row[`${suite}Ms`] ?? 0)}</td>
+      <td>${range ? `${ms(range[0])} – ${ms(range[1])}` : "—"}</td>
+      <td class="verdict ${verdict ? verdict.state : "even"}"><strong>${verdict ? verdict.text : "baseline"}</strong></td>`
+      })
       return `
     <tr>
-      <th scope="row">${row.name}</th>
-      <td>${ms(row.documentMs)}</td>
-      <td>${ms(row.specMs ?? row.inlineMs ?? 0)}</td>
-      <td class="verdict ${verdict ? verdict.state : ""}"><strong>${verdict ? verdict.text : "—"}</strong></td>
+      <th scope="row">${row.name}</th>${cells.join("")}
     </tr>
   `
     })
     .join("")
   document.querySelector("#perf-note").textContent =
-    `${data.browser ?? "Playwright Chromium"}. ${data.codec}. Quiet median after discarding the first ${data.warmupDiscard} samples.`
+    `${data.browser ?? "Playwright Chromium"}. Quiet median of ${data.loops ?? 10} samples after discarding the first ${data.warmupDiscard}. Lanes are sampled round-robin, alternating order, so drift in the machine cannot settle on one of them. The official rows are the same program through different minifiers: how far apart they land is the noise floor for every other row.`
+}
+
+/// A median is worth nothing next to a spread it sits inside. Two lanes whose
+/// samples overlap are reported as a tie, however far apart their medians land,
+/// because on a laptop that is all the machine can honestly say.
+function verdictBetween(lane, baseline) {
+  const overlap = lane.min <= baseline.max && baseline.min <= lane.max
+  if (overlap) {
+    return { text: "too close to call on this machine", state: "even" }
+  }
+  return fasterThan(lane.ms, baseline.ms)
+}
+
+function renderVerifyResult(result) {
+  const out = document.querySelector("#verify-out")
+  if (!result.spec.ok) {
+    const first = result.spec.mismatches[0]
+    out.innerHTML = `
+      <p class="verify-fail">
+        <strong>Refused to time this.</strong> ${result.spec.total - result.spec.pass} of
+        ${result.spec.total} spec cases produced different HTML, so a speed number would be
+        comparing two different programs. Offending lane: <code>${first.lane}</code>, case
+        ${first.index}. Please
+        <a href="https://github.com/yeargun/markedlil/issues">open an issue</a> with your browser
+        and version — this should not happen.
+      </p>`
+    return
+  }
+  const suites = [
+    { key: "document", label: `${HARNESS.documentRepeat}× document` },
+    { key: "spec", label: `${result.spec.total}-case ×${HARNESS.specRounds}` },
+  ]
+  const table = suites
+    .map((suite) => {
+      const rows = result.suites[suite.key]
+      const baseline = rows.find((row) => row.id === "parse")
+      return rows
+        .map((row) => {
+          const verdict = row === baseline ? null : verdictBetween(row, baseline)
+          return `
+      <tr>
+        <th scope="row">${row.name}</th>
+        <td>${suite.label}</td>
+        <td>${ms(row.ms)}</td>
+        <td>${ms(row.min)} – ${ms(row.max)}</td>
+        <td class="verdict ${verdict ? verdict.state : "even"}"><strong>${verdict ? verdict.text : "baseline"}</strong></td>
+      </tr>`
+        })
+        .join("")
+    })
+    .join("")
+  out.innerHTML = `
+    <p class="verify-pass">
+      <strong>${result.spec.pass}/${result.spec.total}</strong> spec cases produced byte-identical
+      HTML in this browser. Only then were these timed.
+    </p>
+    <div class="table-wrap light">
+      <table>
+        <thead>
+          <tr><th>Lane</th><th>Suite</th><th>Median</th><th>Range over ${HARNESS.loops - HARNESS.warmupDiscard} samples</th><th>vs official parse path</th></tr>
+        </thead>
+        <tbody>${table}</tbody>
+      </table>
+    </div>
+    <p class="verify-foot">
+      ${navigator.hardwareConcurrency ?? "?"} logical cores · ${result.corpus.heavyChars.toLocaleString("en-US")} characters per document sample ·
+      lanes alternate order every sample so drift in your machine's clock speed cannot settle on one of them.
+    </p>`
+}
+
+function bindVerify() {
+  const button = document.querySelector("#verify-run")
+  const status = document.querySelector("#verify-status")
+  if (!button) return
+  let corpus = null
+  button.addEventListener("click", async () => {
+    button.disabled = true
+    const started = performance.now()
+    try {
+      if (!corpus) {
+        status.textContent = "loading the spec corpus…"
+        corpus = await loadCorpus()
+      }
+      const lanes = [
+        { id: "parse", name: "Official parse path", parse: (src) => officialMarked.parse(src) },
+        { id: "itslil", name: "@itslil/marked", parse: (src) => lilMarked.parse(src) },
+      ]
+      const result = await runBenchmark({
+        lanes,
+        corpus,
+        onProgress: ({ phase, kind, sample, loops }) => {
+          if (phase === "verify") status.textContent = `checking ${corpus.cases.length} spec cases for identical HTML…`
+          else if (sample) status.textContent = `${kind} suite · sample ${sample} of ${loops}`
+          else status.textContent = `${phase} suite · warming up`
+        },
+      })
+      renderVerifyResult(result)
+      status.textContent = `done in ${((performance.now() - started) / 1000).toFixed(1)}s. Run it again — the spread tells you how much to trust it.`
+    } catch (error) {
+      status.textContent = `could not run: ${error}`
+    } finally {
+      button.disabled = false
+    }
+  })
 }
 
 function bindCopy() {
@@ -295,17 +414,21 @@ function bindPlayground() {
   }
   document.querySelector("#race").addEventListener("click", () => {
     const src = source.value
-    const loops = 10
-    const run = (parse) => {
-      parse(src)
-      const start = performance.now()
-      for (let i = 0; i < loops; i++) parse(src)
-      return performance.now() - start
+    const engines = [
+      { key: "lil", parse: (value) => lilMarked.parse(value), samples: [] },
+      { key: "official", parse: (value) => officialMarked.parse(value), samples: [] },
+    ]
+    for (const engine of engines) engine.parse(src)
+    for (let round = 0; round < 10; round++) {
+      for (const engine of round % 2 === 0 ? engines : [...engines].reverse()) {
+        const start = performance.now()
+        for (let i = 0; i < 20; i++) engine.parse(src)
+        engine.samples.push(performance.now() - start)
+      }
     }
-    const lilMs = run((value) => lilMarked.parse(value))
-    const officialMs = run((value) => officialMarked.parse(value))
+    const [lil, official] = engines.map((engine) => median(engine.samples.slice(3)))
     document.querySelector("#race-out").textContent =
-      `@itslil/marked ${lilMs.toFixed(1)} ms · official parse path ${officialMs.toFixed(1)} ms · ${fasterThan(lilMs, officialMs).text}`
+      `@itslil/marked ${lil.toFixed(1)} ms · official parse path ${official.toFixed(1)} ms · ${fasterThan(lil, official).text} on your text`
   })
   renderPreview()
 }
@@ -317,3 +440,4 @@ renderCompilerComparison(data)
 bindCopy()
 bindProgress()
 bindPlayground()
+bindVerify()

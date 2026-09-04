@@ -136,9 +136,11 @@ function median(values) {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 
-async function timeSuite(page, kind, loops) {
+/// One suite, once. Warming and timing are the same code path so a warm run and
+/// a counted run cannot drift apart, and the timed region stays inside the page.
+async function sampleSuite(page, kind, timed) {
   return page.evaluate(
-    async ({ kind, loops }) => {
+    ({ kind, timed }) => {
       const { parse, parseInline, corpus } = window.__ready
       const fn =
         kind === "inline"
@@ -150,16 +152,15 @@ async function timeSuite(page, kind, loops) {
                 }
               }
             : () => parse(corpus.heavy)
-      fn()
-      const samples = []
-      for (let i = 0; i < loops; i++) {
-        const start = performance.now()
+      if (!timed) {
         fn()
-        samples.push(performance.now() - start)
+        return null
       }
-      return samples
+      const start = performance.now()
+      fn()
+      return performance.now() - start
     },
-    { kind, loops },
+    { kind, timed },
   )
 }
 
@@ -171,6 +172,7 @@ const browser = await chromium.launch()
 const officialHtml = { document: null, inline: null }
 const suites = []
 
+const running = []
 for (const lane of sizes.lanes) {
   const page = await browser.newPage()
   page.on("pageerror", (error) => console.error(lane.id, error))
@@ -192,16 +194,38 @@ for (const lane of sizes.lanes) {
   } else if (html.inline !== officialHtml.inline) {
     throw new Error(`${lane.id} inline HTML diverged from parse-only marked@18.0.10`)
   }
+  running.push({ lane, page, samples: { document: [], spec: [] } })
+}
 
-  const documentSamples = await timeSuite(page, "document", loops)
-  const specSamples = await timeSuite(page, "spec", loops)
-  await page.close()
+/// Lanes are sampled round-robin rather than one lane at a time. Run in blocks,
+/// a machine that speeds up or slows down over the minutes of a run hands that
+/// drift to whichever lane held the floor, and lanes that are the same program
+/// through different minifiers come out disagreeing by more than the result
+/// being measured. Alternating the order each round cancels the linear part.
+for (const kind of ["document", "spec"]) {
+  for (const entry of running) await sampleSuite(entry.page, kind, false)
+  for (let round = 0; round < loops; round++) {
+    const order = round % 2 === 0 ? running : [...running].reverse()
+    for (const entry of order) {
+      entry.samples[kind].push(await sampleSuite(entry.page, kind, true))
+    }
+  }
+}
+
+for (const entry of running) {
+  await entry.page.close()
+  const counted = {
+    document: entry.samples.document.slice(warmupDiscard),
+    spec: entry.samples.spec.slice(warmupDiscard),
+  }
   suites.push({
-    id: lane.id,
-    name: lane.name,
-    primary: lane.primary,
-    documentMs: median(documentSamples.slice(warmupDiscard)),
-    specMs: median(specSamples.slice(warmupDiscard)),
+    id: entry.lane.id,
+    name: entry.lane.name,
+    primary: entry.lane.primary,
+    documentMs: median(counted.document),
+    specMs: median(counted.spec),
+    documentRange: [Math.min(...counted.document), Math.max(...counted.document)],
+    specRange: [Math.min(...counted.spec), Math.max(...counted.spec)],
     htmlOk: true,
   })
 }
@@ -216,6 +240,7 @@ const report = {
   pin: "marked@18.0.10",
   warmupDiscard,
   loops,
+  interleaved: true,
   spec,
   corpus: {
     documentChars: documentCorpus.length,

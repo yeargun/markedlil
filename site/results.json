@@ -4,9 +4,15 @@
   "node": "v20.19.0",
   "codec": "lilscript-codec gzip-9 / brotli-11",
   "comparison": "Same parse path on every official row: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc or Terser. LilScript ships three compiles — cost_model raw, gzip, and brotli — because the search scores a different artifact for each codec. The npm file is the Brotli compile. The published official marked package is not a lane.",
-  "browser": null,
-  "warmupDiscard": 2,
-  "spec": null,
+  "browser": "playwright-chromium",
+  "warmupDiscard": 3,
+  "loops": 10,
+  "interleaved": true,
+  "spec": {
+    "total": 660,
+    "pass": 660,
+    "fail": []
+  },
   "size": [
     {
       "id": "parse",
@@ -127,7 +133,170 @@
       "brotli11": 0.9357907253269917
     }
   },
-  "throughput": [],
+  "throughput": [
+    {
+      "id": "parse",
+      "name": "Parse-only official",
+      "primary": false,
+      "documentMs": 125.70000004768372,
+      "specMs": 173.30000001192093,
+      "documentRange": [
+        121.59999996423721,
+        144.70000004768372
+      ],
+      "specRange": [
+        171.30000001192093,
+        182.70000004768372
+      ],
+      "htmlOk": true,
+      "documentRatio": 1,
+      "specRatio": 1
+    },
+    {
+      "id": "parse-oxc-mangle",
+      "name": "Parse-only · Oxc mangle on",
+      "primary": false,
+      "documentMs": 129.5,
+      "specMs": 172.79999995231628,
+      "documentRange": [
+        122,
+        135.69999998807907
+      ],
+      "specRange": [
+        170.10000002384186,
+        176.60000002384186
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.0302307076441908,
+      "specRatio": 0.9971148294312161
+    },
+    {
+      "id": "parse-oxc-nomangle",
+      "name": "Parse-only · Oxc mangle off",
+      "primary": false,
+      "documentMs": 127.5,
+      "specMs": 171.69999998807907,
+      "documentRange": [
+        122.89999997615814,
+        133
+      ],
+      "specRange": [
+        169.0999999642372,
+        172.89999997615814
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.014319808684435,
+      "specRatio": 0.990767455142921
+    },
+    {
+      "id": "parse-terser-mangle",
+      "name": "Parse-only · Terser mangle on",
+      "primary": false,
+      "documentMs": 126.69999998807907,
+      "specMs": 173.79999995231628,
+      "documentRange": [
+        122.19999998807907,
+        147.89999997615814
+      ],
+      "specRange": [
+        171.69999998807907,
+        175.20000004768372
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.0079554490056961,
+      "specRatio": 1.0028851698809058
+    },
+    {
+      "id": "parse-terser-nomangle",
+      "name": "Parse-only · Terser mangle off",
+      "primary": false,
+      "documentMs": 130.60000002384186,
+      "specMs": 177,
+      "documentRange": [
+        125.69999998807907,
+        154.5999999642372
+      ],
+      "specRange": [
+        175.5999999642372,
+        182.70000004768372
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.0389817022617291,
+      "specRatio": 1.0213502595950639
+    },
+    {
+      "id": "itslil",
+      "name": "@itslil/marked · cost_model brotli",
+      "primary": true,
+      "documentMs": 137.30000001192093,
+      "specMs": 159,
+      "documentRange": [
+        129,
+        154.89999997615814
+      ],
+      "specRange": [
+        156.30000001192093,
+        160.4000000357628
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.0922832136820748,
+      "specRatio": 0.9174841315006506
+    },
+    {
+      "id": "itslil-gzip",
+      "name": "@itslil/marked · cost_model gzip",
+      "primary": false,
+      "documentMs": 146.5999999642372,
+      "specMs": 162.5,
+      "documentRange": [
+        127.10000002384186,
+        150.39999997615814
+      ],
+      "specRange": [
+        160,
+        177.80000001192093
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.166268893465594,
+      "specRatio": 0.9376803230745642
+    },
+    {
+      "id": "itslil-bytes",
+      "name": "@itslil/marked · cost_model raw",
+      "primary": false,
+      "documentMs": 140.80000001192093,
+      "specMs": 175.10000002384186,
+      "documentRange": [
+        137.69999998807907,
+        162.60000002384186
+      ],
+      "specRange": [
+        170.19999998807907,
+        189.5
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.1201272868616476,
+      "specRatio": 1.010386612878229
+    },
+    {
+      "id": "itslil-closed",
+      "name": "@itslil/marked · closed LilScript",
+      "primary": false,
+      "documentMs": 137.5,
+      "specMs": 163.89999997615814,
+      "documentRange": [
+        132.0999999642372,
+        146.60000002384186
+      ],
+      "specRange": [
+        162.69999998807907,
+        166.30000001192093
+      ],
+      "htmlOk": true,
+      "documentRatio": 1.0938743034832141,
+      "specRatio": 0.9457587995665541
+    }
+  ],
   "hero": {
     "brotliRatio": 0.9357907253269917,
     "officialBrotli": 10092,

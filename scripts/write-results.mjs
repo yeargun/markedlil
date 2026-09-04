@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const sizes = JSON.parse(readFileSync(join(root, "reports", "sizes.json"), "utf8"))
-let bench = { suites: [], browser: null, warmupDiscard: 2 }
+let bench = { suites: [], browser: null, warmupDiscard: 2, loops: 10, interleaved: false }
 try {
   bench = JSON.parse(readFileSync(join(root, "reports", "bench.json"), "utf8"))
 } catch {
@@ -35,6 +35,8 @@ const results = {
   comparison: sizes.comparison ?? null,
   browser: bench.browser ?? null,
   warmupDiscard: bench.warmupDiscard ?? 2,
+  loops: bench.loops ?? 10,
+  interleaved: bench.interleaved ?? false,
   spec: bench.spec ?? null,
   size: sizes.lanes
     .filter((lane) => !lane.diagnostic && lane.id !== "full")

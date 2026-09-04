@@ -16,6 +16,8 @@ describe("github pages artifact", () => {
       "app.js",
       "compiler-comparison.js",
       "results.json",
+      "bench.js",
+      "corpus.json",
       "marked.js",
       "marked-official.js",
       ".nojekyll",
@@ -81,6 +83,57 @@ describe("github pages artifact", () => {
     const app = readFileSync(resolve(site, "app.js"), "utf8")
     assert.match(app, /from ["']\.\/marked\.js["']/)
     assert.doesNotMatch(app, /\/dist\/marked/)
+  })
+
+  it("lets a reader run the benchmark instead of trusting it", () => {
+    const html = readFileSync(resolve(site, "index.html"), "utf8")
+    assert.match(html, /id="verify"/)
+    assert.match(html, /id="verify-run"/)
+    assert.match(html, /id="verify-out"/)
+    const app = readFileSync(resolve(site, "app.js"), "utf8")
+    assert.match(app, /from ["']\.\/bench\.js["']/)
+    assert.match(app, /bindVerify\(\)/)
+    const checked = spawnSync(process.execPath, ["--check", resolve(site, "bench.js")], { encoding: "utf8" })
+    assert.equal(checked.status, 0, checked.stderr)
+  })
+
+  it("links the source of every speed number to GitHub", () => {
+    const html = readFileSync(resolve(site, "index.html"), "utf8")
+    for (const path of ["e2e/run.mjs", "site/bench.js", "scripts/spec.mjs", "reports/bench.json"]) {
+      assert.match(html, new RegExp(`https://github\\.com/yeargun/markedlil/blob/main/${path.replace(/[/.]/g, "\\$&")}`), path)
+    }
+  })
+
+  it("ships the corpus the browser benchmark measures, and the harness agrees with it", () => {
+    const corpus = JSON.parse(readFileSync(resolve(site, "corpus.json"), "utf8"))
+    assert.equal(corpus.pass, corpus.total)
+    assert.equal(corpus.cases.length, corpus.pass)
+    assert.ok(corpus.cases.length >= 660, `only ${corpus.cases.length} spec cases survived`)
+    assert.equal(corpus.document, corpus.cases.join("\n\n"))
+    assert.equal(corpus.pin, "marked@18.0.10")
+  })
+
+  it("does not print a speed claim the recorded run does not carry", () => {
+    const results = JSON.parse(readFileSync(resolve(site, "results.json"), "utf8"))
+    if (results.throughput.length === 0) return
+    const official = results.throughput.find((row) => row.id === "parse")
+    const lil = results.throughput.find((row) => row.id === "itslil")
+    assert.ok(official && lil, "both lanes are measured")
+    // Lanes that are the same program through different minifiers bound the
+    // noise: no claim about LilScript is worth more than the disagreement
+    // between rows that should be identical.
+    const officialLanes = results.throughput.filter((row) => row.id.startsWith("parse"))
+    for (const suite of ["documentMs", "specMs"]) {
+      const times = officialLanes.map((row) => row[suite])
+      const spread = (Math.max(...times) - Math.min(...times)) / Math.min(...times)
+      const claim = (official[suite] - lil[suite]) / official[suite]
+      if (claim > 0) {
+        assert.ok(
+          claim > spread,
+          `${suite}: claiming ${(claim * 100).toFixed(1)}% faster while identical official lanes disagree by ${(spread * 100).toFixed(1)}%`,
+        )
+      }
+    }
   })
 
   it("publishes a frozen compiler baseline with provenance", () => {
