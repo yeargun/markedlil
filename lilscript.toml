@@ -16,6 +16,9 @@ function_spelling = "arrow"
 # re-measured rather than trusted. (The five largest ports do not respond to it
 # at all: their width is clamped by the candidate limit before the beam binds.)
 candidate_beam_width = 16
+# 8.23 (measured, fleet): the terminal idiom-directed naming search is -32
+# Brotli here; +95 on micromarklil and nothing on the other seven.
+idiom_directed_naming = true
 
 [mangle]
 identifiers = true
