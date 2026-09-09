@@ -4,7 +4,10 @@ optimization_level = 15
 cost_model = "brotli"
 assume_pristine_builtins = true
 strip_console = true
-local_name_reserve = 48
+# 8.19 (measured, fleet sweep of five reserves): the naming reserve picks the
+# basin, not the depth, and the curve is not monotone -- 8:+15, 16:-5, 32:+53, 64:+113
+# against the declared 48. Re-measure it after any emitter change.
+local_name_reserve = 16
 candidate_search = "production"
 function_spelling = "arrow"
 # 8.16 (measured, this artifact): the beam width picks which basin the terminal
