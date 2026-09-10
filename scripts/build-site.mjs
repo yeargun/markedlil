@@ -69,3 +69,6 @@ async function benchCorpus() {
     cases: passing.map((test) => test.markdown),
   }
 }
+
+// Refuse publication if source or served artifacts drift from this measurement.
+await import("./build-audit.mjs").then(({writeAudit}) => writeAudit({root, output}));

@@ -3,7 +3,7 @@
   "package": "@itslil/marked",
   "node": "v20.19.0",
   "codec": "lilscript-codec gzip-9 / brotli-11",
-  "comparison": "Same parse path on every official row: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc or Terser. LilScript ships three compiles — cost_model raw, gzip, and brotli — because the search scores a different artifact for each codec. The npm file is the Brotli compile. The published official marked package is not a lane.",
+  "comparison": "Same parse path on every official row: marked@18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc or Terser. LilScript ships three compiles \u2014 cost_model raw, gzip, and brotli \u2014 because the search scores a different artifact for each codec. The npm file is the Brotli compile. The published official marked package is not a lane.",
   "browser": "playwright-chromium",
   "warmupDiscard": 3,
   "loops": 10,
@@ -20,117 +20,135 @@
       "raw": 67247,
       "gzip9": 14064,
       "brotli11": 12684,
-      "note": "marked@18.0.10 Lexer/Parser/Tokenizer/Renderer only — no use(), Hooks, or walkTokens",
+      "note": "marked@18.0.10 Lexer/Parser/Tokenizer/Renderer only \u2014 no use(), Hooks, or walkTokens",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
-      "costModel": null
+      "costModel": null,
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "7e1b4a7f6795075dc5afc7734df82d6bea190ced503ec353ad684074baa2ba6d"
     },
     {
       "id": "parse-oxc-mangle",
-      "name": "Parse-only · Oxc mangle on",
-      "raw": 37022,
-      "gzip9": 10930,
-      "brotli11": 10092,
+      "name": "Parse-only \u00b7 Oxc mangle on",
+      "raw": 37023,
+      "gzip9": 10931,
+      "brotli11": 10127,
       "note": "Vite 8 Oxc minify of the parse-only 18.0.10 sources, mangle: true",
       "primary": false,
       "baseline": true,
       "diagnostic": false,
-      "costModel": null
+      "costModel": null,
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "a2d4fe88bcec3bf71ea6b9eeef6b5adb22f364267bd79a628c82062c595a2a0c"
     },
     {
       "id": "parse-oxc-nomangle",
-      "name": "Parse-only · Oxc mangle off",
-      "raw": 47547,
-      "gzip9": 12153,
-      "brotli11": 11279,
+      "name": "Parse-only \u00b7 Oxc mangle off",
+      "raw": 47548,
+      "gzip9": 12154,
+      "brotli11": 11267,
       "note": "Vite 8 Oxc minify of the parse-only 18.0.10 sources, mangle: false",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
-      "costModel": null
+      "costModel": null,
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "c2c3e7a0ea4ab24b790537496433373794277b4b64527fc1509cdf2f6b3759dc"
     },
     {
       "id": "parse-terser-mangle",
-      "name": "Parse-only · Terser mangle on",
-      "raw": 37725,
-      "gzip9": 11045,
-      "brotli11": 10138,
+      "name": "Parse-only \u00b7 Terser mangle on",
+      "raw": 37726,
+      "gzip9": 11048,
+      "brotli11": 10114,
       "note": "Terser compress of the parse-only 18.0.10 sources, mangle: true",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
-      "costModel": null
+      "costModel": null,
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e"
     },
     {
       "id": "parse-terser-nomangle",
-      "name": "Parse-only · Terser mangle off",
-      "raw": 48444,
-      "gzip9": 12302,
-      "brotli11": 11339,
+      "name": "Parse-only \u00b7 Terser mangle off",
+      "raw": 48445,
+      "gzip9": 12305,
+      "brotli11": 11348,
       "note": "Terser compress of the parse-only 18.0.10 sources, mangle: false",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
-      "costModel": null
+      "costModel": null,
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "e682a171abc4803f4752fe1faa28c7734c9639ae61fe2b163d5f26f9317dd826"
     },
     {
       "id": "itslil",
-      "name": "@itslil/marked · cost_model brotli",
-      "raw": 34798,
-      "gzip9": 10595,
-      "brotli11": 9444,
-      "note": "JS library compiled for Brotli. This is the npm ESM. extern class pins the marked 18.0.10 option keys.",
+      "name": "@itslil/marked \u00b7 cost_model brotli",
+      "raw": 34068,
+      "gzip9": 10326,
+      "brotli11": 9263,
+      "note": "Fresh packaged ESM, rebuilt with compiler 63c2896a71.",
       "primary": true,
       "baseline": false,
       "diagnostic": false,
-      "costModel": "brotli"
+      "costModel": "brotli",
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "a94b530633618d0f39819243bbece458109fb3fec1fce97f0391870a6fa6e166"
     },
     {
       "id": "itslil-gzip",
-      "name": "@itslil/marked · cost_model gzip",
-      "raw": 34598,
-      "gzip9": 10557,
-      "brotli11": 9474,
+      "name": "@itslil/marked \u00b7 cost_model gzip",
+      "raw": 34176,
+      "gzip9": 10277,
+      "brotli11": 9228,
       "note": "Same library, compiled with javascript.cost_model = gzip. Not the npm file.",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
-      "costModel": "gzip"
+      "costModel": "gzip",
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "c78c93a31fd79b1433451b467dcd13377a4671019d73ccbc7e298863e9f68080"
     },
     {
       "id": "itslil-bytes",
-      "name": "@itslil/marked · cost_model raw",
-      "raw": 33621,
-      "gzip9": 11122,
-      "brotli11": 9932,
+      "name": "@itslil/marked \u00b7 cost_model raw",
+      "raw": 33501,
+      "gzip9": 10913,
+      "brotli11": 9783,
       "note": "Same library, compiled with javascript.cost_model = raw. Not the npm file.",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
-      "costModel": "raw"
+      "costModel": "raw",
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "ffbaa7f4b550d1ef5678836af17d2b927b2827b334b2abdc3a03d7c4809d2b84"
     },
     {
       "id": "itslil-closed",
-      "name": "@itslil/marked · closed LilScript",
-      "raw": 34092,
-      "gzip9": 10454,
-      "brotli11": 9367,
+      "name": "@itslil/marked \u00b7 closed LilScript",
+      "raw": 34175,
+      "gzip9": 10311,
+      "brotli11": 9252,
       "note": "Brotli compile with [mangle] extern_fields = false. Public JS keys mangle. Not the npm file.",
       "primary": false,
       "baseline": false,
       "diagnostic": false,
-      "costModel": "brotli"
+      "costModel": "brotli",
+      "measuredAt": "2026-09-10T13:57:06Z",
+      "artifactSha256": "d37943690767ccd65533037185e6ba2fad374b02256f8b2fed108aa25c815d96"
     }
   ],
   "matched": {
-    "raw": 33621,
-    "gzip9": 10557,
-    "brotli11": 9444,
+    "raw": 33501,
+    "gzip9": 10277,
+    "brotli11": 9263,
     "vsOxc": {
-      "raw": 0.9081357030954568,
-      "gzip9": 0.9658737419945105,
-      "brotli11": 0.9357907253269917
+      "raw": 0.9048699457094239,
+      "gzip9": 0.9401701582654834,
+      "brotli11": 0.9146835193048287
     }
   },
   "throughput": [
@@ -154,7 +172,7 @@
     },
     {
       "id": "parse-oxc-mangle",
-      "name": "Parse-only · Oxc mangle on",
+      "name": "Parse-only \u00b7 Oxc mangle on",
       "primary": false,
       "documentMs": 129.5,
       "specMs": 172.79999995231628,
@@ -172,7 +190,7 @@
     },
     {
       "id": "parse-oxc-nomangle",
-      "name": "Parse-only · Oxc mangle off",
+      "name": "Parse-only \u00b7 Oxc mangle off",
       "primary": false,
       "documentMs": 127.5,
       "specMs": 171.69999998807907,
@@ -190,7 +208,7 @@
     },
     {
       "id": "parse-terser-mangle",
-      "name": "Parse-only · Terser mangle on",
+      "name": "Parse-only \u00b7 Terser mangle on",
       "primary": false,
       "documentMs": 126.69999998807907,
       "specMs": 173.79999995231628,
@@ -208,7 +226,7 @@
     },
     {
       "id": "parse-terser-nomangle",
-      "name": "Parse-only · Terser mangle off",
+      "name": "Parse-only \u00b7 Terser mangle off",
       "primary": false,
       "documentMs": 130.60000002384186,
       "specMs": 177,
@@ -226,7 +244,7 @@
     },
     {
       "id": "itslil",
-      "name": "@itslil/marked · cost_model brotli",
+      "name": "@itslil/marked \u00b7 cost_model brotli",
       "primary": true,
       "documentMs": 137.30000001192093,
       "specMs": 159,
@@ -244,7 +262,7 @@
     },
     {
       "id": "itslil-gzip",
-      "name": "@itslil/marked · cost_model gzip",
+      "name": "@itslil/marked \u00b7 cost_model gzip",
       "primary": false,
       "documentMs": 146.5999999642372,
       "specMs": 162.5,
@@ -262,7 +280,7 @@
     },
     {
       "id": "itslil-bytes",
-      "name": "@itslil/marked · cost_model raw",
+      "name": "@itslil/marked \u00b7 cost_model raw",
       "primary": false,
       "documentMs": 140.80000001192093,
       "specMs": 175.10000002384186,
@@ -280,7 +298,7 @@
     },
     {
       "id": "itslil-closed",
-      "name": "@itslil/marked · closed LilScript",
+      "name": "@itslil/marked \u00b7 closed LilScript",
       "primary": false,
       "documentMs": 137.5,
       "specMs": 163.89999997615814,
@@ -298,15 +316,15 @@
     }
   ],
   "hero": {
-    "brotliRatio": 0.9357907253269917,
-    "officialBrotli": 10092,
-    "itslilBrotli": 9444,
-    "gzipRatio": 0.9658737419945105,
-    "officialGzip": 10930,
-    "itslilGzip": 10557,
-    "rawRatio": 0.9081357030954568,
-    "officialRaw": 37022,
-    "itslilRaw": 33621,
+    "brotliRatio": 0.9146835193048287,
+    "officialBrotli": 10127,
+    "itslilBrotli": 9263,
+    "gzipRatio": 0.9401701582654834,
+    "officialGzip": 10931,
+    "itslilGzip": 10277,
+    "rawRatio": 0.9048699457094239,
+    "officialRaw": 37023,
+    "itslilRaw": 33501,
     "parseRawBrotli": 12684
   },
   "compilerComparison": {
@@ -361,5 +379,8 @@
         }
       }
     ]
-  }
+  },
+  "sizeMeasuredAt": "2026-09-10T13:57:06Z",
+  "buildAudit": "./build-audit.json",
+  "runtimeEvidenceStatus": "Historical; runtime throughput was not republished as a measurement of this compiler."
 }

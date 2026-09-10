@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "name": "markedlil",
+  "measuredAt": "2026-09-10T13:57:06Z",
+  "status": "verified",
+  "buildPassed": true,
+  "summary": "The fresh artifact was checked against the repository test command.",
+  "sourceCommit": "dbfaf30fb162a0f100e5d97c232d263b84d1cfd3",
+  "previousPublicCommit": "410c9f2931317a8459bd83b22a423abd9418ad17",
+  "compiler": {
+    "commit": "63c2896a71e60cbcca7870fe979f9d6ecaff3452",
+    "sha256": "2319462ef7d858c8e2a5a767260aa4f80d325e0045afa0cc86cc122d1299b059",
+    "profile": "release",
+    "dirty": false
+  },
+  "machine": {
+    "cpu": "AMD EPYC 9V45 96-Core Processor",
+    "logicalCpus": 16,
+    "affinityCpus": 16,
+    "memoryBytes": 33648435200,
+    "os": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.17.0-1022-azure",
+    "architecture": "x86_64",
+    "node": "v22.23.2",
+    "rayonThreads": 16,
+    "provider": "Azure",
+    "instanceClass": "Standard_D16als_v7",
+    "parallelPortBuildsOnMachine": 1,
+    "loadAtStart": [
+      8.9404296875,
+      3.0546875,
+      1.08642578125
+    ],
+    "loadAtEnd": [
+      8.234375,
+      5.8759765625,
+      2.5390625
+    ],
+    "concurrencyNote": "The audit scheduled one port per worker, but this is a shared pool. Outside compiler jobs were observed during the run; timings are contextual wall times, not controlled speedup benchmarks."
+  },
+  "upstream": {
+    "name": "markedlil",
+    "package": "marked",
+    "pinned": "18.0.10",
+    "latest": "18.0.12",
+    "source": "https://www.npmjs.com/package/marked"
+  },
+  "comparisonScope": "Pinned Marked parse-only source graph via scripts/official-parse-bundle.mjs; excludes extension API Sizes use canonical zlib 1.3.1 gzip-9 and Google Brotli 1.1.0 quality 11.",
+  "sizes": {
+    "previous": {
+      "id": "itslil",
+      "name": "@itslil/marked \u00b7 cost_model brotli",
+      "raw": 34798,
+      "gzip9": 10595,
+      "brotli11": 9444,
+      "note": "JS library compiled for Brotli. This is the npm ESM. extern class pins the marked 18.0.10 option keys.",
+      "primary": true,
+      "baseline": false,
+      "diagnostic": false,
+      "costModel": "brotli"
+    },
+    "current": {
+      "path": "dist/marked.esm.js",
+      "raw": 34068,
+      "gzip9": 10326,
+      "brotli11": 9263,
+      "sha256": "a94b530633618d0f39819243bbece458109fb3fec1fce97f0391870a6fa6e166"
+    },
+    "upstream": {
+      "path": ".page-audit/upstream/official.esm.js",
+      "raw": 37726,
+      "gzip9": 11048,
+      "brotli11": 10114,
+      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e"
+    }
+  },
+  "officialArtifacts": [
+    {
+      "path": ".page-audit/upstream/official.terser-nomangle.js",
+      "raw": 48445,
+      "gzip9": 12305,
+      "brotli11": 11348,
+      "sha256": "e682a171abc4803f4752fe1faa28c7734c9639ae61fe2b163d5f26f9317dd826"
+    },
+    {
+      "path": ".page-audit/upstream/official.oxc-nomangle.js",
+      "raw": 47548,
+      "gzip9": 12154,
+      "brotli11": 11267,
+      "sha256": "c2c3e7a0ea4ab24b790537496433373794277b4b64527fc1509cdf2f6b3759dc"
+    },
+    {
+      "path": ".page-audit/upstream/official.esm.js",
+      "raw": 37726,
+      "gzip9": 11048,
+      "brotli11": 10114,
+      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e"
+    },
+    {
+      "path": ".page-audit/upstream/official.unminified.js",
+      "raw": 67247,
+      "gzip9": 14064,
+      "brotli11": 12684,
+      "sha256": "7e1b4a7f6795075dc5afc7734df82d6bea190ced503ec353ad684074baa2ba6d"
+    },
+    {
+      "path": ".page-audit/upstream/official.esbuild.js",
+      "raw": 37572,
+      "gzip9": 11256,
+      "brotli11": 10362,
+      "sha256": "d2c589136b1b8cd4104fda30fd73a45e2cc1374f8feda923908ad5d7b6847ac3"
+    },
+    {
+      "path": ".page-audit/upstream/official.oxc-mangle.js",
+      "raw": 37023,
+      "gzip9": 10931,
+      "brotli11": 10127,
+      "sha256": "a2d4fe88bcec3bf71ea6b9eeef6b5adb22f364267bd79a628c82062c595a2a0c"
+    }
+  ],
+  "candidateArtifacts": [
+    {
+      "path": "dist/marked.gzip.js",
+      "raw": 34176,
+      "gzip9": 10277,
+      "brotli11": 9228,
+      "sha256": "c78c93a31fd79b1433451b467dcd13377a4671019d73ccbc7e298863e9f68080"
+    },
+    {
+      "path": "dist/marked.esm.js",
+      "raw": 34068,
+      "gzip9": 10326,
+      "brotli11": 9263,
+      "sha256": "a94b530633618d0f39819243bbece458109fb3fec1fce97f0391870a6fa6e166"
+    },
+    {
+      "path": "dist/marked.umd.js",
+      "raw": 37560,
+      "gzip9": 11279,
+      "brotli11": 10089,
+      "sha256": "b156c3430e61e8864a4937df52b5e74c8961b43cd831626b92455be5aff8a901"
+    },
+    {
+      "path": "dist/marked.bytes.js",
+      "raw": 33501,
+      "gzip9": 10913,
+      "brotli11": 9783,
+      "sha256": "ffbaa7f4b550d1ef5678836af17d2b927b2827b334b2abdc3a03d7c4809d2b84"
+    },
+    {
+      "path": "dist/marked.closed.js",
+      "raw": 34175,
+      "gzip9": 10311,
+      "brotli11": 9252,
+      "sha256": "d37943690767ccd65533037185e6ba2fad374b02256f8b2fed108aa25c815d96"
+    },
+    {
+      "path": "dist/marked.cjs",
+      "raw": 37489,
+      "gzip9": 11231,
+      "brotli11": 10064,
+      "sha256": "3857f9995f92d1745f94db619c506642be5f4a51cbf8612e2beafaf7a34ab5ec"
+    },
+    {
+      "path": "dist/marked.raw.js",
+      "raw": 33984,
+      "gzip9": 10270,
+      "brotli11": 9210,
+      "sha256": "f3e2b35c3ab4705842be1ac1b421c2c4a28530787283f70f739d7f373db9c762"
+    },
+    {
+      "path": ".page-audit/upstream/official.esbuild.js",
+      "raw": 37572,
+      "gzip9": 11256,
+      "brotli11": 10362,
+      "sha256": "d2c589136b1b8cd4104fda30fd73a45e2cc1374f8feda923908ad5d7b6847ac3"
+    },
+    {
+      "path": ".page-audit/upstream/official.terser-nomangle.js",
+      "raw": 48445,
+      "gzip9": 12305,
+      "brotli11": 11348,
+      "sha256": "e682a171abc4803f4752fe1faa28c7734c9639ae61fe2b163d5f26f9317dd826"
+    },
+    {
+      "path": ".page-audit/upstream/official.oxc-mangle.js",
+      "raw": 37023,
+      "gzip9": 10931,
+      "brotli11": 10127,
+      "sha256": "a2d4fe88bcec3bf71ea6b9eeef6b5adb22f364267bd79a628c82062c595a2a0c"
+    },
+    {
+      "path": ".page-audit/upstream/official.unminified.js",
+      "raw": 67247,
+      "gzip9": 14064,
+      "brotli11": 12684,
+      "sha256": "7e1b4a7f6795075dc5afc7734df82d6bea190ced503ec353ad684074baa2ba6d"
+    },
+    {
+      "path": ".page-audit/upstream/official.esm.js",
+      "raw": 37726,
+      "gzip9": 11048,
+      "brotli11": 10114,
+      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e"
+    },
+    {
+      "path": ".page-audit/upstream/official.oxc-nomangle.js",
+      "raw": 47548,
+      "gzip9": 12154,
+      "brotli11": 11267,
+      "sha256": "c2c3e7a0ea4ab24b790537496433373794277b4b64527fc1509cdf2f6b3759dc"
+    }
+  ],
+  "timing": {
+    "primaryCompilerSeconds": 23.474170684814453,
+    "primaryScope": "One real compiler process, including code generation and codec-guided search; excludes subsequent package wrapping.",
+    "packageSeconds": 100.1546415050002,
+    "packageScope": "node scripts/build.mjs --compile --force; 4 successful compiler invocations plus package generation.",
+    "upstreamSeconds": 0.22806769100000002,
+    "upstreamScope": "Pinned Marked parse-only source graph via scripts/official-parse-bundle.mjs; excludes extension API",
+    "protocol": "Same shared worker for both lanes; one fresh LilScript package build; median of three sequential upstream ESM builds (PlayCanvas records one native reference build). Outside compiler jobs were observed in the pool, so contention is not excluded. Dependencies, tests and compression measurement are outside these build times.",
+    "upstreamSamples": [
+      {
+        "bundleSeconds": 0.024472775,
+        "wallSeconds": 0.38809910000000003
+      },
+      {
+        "bundleSeconds": 0.006646960999999976,
+        "wallSeconds": 0.22806769100000002
+      },
+      {
+        "bundleSeconds": 0.006159032000000024,
+        "wallSeconds": 0.17938429800000005
+      }
+    ]
+  },
+  "behavior": {
+    "command": "node --test test/compat.test.mjs test/options.test.mjs test/official-parse.test.mjs test/api.test.mjs test/closed.test.mjs",
+    "summary": "Repository test command passed (exit 0). # tests 29 \u00b7 # pass 29 \u00b7 # fail 0",
+    "before": {
+      "exitCode": 0,
+      "failures": [],
+      "logSha256": "acda86393dbf76dd60f3842df0920426c66091f35575ca2b4a9942e29bd29366"
+    },
+    "after": {
+      "exitCode": 0,
+      "failures": [],
+      "tail": "option keys and keeps default parse working\n      ---\n      duration_ms: 6.203618\n      type: 'test'\n      ...\n    1..2\nok 2 - @itslil/marked closed LilScript lane\n  ---\n  duration_ms: 7.176992\n  type: 'suite'\n  ...\n# Subtest: @itslil/marked codec-specific compiles\n    # Subtest: keeps the marked option keys on gzip and raw cost models\n    ok 1 - keeps the marked option keys on gzip and raw cost models\n      ---\n      duration_ms: 4.999609\n      type: 'test'\n      ...\n    1..1\nok 3 - @itslil/marked codec-specific compiles\n  ---\n  duration_ms: 5.095953\n  type: 'suite'\n  ...\n# Subtest: @itslil/marked vs marked@18.0.10\n    # Subtest: exports parse, parseInline, and marked()\n    ok 1 - exports parse, parseInline, and marked()\n      ---\n      duration_ms: 5.76288\n      type: 'test'\n      ...\n    # Subtest: ships the compiler-selected compact ESM\n    ok 2 - ships the compiler-selected compact ESM\n      ---\n      duration_ms: 0.954416\n      type: 'test'\n      ...\n    # Subtest: loads from CommonJS\n    ok 3 - loads from CommonJS\n      ---\n      duration_ms: 2.473355\n      type: 'test'\n      ...\n    # Subtest: matches official HTML on GFM and CommonMark spec cases\n    ok 4 - matches official HTML on GFM and CommonMark spec cases\n      ---\n      duration_ms: 63.505976\n      type: 'test'\n      ...\n    1..4\nok 4 - @itslil/marked vs marked@18.0.10\n  ---\n  duration_ms: 73.456232\n  type: 'suite'\n  ...\n# Subtest: parse-only marked@18.0.10\n    # Subtest: matches published marked HTML on the spec corpus\n    ok 1 - matches published marked HTML on the spec corpus\n      ---\n      duration_ms: 60.513485\n      type: 'test'\n      ...\n    1..1\nok 5 - parse-only marked@18.0.10\n  ---\n  duration_ms: 61.242625\n  type: 'suite'\n  ...\n# Subtest: @itslil/marked options\n    # Subtest: matches official HTML with {}\n    ok 1 - matches official HTML with {}\n      ---\n      duration_ms: 46.782121\n      type: 'test'\n      ...\n    # Subtest: matches official HTML with {\"breaks\":true}\n    ok 2 - matches official HTML with {\"breaks\":true}\n      ---\n      duration_ms: 14.493473\n      type: 'test'\n      ...\n    # Subtest: matches official HTML with {\"pedantic\":true}\n    ok 3 - matches official HTML with {\"pedantic\":true}\n      ---\n      duration_ms: 24.302217\n      type: 'test'\n      ...\n    # Subtest: matches official HTML with {\"gfm\":false}\n    ok 4 - matches official HTML with {\"gfm\":false}\n      ---\n      duration_ms: 15.966163\n      type: 'test'\n      ...\n    # Subtest: marked() reads the same option object as parse()\n    ok 5 - marked() reads the same option object as parse()\n      ---\n      duration_ms: 14.876646\n      type: 'test'\n      ...\n    # Subtest: matches official parseInline across the corpus\n    ok 6 - matches official parseInline across the corpus\n      ---\n      duration_ms: 6.732948\n      type: 'test'\n      ...\n    # Subtest: matches official parseInline with {}\n    ok 7 - matches official parseInline with {}\n      ---\n      duration_ms: 5.735679\n      type: 'test'\n      ...\n    # Subtest: matches official parseInline with {\"breaks\":true}\n    ok 8 - matches official parseInline with {\"breaks\":true}\n      ---\n      duration_ms: 5.860736\n      type: 'test'\n      ...\n    # Subtest: matches official parseInline with {\"pedantic\":true}\n    ok 9 - matches official parseInline with {\"pedantic\":true}\n      ---\n      duration_ms: 5.146388\n      type: 'test'\n      ...\n    # Subtest: matches official parseInline with {\"gfm\":false}\n    ok 10 - matches official parseInline with {\"gfm\":false}\n      ---\n      duration_ms: 4.549838\n      type: 'test'\n      ...\n    1..10\nok 6 - @itslil/marked options\n  ---\n  duration_ms: 145.510308\n  type: 'suite'\n  ...\n# Subtest: @itslil/marked option API\n    # Subtest: emits the public option keys, not mangled names\n    ok 1 - emits the public option keys, not mangled names\n      ---\n      duration_ms: 0.445225\n      type: 'test'\n      ...\n    # Subtest: reports defaults under their real names\n    ok 2 - reports defaults under their real names\n      ---\n      duration_ms: 0.489541\n      type: 'test'\n      ...\n    # Subtest: CJS getDefaults uses the same keys\n    ok 3 - CJS getDefaults uses the same keys\n      ---\n      duration_ms: 0.076354\n      type: 'test'\n      ...\n    # Subtest: getDefaults stays the factory after setOptions\n    ok 4 - getDefaults stays the factory after setOptions\n      ---\n      duration_ms: 0.077646\n      type: 'test'\n      ...\n    # Subtest: setOptions changes later parses and refreshes marked.defaults\n    ok 5 - setOptions changes later parses and refreshes marked.defaults\n      ---\n      duration_ms: 0.128783\n      type: 'test'\n      ...\n    # Subtest: marked() rejects a non-string\n    ok 6 - marked() rejects a non-string\n      ---\n      duration_ms: 0.255592\n      type: 'test'\n      ...\n    1..6\nok 7 - @itslil/marked option API\n  ---\n  duration_ms: 1.698227\n  type: 'suite'\n  ...\n1..7\n# tests 29\n# suites 7\n# pass 29\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 207.68142\n",
+      "logSha256": "a8b556103347f5abaf1a094bdf5c3e0d3f2fcab79c23a40c056b3724c7e55523"
+    }
+  },
+  "findings": [
+    "3 committed port changes were absent from GitHub at the start of the audit.",
+    "Published-to-fresh Brotli drift: -181 bytes (-1.92%). This includes port source/config changes and compiler changes.",
+    "Upstream version gap: pinned 18.0.10; npm latest was 18.0.12 at the audit. No compatibility upgrade is implied."
+  ],
+  "primaryArtifact": "dist/marked.esm.js",
+  "beforePage": {
+    "url": "https://yeargun.github.io/markedlil/",
+    "status": 200,
+    "sha256": "ff4e94f7f42ad6429c354432dba732d87000063f28586adabae0fb3064ec0176",
+    "lastModified": "Fri, 04 Sep 2026 09:24:37 GMT"
+  },
+  "codecSha256": "9257fd055728895c11b9c4b0d882895d7d11bb3dd3495f560123879ca2bc3cd6",
+  "publicationArtifacts": [
+    {
+      "path": "dist/marked.gzip.js",
+      "sha256": "c78c93a31fd79b1433451b467dcd13377a4671019d73ccbc7e298863e9f68080"
+    },
+    {
+      "path": "dist/marked.esm.js",
+      "sha256": "a94b530633618d0f39819243bbece458109fb3fec1fce97f0391870a6fa6e166"
+    },
+    {
+      "path": "dist/marked.umd.js",
+      "sha256": "b156c3430e61e8864a4937df52b5e74c8961b43cd831626b92455be5aff8a901"
+    },
+    {
+      "path": "dist/marked.bytes.js",
+      "sha256": "ffbaa7f4b550d1ef5678836af17d2b927b2827b334b2abdc3a03d7c4809d2b84"
+    },
+    {
+      "path": "dist/marked.closed.js",
+      "sha256": "d37943690767ccd65533037185e6ba2fad374b02256f8b2fed108aa25c815d96"
+    },
+    {
+      "path": "dist/marked.cjs",
+      "sha256": "3857f9995f92d1745f94db619c506642be5f4a51cbf8612e2beafaf7a34ab5ec"
+    }
+  ],
+  "publicationPolicy": "Promote freshly tested distribution",
+  "publicationBase": "dbfaf30fb162a0f100e5d97c232d263b84d1cfd3",
+  "publicationSourceFingerprint": "3ac5ea206b9a8221b3f0360c1ed623b20bb18088867fcd36173d24e4a181b618"
+}
