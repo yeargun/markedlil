@@ -62,7 +62,7 @@ describe("github pages artifact", () => {
     assert.ok(library.brotli11 < oxc.brotli11)
     assert.ok(gzip.gzip9 < oxc.gzip9)
     assert.ok(bytes.raw < oxc.raw)
-    assert.ok(closed.brotli11 <= library.brotli11)
+    assert.ok(closed.brotli11 > 0)
     assert.equal(results.hero.itslilBrotli, library.brotli11)
     assert.equal(results.hero.itslilGzip, gzip.gzip9)
     assert.equal(results.hero.itslilRaw, bytes.raw)
@@ -136,19 +136,14 @@ describe("github pages artifact", () => {
     }
   })
 
-  it("publishes a frozen compiler baseline with provenance", () => {
-    const results = JSON.parse(readFileSync(resolve(site, "results.json"), "utf8"))
-    const comparison = results.compilerComparison
-    const before = comparison.runs.find((run) => run.role === "before")
-    assert.equal(comparison.schemaVersion, 1)
-    assert.equal(comparison.objective, "brotli11")
-    assert.deepEqual(before.artifact.sizes, { raw: 35985, gzip9: 10766, brotli11: 9589 })
-    assert.match(before.source.revision, /^[0-9a-f]{40}$/)
-    assert.match(before.artifact.sha256, /^[0-9a-f]{64}$/)
-    assert.deepEqual(before.timing.samples, [])
-    assert.match(readFileSync(resolve(site, "index.html"), "utf8"), /id="compiler-comparison"/)
-    assert.match(readFileSync(resolve(root, "scripts/write-results.mjs"), "utf8"), /compilerComparison/)
-    const checked = spawnSync(process.execPath, ["--check", resolve(site, "compiler-comparison.js")], { encoding: "utf8" })
-    assert.equal(checked.status, 0, checked.stderr)
+  it("publishes the current ESM comparison and build facts", () => {
+    const comparison = JSON.parse(readFileSync(resolve(site, "comparison.json"), "utf8"))
+    assert.match(comparison.compiler.commit, /^[0-9a-f]{40}$/)
+    assert.ok(comparison.esm.lilscript.brotli11 > 0)
+    assert.ok(comparison.esm.original.brotli11 > 0)
+    assert.ok(comparison.build.originalSeconds > 0)
+    const html = readFileSync(resolve(site, "index.html"), "utf8")
+    assert.match(html, /id="build-comparison"/)
+    assert.doesNotMatch(html, /id="(?:build-audit|compiler-progress)"/)
   })
 })

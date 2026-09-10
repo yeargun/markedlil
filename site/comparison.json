@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-09-10T13:57:06Z",
+  "name": "markedlil",
+  "compiler": {
+    "commit": "63c2896a71e60cbcca7870fe979f9d6ecaff3452",
+    "sha256": "2319462ef7d858c8e2a5a767260aa4f80d325e0045afa0cc86cc122d1299b059",
+    "profile": "release",
+    "dirty": false
+  },
+  "upstream": {
+    "package": "marked",
+    "version": "18.0.10"
+  },
+  "scope": "Pinned Marked parse-only source graph via scripts/official-parse-bundle.mjs; excludes extension API",
+  "compatibility": "Repository checks pass.",
+  "tests": {
+    "pass": 29,
+    "total": 29
+  },
+  "buildComplete": true,
+  "machine": {
+    "cpu": "AMD EPYC 9V45 96-Core Processor",
+    "logicalCpus": 16,
+    "memoryBytes": 33648435200,
+    "os": "Ubuntu 24.04.4 LTS",
+    "node": "v22.23.2",
+    "rayonThreads": 16,
+    "provider": "Azure",
+    "instanceClass": "Standard_D16als_v7"
+  },
+  "build": {
+    "compilerSeconds": 23.474170684814453,
+    "packageSeconds": 100.1546415050002,
+    "originalSeconds": 0.22806769100000002,
+    "packageScope": "node scripts/build.mjs --compile --force; 4 successful compiler invocations plus package generation.",
+    "originalScope": "Pinned Marked parse-only source graph via scripts/official-parse-bundle.mjs; excludes extension API",
+    "protocol": "Same shared worker for both lanes; one fresh LilScript package build; median of three sequential upstream ESM builds (PlayCanvas records one native reference build). Outside compiler jobs were observed in the pool, so contention is not excluded. Dependencies, tests and compression measurement are outside these build times."
+  },
+  "esm": {
+    "lilscript": {
+      "raw": 34068,
+      "gzip9": 10326,
+      "brotli11": 9263,
+      "sha256": "a94b530633618d0f39819243bbece458109fb3fec1fce97f0391870a6fa6e166",
+      "file": "./esm-comparison/lilscript.js"
+    },
+    "original": {
+      "raw": 37726,
+      "gzip9": 11048,
+      "brotli11": 10114,
+      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e",
+      "file": "./esm-comparison/original.js"
+    }
+  }
+}

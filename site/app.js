@@ -1,6 +1,5 @@
 import { marked as officialMarked } from "./marked-official.js"
 import { marked as lilMarked } from "./marked.js"
-import { renderCompilerComparison } from "./compiler-comparison.js"
 import { HARNESS, loadCorpus, median, runBenchmark } from "./bench.js"
 
 const data = await fetch("./results.json").then((response) => {
@@ -436,7 +435,6 @@ function bindPlayground() {
 renderHero()
 renderPerf()
 renderSize()
-renderCompilerComparison(data)
 bindCopy()
 bindProgress()
 bindPlayground()

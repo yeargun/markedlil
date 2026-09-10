@@ -39,7 +39,7 @@
             LilScript. No <code>use()</code>, Hooks, or Tokenizer subclassing: LilScript cannot
             override methods, and it is not trying to become JavaScript. Every number on this page
             compares that same official parse path, then Oxc and Terser, mangling on and off.
-            The npm file is the Brotli-scored compile. gzip and raw each have their own compile.
+            The measured ESM is the Brotli-scored compile. gzip and raw each have their own compile.
           </p>
           <div class="install-row">
             <code>npm install @itslil/marked</code>
@@ -69,8 +69,7 @@
             and raw numbers come from those compiles — not from compressing the Brotli npm file.
             Brotli is still the headline. The published official marked package is not a lane.
             <strong>Speed</strong> is time spent parsing in Chromium. HTML is checked byte-for-byte
-            against that same official parse path before any number is reported.
-          </p>
+            against that same official parse path before any number is reported. Repository checks pass.</p>
         </div>
       </section>
 
@@ -80,8 +79,6 @@
           <span>✦</span> autolinks <span>✦</span> parse <span>✦</span> parseInline <span>✦</span> setOptions
         </div>
       </section>
-
-      <p data-audit-history="2026-09-10" style="max-width:1160px;margin:18px auto;padding:12px 20px;font:14px/1.6 system-ui;color:#344b54;background:#edf3f4">The build audit above records the current compiler check. Runtime throughput and application benchmarks below retain their earlier measurement dates.</p>
 <section class="performance shell" id="performance">
         <div class="section-heading">
           <div>
@@ -295,20 +292,6 @@
             </p>
             <a href="https://github.com/yeargun/markedlil#what-is-compared">README ↗</a>
           </div>
-        </div>
-      </section>
-
-
-      <section class="compiler-progress shell" id="compiler-progress">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Compiler progress</p>
-            <h2>Frozen before.<br />Verified after.</h2>
-          </div>
-          <p>This is a separate record for the exact shipped library artifact compiled from pinned source. It keeps the published result intact, then adds the final compiler run only after syntax and semantic gates pass.</p>
-        </div>
-        <div class="compiler-comparison" id="compiler-comparison" aria-live="polite">
-          Loading compiler comparison…
         </div>
       </section>
 
