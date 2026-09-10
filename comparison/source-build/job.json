@@ -1,0 +1,35 @@
+{
+  "source": {
+    "repository": "https://github.com/markedjs/marked.git",
+    "commit": "8698d35b84c17f86ea8a299a6183d47ccb3d2bd7",
+    "package": "marked",
+    "version": "18.0.10",
+    "directory": "."
+  },
+  "portSource": {
+    "commit": "dbfaf30fb162a0f100e5d97c232d263b84d1cfd3"
+  },
+  "compilerCommit": "4dc4e3337d9ffd758d65e3852682d6e13d9331c1",
+  "install": [
+    "npm",
+    "ci",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund"
+  ],
+  "setup": [],
+  "build": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "clean": [
+    "lib"
+  ],
+  "entry": "lib/marked.esm.js",
+  "defaultExport": false,
+  "external": [],
+  "esmScope": "Pinned Marked parse-only source graph via scripts/official-parse-bundle.mjs; excludes extension API",
+  "lilscriptBuild": "node scripts/build.mjs --compile --force",
+  "test": "node --test test/compat.test.mjs test/options.test.mjs test/official-parse.test.mjs test/api.test.mjs test/closed.test.mjs"
+}

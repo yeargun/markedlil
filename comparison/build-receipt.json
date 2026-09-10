@@ -293,12 +293,38 @@
   "publicationSourceFingerprint": "3ac5ea206b9a8221b3f0360c1ed623b20bb18088867fcd36173d24e4a181b618",
   "comparisonArtifacts": [
     {
+      "path": "site/esm-comparison/original.js",
+      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e"
+    },
+    {
       "path": "site/esm-comparison/lilscript.js",
       "sha256": "a94b530633618d0f39819243bbece458109fb3fec1fce97f0391870a6fa6e166"
     },
     {
-      "path": "site/esm-comparison/original.js",
-      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e"
+      "path": "site/source-build.json",
+      "sha256": "293f7c11c6a911c24aea80fe7490275863bc5821d99e284d970603afff12c182"
+    },
+    {
+      "path": "site/comparison.json",
+      "sha256": "0c1833cb373e9ea701d539a7459e452c8a26cd1c75e871fbeaa047fa037735f1"
     }
-  ]
+  ],
+  "sourceBuildReceipt": "comparison/source-build/result.json",
+  "currentMeasurement": {
+    "compiler": {
+      "commit": "4dc4e3337d9ffd758d65e3852682d6e13d9331c1",
+      "sha256": "0616048498eb9eb2e4bd75b39e8e6a083733ada647e16108edfee30ad183beeb"
+    },
+    "source": {
+      "commit": "dbfaf30fb162a0f100e5d97c232d263b84d1cfd3"
+    },
+    "upstream": {
+      "repository": "https://github.com/markedjs/marked.git",
+      "commit": "8698d35b84c17f86ea8a299a6183d47ccb3d2bd7",
+      "package": "marked",
+      "version": "18.0.10",
+      "directory": "."
+    },
+    "compatibility": "Runtime checks: 29/29 pass."
+  }
 }

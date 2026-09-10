@@ -1,0 +1,86 @@
+{
+  "source": {
+    "repository": "https://github.com/markedjs/marked.git",
+    "commit": "8698d35b84c17f86ea8a299a6183d47ccb3d2bd7",
+    "package": "marked",
+    "version": "18.0.10",
+    "directory": "."
+  },
+  "entry": "lib/marked.esm.js",
+  "scope": "Pinned Marked parse-only source graph via scripts/official-parse-bundle.mjs; excludes extension API",
+  "external": [],
+  "samples": [
+    {
+      "bundleSeconds": 0.008999578000000006,
+      "wallSeconds": 0.173684184
+    },
+    {
+      "bundleSeconds": 0.005064859999999982,
+      "wallSeconds": 0.11330238699999998
+    },
+    {
+      "bundleSeconds": 0.0045903710000000045,
+      "wallSeconds": 0.11527133799999996
+    }
+  ],
+  "medianSeconds": 0.11527133799999996,
+  "toolchain": {
+    "esbuild": "0.28.1",
+    "terser": "5.51.2"
+  },
+  "artifacts": [
+    {
+      "path": "original.esm.js",
+      "raw": 37726,
+      "gzip9": 11048,
+      "brotli11": 10114,
+      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e"
+    },
+    {
+      "path": "original.unminified.js",
+      "raw": 67044,
+      "gzip9": 14037,
+      "brotli11": 12671,
+      "sha256": "b489acdf53d500194dbd0dbb5d018092e56e1fee1f1aa8fb37ffd8c444b154e9"
+    },
+    {
+      "path": "original.terser-nomangle.js",
+      "raw": 48443,
+      "gzip9": 12303,
+      "brotli11": 11355,
+      "sha256": "003fd9bebc4414f64f8ee0a31bc5fcb9d07e2fbcdce6e34e9e6615dd56216132"
+    },
+    {
+      "path": "original.esbuild.js",
+      "raw": 37572,
+      "gzip9": 11255,
+      "brotli11": 10367,
+      "sha256": "e98aa890a7457773320c94dff1bd8633d5ad6a2a2d2d65b7a704077661814f26"
+    },
+    {
+      "path": "original.oxc-mangle.js",
+      "raw": 37023,
+      "gzip9": 10931,
+      "brotli11": 10127,
+      "sha256": "a2d4fe88bcec3bf71ea6b9eeef6b5adb22f364267bd79a628c82062c595a2a0c"
+    },
+    {
+      "path": "original.oxc-nomangle.js",
+      "raw": 47546,
+      "gzip9": 12151,
+      "brotli11": 11250,
+      "sha256": "66070c76e382d351b769977cc3b19955f0581cda57eeaaa32c5324d31cd8dc40"
+    }
+  ],
+  "inputs": [
+    "src/defaults.ts",
+    "src/rules.ts",
+    "src/helpers.ts",
+    "src/Tokenizer.ts",
+    "src/Lexer.ts",
+    "src/Renderer.ts",
+    "src/TextRenderer.ts",
+    "src/Parser.ts",
+    "matched-parse-entry.mjs"
+  ]
+}
