@@ -14,6 +14,10 @@ const licenseBanner = `${readFileSync(lilPath, "utf8").split("\n", 1)[0]}\n`
 const lanesDir = join(root, ".tmp", "lanes")
 const parseOnlyPath = join(root, ".tmp", "official-parse-only.js")
 
+// The closed lane differs from the npm compile only where the compiler renames
+// properties, which it does not do yet; say so when the bytes show it.
+const closedIsNpmCompile = readFileSync(closedPath).equals(readFileSync(join(root, "dist/marked.raw.js")))
+
 function withBanner(path) {
   return `${licenseBanner}${readFileSync(path, "utf8").trimEnd()}\n`
 }
@@ -59,6 +63,12 @@ const artifacts = [
     code: parseMinified["terser-nomangle"],
   },
   {
+    id: "parse-esbuild",
+    name: "Parse-only · esbuild minify",
+    note: "esbuild 0.28.1 minify (whitespace, identifiers, syntax) of the parse-only 18.0.10 sources",
+    code: parseMinified.esbuild,
+  },
+  {
     id: "itslil",
     name: "@itslil/marked · cost_model brotli",
     note: "JS library compiled for Brotli. This is the npm ESM. extern class pins the marked 18.0.10 option keys.",
@@ -83,7 +93,9 @@ const artifacts = [
   {
     id: "itslil-closed",
     name: "@itslil/marked · closed LilScript",
-    note: "Brotli compile with [mangle] extern_fields = false. Public JS keys mangle. Not the npm file.",
+    note: closedIsNpmCompile
+      ? "Brotli compile of lilscript.closed.toml. This compiler renames no properties yet, so the JS option keys keep their names and the file is byte-identical to the npm compile. Not the npm file."
+      : "Brotli compile of lilscript.closed.toml. This compiler renames no properties yet, so the JS option keys keep their names. Not the npm file.",
     code: withBanner(closedPath),
     costModel: "brotli",
   },
@@ -110,6 +122,15 @@ for (const artifact of artifacts) {
   })
 }
 
+/// Every file the npm package ships, measured as shipped. None of them passes
+/// through a minifier: the CJS and browser files are the ESM compile with its
+/// export clause swapped (scripts/build.mjs).
+const delivered = [
+  { path: "dist/marked.esm.js", format: "ESM", writtenBy: "compiler output + license banner" },
+  { path: "dist/marked.cjs", format: "CommonJS", writtenBy: "compiler output + license banner; export clause swapped for exports getters" },
+  { path: "dist/marked.umd.js", format: "browser global", writtenBy: "compiler output + license banner; export clause swapped for globalThis.marked in a strict function scope" },
+].map((file) => ({ ...file, ...measureFile(join(root, file.path)) }))
+
 const oxc = measured.find((lane) => lane.id === "parse-oxc-mangle")
 const brotliBuild = measured.find((lane) => lane.id === "itslil")
 const gzipBuild = measured.find((lane) => lane.id === "itslil-gzip")
@@ -134,6 +155,7 @@ const report = {
     },
   },
   lanes: measured,
+  delivered,
 }
 
 mkdirSync(join(root, "reports"), { recursive: true })
