@@ -54,6 +54,7 @@ const results = {
     })),
   matched: sizes.matched ?? null,
   delivered: sizes.delivered ?? [],
+  sizeMeasuredAt: sizes.generatedAt ?? null,
   throughput: (bench.suites ?? []).filter((row) => row.id !== "full"),
   hero: {
     brotliRatio: itslil && officialOxc ? itslil.brotli11 / officialOxc.brotli11 : null,

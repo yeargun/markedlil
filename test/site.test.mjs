@@ -1,5 +1,6 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
+import { createHash } from "node:crypto"
 import { existsSync, readFileSync } from "node:fs"
 import { describe, it } from "node:test"
 import { dirname, resolve } from "node:path"
@@ -145,5 +146,28 @@ describe("github pages artifact", () => {
     const html = readFileSync(resolve(site, "index.html"), "utf8")
     assert.match(html, /id="build-comparison"/)
     assert.doesNotMatch(html, /id="(?:build-audit|compiler-progress)"/)
+  })
+
+  it("publishes compile time for the ESM that ships", () => {
+    const comparison = JSON.parse(readFileSync(resolve(site, "comparison.json"), "utf8"))
+    const shipped = createHash("sha256").update(readFileSync(resolve(root, "dist/marked.esm.js"))).digest("hex")
+    assert.equal(comparison.esm.lilscript.sha256, shipped, "the measured LilScript lane is the dist/ that ships")
+    assert.ok(comparison.build.primaryCompilerSeconds > 0)
+    assert.ok(comparison.build.compilerSeconds >= comparison.build.primaryCompilerSeconds)
+    assert.match(readFileSync(resolve(site, "index.html"), "utf8"), /Compile time\./)
+  })
+
+  it("ships compiler-written files: CJS and browser builds carry the ESM compile verbatim", () => {
+    const esm = readFileSync(resolve(root, "dist/marked.esm.js"), "utf8")
+    const body = esm.slice(esm.indexOf("\n") + 1).replace(/;?export\s*\{[^}]*\}\s*;?\s*$/, "")
+    assert.ok(body.length > 30000, "the ESM carries the compiled library")
+    for (const path of ["dist/marked.cjs", "dist/marked.umd.js"]) {
+      assert.ok(readFileSync(resolve(root, path), "utf8").includes(body), `${path} is the compiler output, not a re-print`)
+    }
+    const results = JSON.parse(readFileSync(resolve(site, "results.json"), "utf8"))
+    assert.deepEqual(
+      results.delivered.map((file) => file.path),
+      ["dist/marked.esm.js", "dist/marked.cjs", "dist/marked.umd.js"],
+    )
   })
 })

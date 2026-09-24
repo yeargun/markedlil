@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="@itslil/marked is the parse path of marked 18.0.10, not the full package. Size and speed are versus official Lexer/Parser/Renderer minified by Oxc and Terser."
+      content="@itslil/marked is the parse path of marked 18.0.10, not the full package. Size and speed are versus official Lexer/Parser/Renderer minified by Oxc, Terser and esbuild."
     />
     <meta name="theme-color" content="#c9a227" />
     <title>itslil/marked — marked 18.0.10 through LilScript</title>
@@ -38,7 +38,7 @@
             <code>parse</code>, <code>parseInline</code>, <code>setOptions</code> — rewritten in
             LilScript. No <code>use()</code>, Hooks, or Tokenizer subclassing: LilScript cannot
             override methods, and it is not trying to become JavaScript. Every number on this page
-            compares that same official parse path, then Oxc and Terser, mangling on and off.
+            compares that same official parse path, then Oxc, Terser and esbuild.
             The measured ESM is the Brotli-scored compile. gzip and raw each have their own compile.
           </p>
           <div class="install-row">
@@ -87,7 +87,7 @@
           </div>
           <p>
             HTML must match the official parse path of <code>marked@18.0.10</code>. The document suite is the GFM+CommonMark
-            corpus repeated 32 times. The loop suite parses all 660 cases forty times. The four official rows are the same
+            corpus repeated 32 times. The loop suite parses all 660 cases forty times. The official rows are the same
             program through different minifiers, so the distance between them is the noise floor — a lane is only called
             faster when it clears its own sample range.
           </p>
@@ -198,10 +198,12 @@
               <h2>Raw, gzip,<br />and Brotli.</h2>
             </div>
             <p>
-              Official 18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc and Terser with mangling on and off.
-              LilScript is not post-minified. Each codec below uses the LilScript compile scored for that
-              codec (<code>cost_model = raw | gzip | brotli</code>). The npm file is the Brotli compile.
-              Closed LilScript is Brotli with <code>extern_fields = false</code>.
+              Official 18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc and Terser with mangling on and off,
+              and esbuild's minifier. LilScript is not post-minified. Each codec below uses the LilScript
+              compile scored for that codec (<code>cost_model = raw | gzip | brotli</code>). The npm file is
+              the Brotli compile. Closed LilScript is the Brotli compile of <code>lilscript.closed.toml</code>;
+              this compiler renames no properties yet (<code>extern_fields</code> has no effect), so that lane
+              is the npm file byte for byte.
             </p>
           </div>
 
@@ -281,14 +283,37 @@
             </div>
           </div>
 
+          <div class="codec-block">
+            <h3>The files you install</h3>
+            <p class="codec-lead">
+              Measured as shipped, license banner included. No minifier or bundler runs after the compiler:
+              the CommonJS and browser files are the ESM compile with only its export clause swapped.
+            </p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>File</th>
+                    <th>Raw</th>
+                    <th>gzip-9</th>
+                    <th>Brotli-11</th>
+                    <th>How it is written</th>
+                  </tr>
+                </thead>
+                <tbody id="body-delivered"></tbody>
+              </table>
+            </div>
+          </div>
+
           <div class="method-note">
             <p>
               <strong>Why this surface.</strong> LilScript cannot override methods, so this port has no
               <code>use()</code> / Hooks / walkTokens — and there is no plan to grow the language into
               JavaScript to get them. Comparing against published <code>marked.esm.js</code> would put
               the extension system on one side only. The fair fight is the 18.0.10 parse path, then the
-              same Oxc and Terser work the JS ecosystem actually ships. Closed LilScript is the other
-              honest comparison: no JavaScript options object, so those property names mangle.
+              same Oxc, Terser and esbuild work the JS ecosystem actually ships. Closed LilScript is the
+              other honest comparison: a program with no JavaScript options object, whose property names
+              could mangle. The compiler does not rename properties yet, so today it adds nothing.
             </p>
             <a href="https://github.com/yeargun/markedlil#what-is-compared">README ↗</a>
           </div>

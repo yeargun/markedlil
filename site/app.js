@@ -76,6 +76,7 @@ const OFFICIAL_SIZE_IDS = [
   "parse",
   "parse-oxc-nomangle",
   "parse-terser-nomangle",
+  "parse-esbuild",
   "parse-terser-mangle",
   "parse-oxc-mangle",
 ]
@@ -184,6 +185,26 @@ function renderSize() {
       <td class="verdict ${verdict.state}"><strong>${verdict.text}</strong></td>
     </tr>`
     })
+    .join("")
+}
+
+/// The files npm and the CDNs serve, measured as shipped. Each says how it was
+/// written, so a reader can see that no minifier ran after the compiler.
+function renderDelivered() {
+  const body = document.querySelector("#body-delivered")
+  const files = data.delivered ?? []
+  if (!body || files.length === 0) return
+  body.innerHTML = files
+    .map(
+      (file) => `
+    <tr>
+      <th scope="row"><code>${file.path}</code><br /><small>${file.format}</small></th>
+      <td>${formatter.format(file.raw)}</td>
+      <td>${formatter.format(file.gzip9)}</td>
+      <td>${formatter.format(file.brotli11)}</td>
+      <td>${file.writtenBy}</td>
+    </tr>`,
+    )
     .join("")
 }
 
@@ -435,6 +456,7 @@ function bindPlayground() {
 renderHero()
 renderPerf()
 renderSize()
+renderDelivered()
 bindCopy()
 bindProgress()
 bindPlayground()
