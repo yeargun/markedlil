@@ -31,3 +31,10 @@ test('built Pages artifact contains the current data and measured downloads',()=
  for(const row of data.objectives)for(const item of [row.lilscript,row.original])assert.ok(existsSync(join(root,'_site',item.artifact)));
  for(const file of ['app.js','styles.css','objective-comparison.js','objective-comparison.css','.nojekyll'])assert.ok(existsSync(join(root,'_site',file)),file);
 });
+
+test('live verification retains its controls and the checked corpus',()=>{
+ const html=readFileSync(join(root,'site/index.html'),'utf8');
+ for(const id of ['verify-run','verify-status','verify-out'])assert.ok(html.includes(`id="${id}"`));
+ const corpus=JSON.parse(readFileSync(join(root,'_site/corpus.json'),'utf8'));
+ assert.equal(corpus.cases.length,660);assert.equal(corpus.pass,corpus.total);
+});

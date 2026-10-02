@@ -68,7 +68,8 @@
           <span>✦</span> autolinks <span>✦</span> parse <span>✦</span> parseInline <span>✦</span> setOptions
         </div>
 </section>
-<section class="performance shell" id="performance"><div class="verify-head">
+<section class="performance shell" id="performance"><div class="verify" id="verify">
+<div class="verify-head">
 <div>
 <h3>Don't take the number. Run it.</h3>
 <p>
@@ -81,6 +82,12 @@
               </p>
 </div>
 <button id="verify-run" type="button">run the benchmark</button>
+</div>
+<p class="verify-status" id="verify-status">
+            Keep this tab in front while it runs — a background tab is throttled and the numbers
+            are meaningless. Takes a few seconds.
+          </p>
+<div aria-live="polite" class="verify-out" id="verify-out"></div>
 </div></section>
 <section class="lab shell" id="lab">
 <div class="section-heading">
