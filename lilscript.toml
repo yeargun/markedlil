@@ -1,18 +1,56 @@
+# Compiler-owned delivery; no JavaScript post-minifier or export rewriting.
+[policy]
+version = 3
 [javascript]
 priority = "size-first"
-optimization_level = 15
-cost_model = "brotli"
+# Assumes unpatched platform builtins; disable when consumers replace them.
 assume_pristine_builtins = true
-strip_console = true
-candidate_search = "production"
-# 8.16 (measured, this artifact): the beam width picks which basin the terminal
-# search lands in, and the curve is not monotone -- 8:-17, 12:+0, 16:-31, 20:+40 against the
-# default. It is tuned, not raised, and it drifts with the compiler, so it is
-# re-measured rather than trusted. (The five largest ports do not respond to it
-# at all: their width is clamped by the candidate limit before the beam binds.)
-candidate_beam_width = 16
+# Remove debugLog instrumentation; ordinary print and host console effects remain.
+strip_debug = true
 
+# Preserved effort setting. 13 favors size; 14/15 allow more expensive marginal searches.
+[effort]
+level = 15
+
+# Optimize the delivered files for this codec, independently of raw/gzip objectives.
+[objective]
+codecs = "brotli"
 [mangle]
 identifiers = true
 properties = true
 pool_strings = true
+
+[delivery]
+mode = "single"
+directory = "."
+select = ["index"]
+entry_names = "marked.esm.js"
+[delivery.entries]
+index = "src/entry.lil"
+browser = "src/browser.lil"
+[[delivery.also]]
+name = "cjs"
+entries = ["index"]
+format = "cjs"
+es_module_marker = "always"
+entry_names = "marked.cjs"
+[[delivery.also]]
+name = "browser"
+entries = ["browser"]
+format = "iife"
+exports = "default"
+global = "marked"
+global_binding = "property"
+entry_names = "marked.umd.js"
+
+# Separate winners for codec-specific public ESM artifacts, sharing source work.
+[[delivery.also]]
+name = "gzip"
+entries = ["index"]
+codecs = "gzip"
+entry_names = "marked.gzip.js"
+[[delivery.also]]
+name = "bytes"
+entries = ["index"]
+codecs = "raw"
+entry_names = "marked.bytes.js"

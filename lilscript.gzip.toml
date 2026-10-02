@@ -1,12 +1,27 @@
+# Compiler-owned delivery; no JavaScript post-minifier or export rewriting.
+[policy]
+version = 3
 [javascript]
 priority = "size-first"
-optimization_level = 15
-cost_model = "gzip"
+# Assumes unpatched platform builtins; disable when consumers replace them.
 assume_pristine_builtins = true
-strip_console = true
-candidate_search = "production"
+# Remove debugLog instrumentation; ordinary print and host console effects remain.
+strip_debug = true
 
+# Preserved effort setting. 13 favors size; 14/15 allow more expensive marginal searches.
+[effort]
+level = 15
+
+# Optimize the delivered files for this codec, independently of raw/gzip objectives.
+[objective]
+codecs = "gzip"
 [mangle]
 identifiers = true
 properties = true
 pool_strings = true
+
+[delivery]
+mode = "single"
+entry_names = "marked.gzip.js"
+[delivery.entries]
+index = "src/entry.lil"
