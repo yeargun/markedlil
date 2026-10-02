@@ -1,3 +1,6 @@
+import {renderComparison} from './objective-comparison.js';
+const currentComparison=await fetch('./comparison.json').then(response=>{if(!response.ok)throw Error('Comparison could not load');return response.json()});
+renderComparison(currentComparison);
 import { marked as officialMarked } from "./marked-official.js"
 import { marked as lilMarked } from "./marked.js"
 import { HARNESS, loadCorpus, median, runBenchmark } from "./bench.js"
@@ -131,82 +134,13 @@ function matchedLibraryRow() {
   }
 }
 
-function renderHero() {
-  const oxc = laneById("parse-oxc-mangle")
-  const itslil = laneById("itslil")
-  const gzip = laneById("itslil-gzip")
-  const bytes = laneById("itslil-bytes")
-  if (!oxc || !itslil) return
-  const smaller = smallerThan(itslil.brotli11, oxc.brotli11)
-  document.querySelector("#hero-ratio").innerHTML =
-    `${smaller.amount}<span>${smaller.word}</span>`
-  document.querySelector("#hero-bytes").textContent =
-    `${formatter.format(oxc.brotli11)} B → ${formatter.format(itslil.brotli11)} B Brotli-11`
-  document.querySelector("#hero-shipped").textContent = smallerThan(
-    itslil.brotli11,
-    oxc.brotli11,
-  ).text
-  if (gzip) {
-    document.querySelector("#hero-gzip").textContent = smallerThan(gzip.gzip9, oxc.gzip9).text
-  }
-  if (bytes) {
-    document.querySelector("#hero-raw").textContent = smallerThan(bytes.raw, oxc.raw).text
-  }
-  if (data.spec) {
-    document.querySelector("#hero-spec").textContent = `${data.spec.pass}/${data.spec.total}`
-  }
-}
+function renderHero() {}
 
-function renderSize() {
-  const oxc = laneById("parse-oxc-mangle")
-  if (!oxc) return
-  renderCodec("brotli11", "itslil", ["itslil-closed"], "#bar-brotli", "#body-brotli")
-  renderCodec("gzip9", "itslil-gzip", [], "#bar-gzip", "#body-gzip")
-  renderCodec("raw", "itslil-bytes", [], "#bar-raw", "#body-raw")
-
-  const matched = matchedLibraryRow()
-  const rows = [
-    ...OFFICIAL_SIZE_IDS.map(laneById),
-    matched,
-    laneById("itslil"),
-    laneById("itslil-gzip"),
-    laneById("itslil-bytes"),
-    laneById("itslil-closed"),
-  ].filter(Boolean)
-  document.querySelector("#body-matched").innerHTML = rows
-    .map((lane) => {
-      const verdict = smallerThan(lane.brotli11, oxc.brotli11)
-      return `
-    <tr>
-      <th scope="row">${lane.name}</th>
-      <td>${formatter.format(lane.raw)}</td>
-      <td>${formatter.format(lane.gzip9)}</td>
-      <td>${formatter.format(lane.brotli11)}</td>
-      <td class="verdict ${verdict.state}"><strong>${verdict.text}</strong></td>
-    </tr>`
-    })
-    .join("")
-}
+function renderSize() {}
 
 /// The files npm and the CDNs serve, measured as shipped. Each says how it was
 /// written, so a reader can see that no minifier ran after the compiler.
-function renderDelivered() {
-  const body = document.querySelector("#body-delivered")
-  const files = data.delivered ?? []
-  if (!body || files.length === 0) return
-  body.innerHTML = files
-    .map(
-      (file) => `
-    <tr>
-      <th scope="row"><code>${file.path}</code><br /><small>${file.format}</small></th>
-      <td>${formatter.format(file.raw)}</td>
-      <td>${formatter.format(file.gzip9)}</td>
-      <td>${formatter.format(file.brotli11)}</td>
-      <td>${file.writtenBy}</td>
-    </tr>`,
-    )
-    .join("")
-}
+function renderDelivered() {}
 
 function recordedVerdict(row, baseline, suite) {
   if (!row || !baseline) return null
@@ -218,64 +152,7 @@ function recordedVerdict(row, baseline, suite) {
   return fasterThan(row[`${suite}Ms`], baseline[`${suite}Ms`])
 }
 
-function renderPerf() {
-  const suites = parsePathLanes(data.throughput)
-  if (suites.length === 0) return
-  const lil = suites.find((row) => row.id === "itslil")
-  const official = suites.find((row) => row.id === "parse")
-  const document32 = recordedVerdict(lil, official, "document")
-  const specLoop = recordedVerdict(lil, official, "spec")
-  const cards = [
-    {
-      label: "parsing one big document, against the official parse path",
-      value: document32 ? document32.text : "—",
-      win: document32 ? document32.state === "win" : false,
-    },
-    {
-      label: "parsing all 660 spec cases, against the official parse path",
-      value: specLoop ? specLoop.text : "—",
-      win: specLoop ? specLoop.state === "win" : false,
-    },
-    {
-      label: "spec cases where the HTML is byte-identical",
-      value: data.spec ? `${data.spec.pass}/${data.spec.total}` : "—",
-      geo: true,
-    },
-    {
-      label: "median time to parse the 32× document",
-      value: lil ? ms(lil.documentMs) : "—",
-    },
-  ]
-  document.querySelector("#perf-cards").innerHTML = cards
-    .map(
-      (card) => `
-    <article class="perf-card${card.win ? " win" : ""}${card.geo ? " geo" : ""}">
-      <strong>${card.value}</strong>
-      <span>${card.label}</span>
-    </article>
-  `,
-    )
-    .join("")
-  document.querySelector("#perf-body").innerHTML = suites
-    .map((row) => {
-      const cells = ["document", "spec"].map((suite) => {
-        const verdict = row === official ? null : recordedVerdict(row, official, suite)
-        const range = row[`${suite}Range`]
-        return `
-      <td>${ms(row[`${suite}Ms`] ?? 0)}</td>
-      <td>${range ? `${ms(range[0])} – ${ms(range[1])}` : "—"}</td>
-      <td class="verdict ${verdict ? verdict.state : "even"}"><strong>${verdict ? verdict.text : "baseline"}</strong></td>`
-      })
-      return `
-    <tr>
-      <th scope="row">${row.name}</th>${cells.join("")}
-    </tr>
-  `
-    })
-    .join("")
-  document.querySelector("#perf-note").textContent =
-    `${data.browser ?? "Playwright Chromium"}. Quiet median of ${data.loops ?? 10} samples after discarding the first ${data.warmupDiscard}. Lanes are sampled round-robin, alternating order, so drift in the machine cannot settle on one of them. The official rows are the same program through different minifiers: how far apart they land is the noise floor for every other row.`
-}
+function renderPerf() {}
 
 /// A median is worth nothing next to a spread it sits inside. Two lanes whose
 /// samples overlap are reported as a tie, however far apart their medians land,
