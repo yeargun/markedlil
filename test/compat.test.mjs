@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { createHash } from "node:crypto"
 import { createRequire } from "node:module"
 import { readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
@@ -26,9 +27,10 @@ describe("@itslil/marked vs marked@18.0.10", () => {
 
   it("ships the compiler-selected compact ESM", () => {
     const source = readFileSync(resolve(root, "dist/marked.esm.js"), "utf8")
-    assert.match(source, /@itslil\/marked 18\.0\.10/)
-    assert.match(source, /export\s*\{/)
-    assert.match(source, / as default/)
+    const manifest = JSON.parse(readFileSync(resolve(root, "dist/lilscript.manifest.json"), "utf8"))
+    const artifact = manifest.outputs.flatMap(output => output.files).find(file => file.file === "marked.esm.js")
+    assert.ok(artifact, "the public ESM must be a compiler-delivered artifact")
+    assert.equal(createHash("sha256").update(source).digest("hex"), artifact.sha256)
     assert.ok(source.split("\n").length <= 8, "ESM must stay compact compiler output")
   })
 
