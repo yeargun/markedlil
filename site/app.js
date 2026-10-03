@@ -1,4 +1,5 @@
 import {renderComparison} from './objective-comparison.js';
+import {renderRuntime} from './runtime-comparison.js';
 const currentComparison=await fetch('./comparison.json').then(response=>{if(!response.ok)throw Error('Comparison could not load');return response.json()});
 renderComparison(currentComparison);
 import { marked as officialMarked } from "./marked-official.js"
@@ -7,6 +8,10 @@ import { HARNESS, loadCorpus, median, runBenchmark } from "./bench.js"
 
 const data = await fetch("./results.json").then((response) => {
   if (!response.ok) throw new Error(`Unable to load results: ${response.status}`)
+  return response.json()
+})
+const runtime = await fetch("./runtime.json").then((response) => {
+  if (!response.ok) throw new Error(`Unable to load runtime measurements: ${response.status}`)
   return response.json()
 })
 
@@ -22,7 +27,7 @@ A [marked](https://github.com/markedjs/marked) 18.0.10 port in **LilScript**.
 
 | Lane | Tool | Mangle |
 | --- | --- | --- |
-| official parse path | — | — |
+| original minified Marked | Terser | on |
 | oxc | Vite 8 | on / off |
 | terser | Terser | on / off |
 
@@ -64,7 +69,7 @@ function smallerThan(value, baseline) {
 }
 
 function fasterThan(value, baseline) {
-  return percentAgainst(value, baseline, "faster", "slower")
+  return percentAgainst(value, baseline, "less time", "more time")
 }
 
 function parsePathLanes(rows) {
@@ -152,7 +157,7 @@ function recordedVerdict(row, baseline, suite) {
   return fasterThan(row[`${suite}Ms`], baseline[`${suite}Ms`])
 }
 
-function renderPerf() {}
+function renderPerf() { renderRuntime(runtime) }
 
 /// A median is worth nothing next to a spread it sits inside. Two lanes whose
 /// samples overlap are reported as a tie, however far apart their medians land,
@@ -211,7 +216,7 @@ function renderVerifyResult(result) {
     <div class="table-wrap light">
       <table>
         <thead>
-          <tr><th>Lane</th><th>Suite</th><th>Median</th><th>Range over ${HARNESS.loops - HARNESS.warmupDiscard} samples</th><th>vs official parse path</th></tr>
+          <tr><th>Parser</th><th>Suite</th><th>Median</th><th>Range over ${HARNESS.loops - HARNESS.warmupDiscard} samples</th><th>vs original minified</th></tr>
         </thead>
         <tbody>${table}</tbody>
       </table>
@@ -236,7 +241,7 @@ function bindVerify() {
         corpus = await loadCorpus()
       }
       const lanes = [
-        { id: "parse", name: "Official parse path", parse: (src) => officialMarked.parse(src) },
+        { id: "parse", name: "Original minified Marked", parse: (src) => officialMarked.parse(src) },
         { id: "itslil", name: "@itslil/marked", parse: (src) => lilMarked.parse(src) },
       ]
       const result = await runBenchmark({
@@ -325,7 +330,7 @@ function bindPlayground() {
     }
     const [lil, official] = engines.map((engine) => median(engine.samples.slice(3)))
     document.querySelector("#race-out").textContent =
-      `@itslil/marked ${lil.toFixed(1)} ms · official parse path ${official.toFixed(1)} ms · ${fasterThan(lil, official).text} on your text`
+      `@itslil/marked ${lil.toFixed(1)} ms · original minified Marked ${official.toFixed(1)} ms · ${fasterThan(lil, official).text} on your text`
   })
   renderPreview()
 }

@@ -5,7 +5,9 @@ import {
   otherSlashPipe,
   otherBlankLine,
   otherEscapeTest,
+  otherEscapeReplace,
   otherEscapeTestNoEncode,
+  otherEscapeReplaceNoEncode,
   otherPercentDecode
 } from "./rules.lil";
 
@@ -266,96 +268,28 @@ export string indentCodeCompensation(string raw, string text) {
   return joinLines(out);
 }
 
+string escapeCharacter(string ch) {
+  return match (ch) {
+    "&" => "&amp;",
+    "<" => "&lt;",
+    ">" => "&gt;",
+    "\"" => "&quot;",
+    "'" => "&#39;",
+    _ => ch
+  };
+}
+
 export string escapeHtml(string html, bool encode) {
   if (encode) {
     if (!otherEscapeTest.test(html)) {
       return html;
     }
-  } else {
-    if (!otherEscapeTestNoEncode.test(html)) {
-      return html;
-    }
+    return JS.stringReplace(html, otherEscapeReplace, escapeCharacter);
   }
-  string out = "";
-  int i = 0;
-  while (i < html.length) {
-    string ch = html.charAt(i);
-    if (ch == "&") {
-      if (encode) {
-        out = out + "&amp;";
-      } else {
-        int j = i + 1;
-        bool entity = false;
-        if (j < html.length && html.charAt(j) == "#") {
-          j = j + 1;
-          if (j < html.length && (html.charAt(j) == "x" || html.charAt(j) == "X")) {
-            j = j + 1;
-            int start = j;
-            while (j < html.length) {
-              int c = html.charCodeAt(j);
-              bool hex =
-                (c >= 48 && c <= 57) ||
-                (c >= 65 && c <= 70) ||
-                (c >= 97 && c <= 102);
-              if (!hex) {
-                break;
-              }
-              j = j + 1;
-            }
-            if (j > start && j - start <= 6 && j < html.length && html.charAt(j) == ";") {
-              entity = true;
-            }
-          } else {
-            int start = j;
-            while (j < html.length) {
-              int c = html.charCodeAt(j);
-              if (c < 48 || c > 57) {
-                break;
-              }
-              j = j + 1;
-            }
-            if (j > start && j - start <= 7 && j < html.length && html.charAt(j) == ";") {
-              entity = true;
-            }
-          }
-        } else {
-          int start = j;
-          while (j < html.length) {
-            int c = html.charCodeAt(j);
-            bool word =
-              (c >= 48 && c <= 57) ||
-              (c >= 65 && c <= 90) ||
-              (c >= 97 && c <= 122) ||
-              c == 95;
-            if (!word) {
-              break;
-            }
-            j = j + 1;
-          }
-          if (j > start && j < html.length && html.charAt(j) == ";") {
-            entity = true;
-          }
-        }
-        if (entity) {
-          out = out + "&";
-        } else {
-          out = out + "&amp;";
-        }
-      }
-    } else if (ch == "<") {
-      out = out + "&lt;";
-    } else if (ch == ">") {
-      out = out + "&gt;";
-    } else if (ch == "\"") {
-      out = out + "&quot;";
-    } else if (ch == "'") {
-      out = out + "&#39;";
-    } else {
-      out = out + ch;
-    }
-    i = i + 1;
+  if (!otherEscapeTestNoEncode.test(html)) {
+    return html;
   }
-  return out;
+  return JS.stringReplace(html, otherEscapeReplaceNoEncode, escapeCharacter);
 }
 
 export string? cleanUrl(string href) {

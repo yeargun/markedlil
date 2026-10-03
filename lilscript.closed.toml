@@ -1,6 +1,9 @@
 # Compiler-owned delivery; no JavaScript post-minifier or export rewriting.
 [policy]
 version = 3
+[policy.resources]
+# Match the independently measured objective builds instead of inheriting the service ceiling.
+logical_work = 2000000000
 [javascript]
 priority = "size-first"
 # Assumes unpatched platform builtins; disable when consumers replace them.
@@ -25,3 +28,7 @@ mode = "single"
 entry_names = "marked.closed.js"
 [delivery.entries]
 index = "src/entry.lil"
+
+# Keep package delivery builds serial.
+[execution]
+jobs = 1

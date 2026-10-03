@@ -13,12 +13,115 @@
   },
   "lilscript": [
     {
-      "library": "markedlil",
+      "name": "checked-raw",
+      "command": [
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/bin/lilscript",
+        "--config",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked-raw.toml",
+        "--target",
+        "js-module",
+        "--mode",
+        "production",
+        "--jobs",
+        "1",
+        "--out-dir",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/artifacts/checked-raw",
+        "--explain",
+        "json",
+        "--cache",
+        "off",
+        "--logical-work",
+        "2000000000"
+      ],
+      "wallSeconds": 14.789840931996878,
+      "exit": 0,
+      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+      "artifactSha256": "0cb7c81b69e9e84b848bd0b66a682c73714d380575a7ad7ccbdb01c2779a7c89",
       "objective": "raw",
+      "configSha256": "4ad64deacc101dffbe0c398d2fae4d70e0e2d5981bfa025dddb4921fafc56b3e",
+      "sourceSha256": "9fb22df13918a0420c29c8020a3a28e0d8d811daa77484a4cbece164291b8209",
+      "sourceInputs": {
+        "root": 0,
+        "entries": [
+          {
+            "name": "index",
+            "module": 0
+          }
+        ],
+        "modules": [
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/entry.lil",
+            "bytes": 2958,
+            "sha256": "b1f71341712881346d2271eeb8e9ad915529b72699a8c9a798edffec6d073ca5",
+            "dependencies": [
+              1,
+              2
+            ],
+            "dynamic_dependencies": [],
+            "repositoryPath": "src/entry.lil"
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/types.lil",
+            "bytes": 3301,
+            "sha256": "14e60975f35cf769dcb60e63426287190a9c2fbf082b849834521e237fd7bf4e",
+            "dependencies": [],
+            "dynamic_dependencies": [],
+            "repositoryPath": "src/types.lil"
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/parse.lil",
+            "bytes": 8706,
+            "sha256": "625008f2ae4fb386b7ef35b6039c4ce3d53b38c584380e52937eca88153ad39a",
+            "dependencies": [
+              1,
+              3,
+              5,
+              4
+            ],
+            "dynamic_dependencies": [],
+            "repositoryPath": "src/parse.lil"
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/lexer.lil",
+            "bytes": 40106,
+            "sha256": "2f717efc2c13e0aef71dfc6453813cd03c19e57111bdc15f88bc9b703284d5c4",
+            "dependencies": [
+              1,
+              4,
+              5
+            ],
+            "dynamic_dependencies": [],
+            "repositoryPath": "src/lexer.lil"
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/rules.lil",
+            "bytes": 20226,
+            "sha256": "c584e85a2ace23f0c8b95f2644b9fdc12b3e42a3e40cf41414729091117c70a7",
+            "dependencies": [],
+            "dynamic_dependencies": [],
+            "repositoryPath": "src/rules.lil"
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/str.lil",
+            "bytes": 7770,
+            "sha256": "5075935f4cac426d577c034f6fa3f5ab9a7facff15028bb23a8483d77ff21320",
+            "dependencies": [
+              4
+            ],
+            "dynamic_dependencies": [],
+            "repositoryPath": "src/str.lil"
+          }
+        ],
+        "host_modules": [],
+        "host_reserved": []
+      }
+    },
+    {
+      "name": "checked-gzip",
       "command": [
         "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/bin/lilscript",
         "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/configs/markedlil-raw.toml",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked-gzip.toml",
         "--target",
         "js-module",
         "--mode",
@@ -26,7 +129,7 @@
         "--jobs",
         "1",
         "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/artifacts/markedlil/raw",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/artifacts/checked-gzip",
         "--explain",
         "json",
         "--cache",
@@ -34,51 +137,89 @@
         "--logical-work",
         "2000000000"
       ],
-      "wallSeconds": 14.89203249899947,
-      "returncode": 0,
+      "wallSeconds": 13.189285849999578,
+      "exit": 0,
       "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "7ff5463169e4ff4865049cb211062f9a003e34780435373e97b364c45834ea66",
-      "measuredAt": "2026-10-02T22:35:10.238264+00:00",
-      "outputSha256": "bebcc138a0886391acf61a3b39005e3b3b961a6052bc7a416d9881d4bf8af085",
-      "raw": 32063
-    },
-    {
-      "library": "markedlil",
+      "artifactSha256": "6712b7d963f6382c8fa6fdbd4c96be0256a5fac8d69a3640a16423f6146fd5e8",
       "objective": "gzip",
-      "command": [
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/bin/lilscript",
-        "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/configs/markedlil-gzip.toml",
-        "--target",
-        "js-module",
-        "--mode",
-        "production",
-        "--jobs",
-        "1",
-        "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/artifacts/markedlil/gzip",
-        "--explain",
-        "json",
-        "--cache",
-        "off",
-        "--logical-work",
-        "2000000000"
-      ],
-      "wallSeconds": 13.287961277997965,
-      "returncode": 0,
-      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "1d0bcc91510ccd06e18ff769bdb72d2bdb54396e0266eb80202da93e7ab84359",
-      "measuredAt": "2026-10-02T22:35:23.536549+00:00",
-      "outputSha256": "c293f3cd67f535a351b992f21a5515008d96f3414725c2fdf3c28d11902beac4",
-      "raw": 36891
+      "configSha256": "34bbebaee659354797a0953053de631493f65301386f3859c8c999e6eee2ab93",
+      "sourceSha256": "9fb22df13918a0420c29c8020a3a28e0d8d811daa77484a4cbece164291b8209",
+      "sourceInputs": {
+        "root": 0,
+        "entries": [
+          {
+            "name": "index",
+            "module": 0
+          }
+        ],
+        "modules": [
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/entry.lil",
+            "bytes": 2958,
+            "sha256": "b1f71341712881346d2271eeb8e9ad915529b72699a8c9a798edffec6d073ca5",
+            "dependencies": [
+              1,
+              2
+            ],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/types.lil",
+            "bytes": 3301,
+            "sha256": "14e60975f35cf769dcb60e63426287190a9c2fbf082b849834521e237fd7bf4e",
+            "dependencies": [],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/parse.lil",
+            "bytes": 8706,
+            "sha256": "625008f2ae4fb386b7ef35b6039c4ce3d53b38c584380e52937eca88153ad39a",
+            "dependencies": [
+              1,
+              3,
+              5,
+              4
+            ],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/lexer.lil",
+            "bytes": 40106,
+            "sha256": "2f717efc2c13e0aef71dfc6453813cd03c19e57111bdc15f88bc9b703284d5c4",
+            "dependencies": [
+              1,
+              4,
+              5
+            ],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/rules.lil",
+            "bytes": 20226,
+            "sha256": "c584e85a2ace23f0c8b95f2644b9fdc12b3e42a3e40cf41414729091117c70a7",
+            "dependencies": [],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/str.lil",
+            "bytes": 7770,
+            "sha256": "5075935f4cac426d577c034f6fa3f5ab9a7facff15028bb23a8483d77ff21320",
+            "dependencies": [
+              4
+            ],
+            "dynamic_dependencies": []
+          }
+        ],
+        "host_modules": [],
+        "host_reserved": []
+      }
     },
     {
-      "library": "markedlil",
-      "objective": "brotli",
+      "name": "checked",
       "command": [
         "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/bin/lilscript",
         "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/configs/markedlil-brotli.toml",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked.toml",
         "--target",
         "js-module",
         "--mode",
@@ -86,7 +227,7 @@
         "--jobs",
         "1",
         "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/artifacts/markedlil/brotli",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/artifacts/checked",
         "--explain",
         "json",
         "--cache",
@@ -94,13 +235,82 @@
         "--logical-work",
         "2000000000"
       ],
-      "wallSeconds": 33.32962784399933,
-      "returncode": 0,
+      "wallSeconds": 29.870925612995052,
+      "exit": 0,
       "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "b2d84dc4828013982cadb139ae17b8f4acd00ca1b92d0d378970294259b97997",
-      "measuredAt": "2026-10-02T22:35:56.872321+00:00",
-      "outputSha256": "5c1ada5fa10b1fd64f7daf37c72e10f4b0010713cd1515740b0b6707656d5a1f",
-      "raw": 36565
+      "artifactSha256": "a6ba04adc7b30f005348f2ce3056e21b0a8aef7627e33d718c47260eff4757af",
+      "objective": "brotli",
+      "configSha256": "9f2f764371eec7ed198e511682b6b3c2dd021470bdb9fb313947bfae12be3211",
+      "sourceSha256": "9fb22df13918a0420c29c8020a3a28e0d8d811daa77484a4cbece164291b8209",
+      "sourceInputs": {
+        "root": 0,
+        "entries": [
+          {
+            "name": "index",
+            "module": 0
+          }
+        ],
+        "modules": [
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/entry.lil",
+            "bytes": 2958,
+            "sha256": "b1f71341712881346d2271eeb8e9ad915529b72699a8c9a798edffec6d073ca5",
+            "dependencies": [
+              1,
+              2
+            ],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/types.lil",
+            "bytes": 3301,
+            "sha256": "14e60975f35cf769dcb60e63426287190a9c2fbf082b849834521e237fd7bf4e",
+            "dependencies": [],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/parse.lil",
+            "bytes": 8706,
+            "sha256": "625008f2ae4fb386b7ef35b6039c4ce3d53b38c584380e52937eca88153ad39a",
+            "dependencies": [
+              1,
+              3,
+              5,
+              4
+            ],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/lexer.lil",
+            "bytes": 40106,
+            "sha256": "2f717efc2c13e0aef71dfc6453813cd03c19e57111bdc15f88bc9b703284d5c4",
+            "dependencies": [
+              1,
+              4,
+              5
+            ],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/rules.lil",
+            "bytes": 20226,
+            "sha256": "c584e85a2ace23f0c8b95f2644b9fdc12b3e42a3e40cf41414729091117c70a7",
+            "dependencies": [],
+            "dynamic_dependencies": []
+          },
+          {
+            "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/str.lil",
+            "bytes": 7770,
+            "sha256": "5075935f4cac426d577c034f6fa3f5ab9a7facff15028bb23a8483d77ff21320",
+            "dependencies": [
+              4
+            ],
+            "dynamic_dependencies": []
+          }
+        ],
+        "host_modules": [],
+        "host_reserved": []
+      }
     }
   ],
   "upstream": {
@@ -214,86 +424,99 @@
     ],
     "modules": [
       {
-        "path": "/home/azureuser/markedlil/src/entry.lil",
+        "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/entry.lil",
         "bytes": 2958,
         "sha256": "b1f71341712881346d2271eeb8e9ad915529b72699a8c9a798edffec6d073ca5",
         "dependencies": [
           1,
           2
         ],
-        "dynamic_dependencies": []
+        "dynamic_dependencies": [],
+        "repositoryPath": "src/entry.lil"
       },
       {
-        "path": "/home/azureuser/markedlil/src/types.lil",
-        "bytes": 3366,
-        "sha256": "ef4efd2a8dc01b22b5bb181fe7beb9246cb00c13b2cb1227ae02730652c0d9a1",
+        "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/types.lil",
+        "bytes": 3301,
+        "sha256": "14e60975f35cf769dcb60e63426287190a9c2fbf082b849834521e237fd7bf4e",
         "dependencies": [],
-        "dynamic_dependencies": []
+        "dynamic_dependencies": [],
+        "repositoryPath": "src/types.lil"
       },
       {
-        "path": "/home/azureuser/markedlil/src/parse.lil",
-        "bytes": 8425,
-        "sha256": "a2861173f019f7e6fecfe9fcc1670d563258e2d8fc33b298ef73213cc0cba456",
+        "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/parse.lil",
+        "bytes": 8706,
+        "sha256": "625008f2ae4fb386b7ef35b6039c4ce3d53b38c584380e52937eca88153ad39a",
         "dependencies": [
           1,
           3,
           5,
           4
         ],
-        "dynamic_dependencies": []
+        "dynamic_dependencies": [],
+        "repositoryPath": "src/parse.lil"
       },
       {
-        "path": "/home/azureuser/markedlil/src/lexer.lil",
-        "bytes": 39073,
-        "sha256": "e23437960935b0a62a97ade3696e6a3a0a68cea3c187cf5d57cd234cdde656b1",
+        "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/lexer.lil",
+        "bytes": 40106,
+        "sha256": "2f717efc2c13e0aef71dfc6453813cd03c19e57111bdc15f88bc9b703284d5c4",
         "dependencies": [
           1,
           4,
           5
         ],
-        "dynamic_dependencies": []
+        "dynamic_dependencies": [],
+        "repositoryPath": "src/lexer.lil"
       },
       {
-        "path": "/home/azureuser/markedlil/src/rules.lil",
-        "bytes": 20051,
-        "sha256": "5d340d701aee699f5fca2a47bc091c1904dfc448b30caf19160eca71ffcb940a",
+        "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/rules.lil",
+        "bytes": 20226,
+        "sha256": "c584e85a2ace23f0c8b95f2644b9fdc12b3e42a3e40cf41414729091117c70a7",
         "dependencies": [],
-        "dynamic_dependencies": []
+        "dynamic_dependencies": [],
+        "repositoryPath": "src/rules.lil"
       },
       {
-        "path": "/home/azureuser/markedlil/src/str.lil",
-        "bytes": 9602,
-        "sha256": "df057ded716b97b48abc5971fb9d2722515f624cf6acdc7d407fe8ef3b230b54",
+        "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/str.lil",
+        "bytes": 7770,
+        "sha256": "5075935f4cac426d577c034f6fa3f5ab9a7facff15028bb23a8483d77ff21320",
         "dependencies": [
           4
         ],
-        "dynamic_dependencies": []
+        "dynamic_dependencies": [],
+        "repositoryPath": "src/str.lil"
       }
     ],
     "host_modules": [],
     "host_reserved": []
   },
   "validation": {
-    "checks": 7923,
+    "checks": 38127,
     "objectives": [
       {
         "objective": "raw",
-        "checks": 2641,
-        "suite": "differential"
+        "checks": 12709,
+        "suite": "differential",
+        "scope": "All 660 cases: parse/parseInline x default and eight option combinations; 32x document; three independent documents x default and eight option combinations; 400 mixed documents and interleaved plain documents; live options."
       },
       {
         "objective": "gzip",
-        "checks": 2641,
-        "suite": "differential"
+        "checks": 12709,
+        "suite": "differential",
+        "scope": "All 660 cases: parse/parseInline x default and eight option combinations; 32x document; three independent documents x default and eight option combinations; 400 mixed documents and interleaved plain documents; live options."
       },
       {
         "objective": "brotli",
-        "checks": 2641,
-        "suite": "differential"
+        "checks": 12709,
+        "suite": "differential",
+        "scope": "All 660 cases: parse/parseInline x default and eight option combinations; 32x document; three independent documents x default and eight option combinations; 400 mixed documents and interleaved plain documents; live options."
       }
     ],
-    "scope": "Main ESM entry; selected corpora and API checks, not all package formats or complete upstream equivalence."
+    "scope": "Main ESM: 660 cases through parse and parseInline with defaults and all eight gfm/breaks/pedantic combinations; large and independent documents; mixed documents; live options. Separate package tests cover ESM, CJS and UMD. This is not complete upstream API equivalence."
   },
   "workLimit": 2000000000,
-  "timingScope": "One sequential fresh-output build per objective/minifier. Upstream timing is ESM bundling and minification, not original-repository source compilation."
+  "timingScope": "One sequential cache-disabled output build per LilScript objective on 2026-10-03. Original bundle/minifier timings were measured earlier on the same date and host; they start from installed ESM and do not include original TypeScript compilation. No compilation overlaps the runtime measurements.",
+  "sourceArchive": {
+    "artifact": "./comparison-artifacts/sources.tar.gz",
+    "sha256": "c00d5f5f17b26112715a371647f444193fb0ba1f294d05f90bbbc69d9cc04e70"
+  }
 }

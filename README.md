@@ -1,12 +1,31 @@
 # @itslil/marked
 
+A [LilScript](https://github.com/yeargun/lilscript) implementation of the synchronous parsing API of [`marked@18.0.10`](https://github.com/markedjs/marked): `parse`, `parseInline`, `marked()`, and option handling. It matches the original's HTML on the 660-case GFM and CommonMark corpus.
 
+**[Website and live benchmark](https://yeargun.github.io/markedlil/)** · **[Full comparison and methodology](COMPARISON.md)**
 
-This is **not** the official [`marked`](https://github.com/markedjs/marked) package. It is the **parse path** of `marked@18.0.10` — `parse`, `parseInline`, `setOptions` / `options`, `getDefaults`, `defaults`, and `marked()` — rewritten in [LilScript](https://github.com/yeargun/lilscript).
+## Current build versus original minified Marked
 
-It matches `marked@18.0.10` HTML on the GFM + CommonMark corpus (**660 / 660**). It does **not** have `use()`, Hooks, `walkTokens`, Renderer/Tokenizer subclassing, or the `Marked` class.
+Each size row uses a separate LilScript compilation targeting that compression objective. The original is the smallest measured output for that metric among Terser, esbuild and Oxc. Sizes are bytes.
 
-**Site:** [yeargun.github.io/markedlil](https://yeargun.github.io/markedlil/)
+| Objective | LilScript | Original minified | Smaller |
+|---|---:|---:|---:|
+| Raw | 31,834 | 42,650 | 25.4% |
+| Gzip-9 | 9,834 | 12,530 | 21.5% |
+| Brotli-11 | 8,851 | 11,488 | 23.0% |
+
+Parsing a 537,310-character document with the Brotli-objective ESM, compared with original minified Marked:
+
+| Browser | Original minified | @itslil/marked | Less parse time |
+|---|---:|---:|---:|
+| Chromium 139 | 125.20 ms | 92.80 ms | 25.9% |
+| Firefox 144 | 160.00 ms | 147.00 ms | 8.1% |
+
+These are medians of three fresh-page medians on a shared machine, with alternating parser order and warmup samples discarded. Individual runs vary. [COMPARISON.md](COMPARISON.md) includes the independent README workload, longer warmup, all codec sizes, build times, and links to every timing sample.
+
+The website and measurements use the current repository artifacts. npm releases are published separately; download the measured [Brotli-objective ESM](site/comparison-artifacts/lilscript-brotli.mjs), [gzip-objective ESM](site/comparison-artifacts/lilscript-gzip.mjs), or [raw-objective ESM](site/comparison-artifacts/lilscript-raw.mjs).
+
+## Usage
 
 ```sh
 npm install @itslil/marked
@@ -18,44 +37,48 @@ import { marked } from "@itslil/marked"
 document.body.innerHTML = marked.parse("# hello")
 ```
 
-Official marked does not sanitize HTML. Neither does this port. Run a sanitizer on the output if the markdown is untrusted.
+Marked does not sanitize HTML. Run a sanitizer on the output when the Markdown is untrusted.
 
-## Why the extension system is gone
+## Supported API
 
-LilScript is not JavaScript and is not trying to become JavaScript. It compiles *to* JS. Classes do not override methods. There is no `any`. A plugin ABI that installs user objects onto Lexer/Parser/Renderer cannot be expressed without lying about those rules.
+| Name | Behavior |
+|---|---|
+| `parse(src, opt?)` | Block Markdown to HTML |
+| `parseInline(src, opt?)` | Inline Markdown to HTML |
+| `marked(src, opt?)` | Same as `parse`; rejects non-string input |
+| `marked.parse` | The `marked` function |
+| `marked.parseInline` | Same as `parseInline` |
+| `setOptions(opt)` / `options(opt)` | Mutate live defaults; return `marked` |
+| `marked.setOptions` / `marked.options` | The same option setters |
+| `getDefaults()` | A fresh factory object: `gfm: true`, other options false |
+| `defaults` / `marked.defaults` | The live options object |
 
-The extension system was not stripped to win a size fight. It is absent because the language cannot host it. There is no plan to grow LilScript until every JavaScript pattern ports.
+Public option names stay exact in ESM, CommonJS and UMD: `gfm`, `breaks`, `pedantic`, `silent`, and `async`. Parsing is synchronous; `async` remains false. Pedantic grammar takes precedence over GFM and breaks. The original's extension API, `use()`, Hooks, `walkTokens`, Renderer/Tokenizer subclassing and `Marked` class are outside this port's supported API.
 
-## Comparison with the original
+## Validation and builds
 
-See [COMPARISON.md](COMPARISON.md) for current raw-, gzip- and Brotli-objective builds, minified upstream comparisons, build times and validation.
+The three objective artifacts pass 38,127 scoped parity checks. Package tests cover ESM, CommonJS and UMD, all eight gfm/breaks/pedantic combinations, escaping, Unicode edges, nested markup and repeated parses. This does not establish complete upstream API equivalence.
 
-## Compatibility
+```sh
+npm ci
+npm test
+npm run check:site
+npm run check:pack
+```
 
-The **JS library** (the npm file) is the only artifact that must keep these names readable after mangling. `test/api.test.mjs` locks the spellings in the compiler output and calls every entry on ESM, CJS, and UMD.
+To rebuild package artifacts, set `LILSCRIPT_COMPILER` to a compatible compiler executable and run `npm run build`. The project uses one worker and an explicit 2-billion-unit logical-work budget. All runtime files are compiler outputs; no JavaScript post-minifier is used. [Build receipts and compiler identity](site/comparison-builds.json) describe the independently measured objective builds.
 
-| Name | What it is |
-| --- | --- |
-| `parse(src, opt?)` | block markdown → HTML |
-| `parseInline(src, opt?)` | inline markdown → HTML |
-| `marked(src, opt?)` | same as `parse`; throws if `src` is not a string |
-| `marked.parse` | the `marked` function |
-| `marked.parseInline` | same as `parseInline` |
-| `setOptions(opt)` / `options(opt)` | mutate live defaults; return `marked` |
-| `marked.setOptions` / `marked.options` | the same pair |
-| `getDefaults()` | a fresh factory object (`gfm: true`, others false) |
-| `defaults` / `marked.defaults` | the live options object |
+To repeat runtime measurements, install Playwright's browsers and run:
 
-Option keys stay exact: `gfm`, `breaks`, `pedantic`, `silent`, `async`. `async` is present and always `false` — this port does not return a Promise. `silent` is accepted; on a thrown parse it matches official's error HTML.
+```sh
+npx playwright install chromium firefox
+npm run bench
+ENGINE=firefox npm run bench
+DOCUMENT=node_modules/marked/README.md BATCH=12 npm run bench
+```
 
-The closed LilScript lane is where these keys would mangle once the compiler renames properties; today it keeps them. It is not the npm file.
-
-- ESM, CJS, and UMD artifacts, all compiler-written
-- GFM on by default (`breaks: false`, `pedantic: false`)
-- Nested links match published `marked@18.0.10`, not git master
-- Spec fixtures live in `test/specs/`
-- Official parse-path sources used for the comparison live in `official/marked-18.0.10/`
+`npm run bench` uses the exact website artifacts and the shared browser harness. It writes samples and artifact hashes under `reports/`. Set `INCLUDE_SPEC=1` to also time the full 660-case workload. [All recorded runtime samples](site/runtime.json) are checked into the repository.
 
 ## License
 
-MIT. See [LICENSE](./LICENSE) and [NOTICE.md](./NOTICE.md). marked is copyright Christopher Jeffrey / MarkedJS.
+MIT. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Marked is copyright Christopher Jeffrey / MarkedJS.

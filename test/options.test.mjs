@@ -12,7 +12,12 @@ const esm = await import(pathToFileURL(resolve(root, "dist/marked.esm.js")).href
 const requireCjs = createRequire(import.meta.url)
 const cjs = requireCjs(resolve(root, "dist/marked.cjs"))
 const cases = loadSpecCases()
-const optionSets = [{}, { breaks: true }, { pedantic: true }, { gfm: false }]
+const optionSets = [{}]
+for (const gfm of [false, true]) {
+  for (const breaks of [false, true]) {
+    for (const pedantic of [false, true]) optionSets.push({ gfm, breaks, pedantic })
+  }
+}
 
 function parseAll(parse, options) {
   const fail = []

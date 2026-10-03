@@ -17,6 +17,20 @@ export function verifyComparison(root){
   if(hash(config)!==row.lilscript.configSha256 || !config.includes(`codecs = "${row.objective}"`))throw Error('Objective/config mismatch');
  }
  for(const row of data.minifiers){if(hash(readFileSync(join(root,'site',row.artifact)))!==row.sha256)throw Error('Upstream artifact changed')}
+ const runtimeFile=readFileSync(join(root,'site',data.runtime.artifact));
+ if(hash(runtimeFile)!==data.runtime.sha256)throw Error('Runtime evidence changed');
+ const runtime=JSON.parse(runtimeFile);
+ const brotli=data.objectives.find(row=>row.objective==='brotli');
+ for(const [key,expected] of [['lilscript',brotli.lilscript],['original',brotli.original]]){
+  const artifact=runtime[key];
+  if(artifact.sha256!==expected.sha256 || hash(readFileSync(join(root,'site',artifact.artifact)))!==artifact.sha256)throw Error(`Timed artifact changed: ${key}`);
+ }
+ if(hash(readFileSync(join(root,'dist/marked.esm.js')))!==runtime.lilscript.sha256)throw Error('Package ESM differs from timed ESM');
+ const receipt=JSON.parse(readFileSync(join(root,'site/comparison-builds.json')));
+ for(const source of receipt.sourceInputs.modules){
+  if(hash(readFileSync(join(root,source.repositoryPath)))!==source.sha256)throw Error(`Compared source changed: ${source.repositoryPath}`);
+ }
+ if(hash(readFileSync(join(root,'site',receipt.sourceArchive.artifact)))!==receipt.sourceArchive.sha256)throw Error('Source archive changed');
  return data;
 }
 if(process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)){

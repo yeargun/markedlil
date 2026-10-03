@@ -29,7 +29,43 @@ test('built Pages artifact contains the current data and measured downloads',()=
  const data=JSON.parse(readFileSync(join(root,'site/comparison.json'),'utf8'));
  assert.equal(readFileSync(join(root,'_site/comparison.json'),'utf8'),readFileSync(join(root,'site/comparison.json'),'utf8'));
  for(const row of data.objectives)for(const item of [row.lilscript,row.original])assert.ok(existsSync(join(root,'_site',item.artifact)));
- for(const file of ['app.js','styles.css','objective-comparison.js','objective-comparison.css','.nojekyll'])assert.ok(existsSync(join(root,'_site',file)),file);
+ for(const file of ['app.js','styles.css','objective-comparison.js','objective-comparison.css','runtime-comparison.js','runtime.json','.nojekyll'])assert.ok(existsSync(join(root,'_site',file)),file);
+});
+
+test('recorded runtime summaries match the original/current samples and timed artifacts',()=>{
+ const data=verifyComparison(root);
+ const runtime=JSON.parse(readFileSync(join(root,'site/runtime.json'),'utf8'));
+ const median=values=>{
+  const sorted=[...values].sort((a,b)=>a-b);const middle=Math.floor(sorted.length/2);
+  return sorted.length%2?sorted[middle]:(sorted[middle-1]+sorted[middle])/2;
+ };
+ assert.equal(runtime.rows.length,4);
+ assert.equal(new Set(runtime.rows.map(row=>`${row.workload}/${row.engine}`)).size,4);
+ for(const row of runtime.rows){
+  assert.equal(row.runs.length,runtime.method.freshPages);
+  for(const run of row.runs){
+   assert.equal(run.verifiedCases,660);
+   for(const mode of ['standard','extendedWarmup']){
+    for(const lane of ['original','lilscript']){
+     const measured=run[mode][lane];
+     assert.equal(measured.samples.length,mode==='standard'?7:16);
+     // Batched samples are normalized after the median; allow floating-point rounding.
+     assert.ok(Math.abs(measured.ms-median(measured.samples))<1e-10);
+     assert.equal(measured.min,Math.min(...measured.samples));
+     assert.equal(measured.max,Math.max(...measured.samples));
+    }
+   }
+  }
+  for(const mode of ['standard','extendedWarmup']){
+   assert.equal(row[mode].originalMs,median(row.runs.map(run=>run[mode].original.ms)));
+   assert.equal(row[mode].lilscriptMs,median(row.runs.map(run=>run[mode].lilscript.ms)));
+   assert.equal(row[mode].timeReductionPercent,100*(1-row[mode].lilscriptMs/row[mode].originalMs));
+  }
+ }
+ assert.equal(data.validation.checks,38127);
+ const html=readFileSync(join(root,'site/index.html'),'utf8');
+ assert.match(html,/id="recorded-runtime"/);
+ assert.doesNotMatch(readFileSync(join(root,'site/app.js'),'utf8'),/name: "Official parse path"/);
 });
 
 test('live verification retains its controls and the checked corpus',()=>{

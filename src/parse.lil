@@ -25,8 +25,9 @@ string alignName(Align align) {
 }
 
 string renderText(Token token, bool textOnly) {
-  if (token.tokens.length > 0) {
-    return renderInline(token.tokens, textOnly);
+  Token[]? children = token.tokens;
+  if (children != null && children.length > 0) {
+    return renderInline(children, textOnly);
   }
   if (token.escaped) {
     return token.text;
@@ -41,7 +42,10 @@ string checkboxHtml(Token token) {
   return "<input disabled=\"\" type=\"checkbox\"> ";
 }
 
-export string renderInline(Token[] tokens, bool textOnly) {
+export string renderInline(Token[]? tokens, bool textOnly) {
+  if (tokens == null) {
+    return "";
+  }
   string out = "";
   int i = 0;
   while (i < tokens.length) {
@@ -76,8 +80,9 @@ export string renderInline(Token[] tokens, bool textOnly) {
         out = out + token.text;
       } else {
         string alt = token.text;
-        if (token.tokens.length > 0) {
-          alt = renderInline(token.tokens, true);
+        Token[]? children = token.tokens;
+        if (children != null && children.length > 0) {
+          alt = renderInline(children, true);
         }
         string? href = cleanUrl(token.href);
         if (href == null) {
@@ -179,17 +184,19 @@ string renderTableCell(Token cell) {
 }
 
 string renderTable(Token token) {
+  Token[] headerCells = token.headerCells ?? [];
+  Token[][] rows = token.rows ?? [];
   string cell = "";
   int j = 0;
-  while (j < token.headerCells.length) {
-    cell = cell + renderTableCell(token.headerCells[j]);
+  while (j < headerCells.length) {
+    cell = cell + renderTableCell(headerCells[j]);
     j = j + 1;
   }
   string header = "<tr>\n" + cell + "</tr>\n";
   string body = "";
   int r = 0;
-  while (r < token.rows.length) {
-    Token[] row = token.rows[r];
+  while (r < rows.length) {
+    Token[] row = rows[r];
     cell = "";
     int k = 0;
     while (k < row.length) {
@@ -205,7 +212,10 @@ string renderTable(Token token) {
   return "<table>\n<thead>\n" + header + "</thead>\n" + body + "</table>\n";
 }
 
-export string renderTokens(Token[] tokens) {
+export string renderTokens(Token[]? tokens) {
+  if (tokens == null) {
+    return "";
+  }
   string out = "";
   int i = 0;
   while (i < tokens.length) {
@@ -223,10 +233,11 @@ export string renderTokens(Token[] tokens) {
     } else if (token.kind == Kind.Blockquote) {
       out = out + "<blockquote>\n" + renderTokens(token.tokens) + "</blockquote>\n";
     } else if (token.kind == Kind.List) {
+      Token[] items = token.items ?? [];
       string body = "";
       int j = 0;
-      while (j < token.items.length) {
-        body = body + renderListItem(token.items[j]);
+      while (j < items.length) {
+        body = body + renderListItem(items[j]);
         j = j + 1;
       }
       string type = "ul";

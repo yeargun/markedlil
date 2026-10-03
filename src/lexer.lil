@@ -73,7 +73,6 @@ Token? outputLink(JsValue cap, string href, string title, string raw, Lexer lx, 
   Token token = makeToken(kind, raw);
   token.href = href;
   token.title = title;
-  token.hasTitle = title.length > 0;
   token.text = text;
   token.tokens = tokens;
   return token;
@@ -192,9 +191,12 @@ Token? tokBlockquote(Lexer lx, string src) {
     );
     if (raw.length > 0) {
       raw = raw + "\n" + currentRaw;
-      text = text + "\n" + currentText;
     } else {
       raw = currentRaw;
+    }
+    if (text.length > 0) {
+      text = text + "\n" + currentText;
+    } else {
       text = currentText;
     }
     bool top = lx.top;
@@ -205,7 +207,8 @@ Token? tokBlockquote(Lexer lx, string src) {
       break;
     }
     if (!hasTokens(tokens)) {
-      break;
+      // Empty quoted lines can still have a lazy continuation.
+      continue;
     }
     Token last = lastToken(tokens);
     if (last.kind == Kind.Code) {
@@ -246,6 +249,8 @@ Token? tokList(Lexer lx, string src) {
   string bull = groupN(cap, 1).trim();
   bool isordered = bull.length > 1;
   Token listTok = makeToken(Kind.List, "");
+  Token[] items = [];
+  listTok.items = items;
   listTok.ordered = isordered;
   if (isordered) {
     listTok.start = parseStart(bull);
@@ -369,28 +374,29 @@ Token? tokList(Lexer lx, string src) {
     Token item = makeToken(Kind.ListItem, raw);
     item.task = lx.gfm && otherListIsTask.test(itemContents);
     item.text = itemContents;
-    listTok.items.push(item);
+    items.push(item);
     listTok.raw = listTok.raw + raw;
     src = remaining;
   }
-  if (listTok.items.length == 0) {
+  if (items.length == 0) {
     return null;
   }
-  Token lastItem = lastToken(listTok.items);
+  Token lastItem = lastToken(items);
   lastItem.raw = lastItem.raw.trimEnd();
   lastItem.text = lastItem.text.trimEnd();
   listTok.raw = listTok.raw.trimEnd();
   int itemIndex = 0;
-  while (itemIndex < listTok.items.length) {
-    Token item = listTok.items[itemIndex];
+  while (itemIndex < items.length) {
+    Token item = items[itemIndex];
     lx.top = false;
-    item.tokens = [];
-    blockTokens(lx, item.text, item.tokens, false);
+    Token[] children = [];
+    item.tokens = children;
+    blockTokens(lx, item.text, children, false);
     if (!listTok.loose) {
       bool hasMultipleLineBreaks = false;
       int t = 0;
-      while (t < item.tokens.length) {
-        Token child = item.tokens[t];
+      while (t < children.length) {
+        Token child = children[t];
         if (child.kind == Kind.Space && otherAnyLine.test(child.raw)) {
           hasMultipleLineBreaks = true;
         }
@@ -401,10 +407,11 @@ Token? tokList(Lexer lx, string src) {
     itemIndex = itemIndex + 1;
   }
   itemIndex = 0;
-  while (itemIndex < listTok.items.length) {
-    Token item = listTok.items[itemIndex];
-    if (item.task && item.tokens.length > 0) {
-      Token itemToken = item.tokens[0];
+  while (itemIndex < items.length) {
+    Token item = items[itemIndex];
+    Token[] children = item.tokens ?? [];
+    if (item.task && children.length > 0) {
+      Token itemToken = children[0];
       if (itemToken.kind == Kind.Text || itemToken.kind == Kind.Paragraph) {
         item.text = replaceRe(item.text, otherListReplaceTask, "");
         itemToken.raw = replaceRe(itemToken.raw, otherListReplaceTask, "");
@@ -424,21 +431,23 @@ Token? tokList(Lexer lx, string src) {
           item.checked = checkbox.checked;
           if (listTok.loose) {
             if (
-              item.tokens.length > 0 &&
-              (item.tokens[0].kind == Kind.Paragraph || item.tokens[0].kind == Kind.Text)
+              children.length > 0 &&
+              (children[0].kind == Kind.Paragraph || children[0].kind == Kind.Text)
             ) {
-              item.tokens[0].raw = checkbox.raw + item.tokens[0].raw;
-              item.tokens[0].text = checkbox.raw + item.tokens[0].text;
-              unshiftToken(item.tokens[0].tokens, checkbox);
+              children[0].raw = checkbox.raw + children[0].raw;
+              children[0].text = checkbox.raw + children[0].text;
+              Token[] inlineChildren = children[0].tokens ?? [];
+              children[0].tokens = inlineChildren;
+              unshiftToken(inlineChildren, checkbox);
             } else {
               Token para = makeToken(Kind.Paragraph, checkbox.raw);
               para.text = checkbox.raw;
-              para.tokens.push(checkbox);
+              para.tokens = [checkbox];
               Token[] next = [];
               next.push(para);
               int c = 0;
-              while (c < item.tokens.length) {
-                next.push(item.tokens[c]);
+              while (c < children.length) {
+                next.push(children[c]);
                 c = c + 1;
               }
               item.tokens = next;
@@ -447,8 +456,8 @@ Token? tokList(Lexer lx, string src) {
             Token[] next = [];
             next.push(checkbox);
             int c = 0;
-            while (c < item.tokens.length) {
-              next.push(item.tokens[c]);
+            while (c < children.length) {
+              next.push(children[c]);
               c = c + 1;
             }
             item.tokens = next;
@@ -464,13 +473,14 @@ Token? tokList(Lexer lx, string src) {
   }
   if (listTok.loose) {
     itemIndex = 0;
-    while (itemIndex < listTok.items.length) {
-      Token item = listTok.items[itemIndex];
+    while (itemIndex < items.length) {
+      Token item = items[itemIndex];
+      Token[] children = item.tokens ?? [];
       item.loose = true;
       int t = 0;
-      while (t < item.tokens.length) {
-        if (item.tokens[t].kind == Kind.Text) {
-          item.tokens[t].kind = Kind.Paragraph;
+      while (t < children.length) {
+        if (children[t].kind == Kind.Text) {
+          children[t].kind = Kind.Paragraph;
         }
         t = t + 1;
       }
@@ -487,9 +497,6 @@ Token? tokHtml(Lexer lx, string src) {
   }
   string raw = trimTrailingBlankLines(group0(cap));
   Token token = makeToken(Kind.Html, raw);
-  token.block = true;
-  string first = groupN(cap, 1);
-  token.pre = first == "pre" || first == "script" || first == "style";
   token.text = raw;
   return token;
 }
@@ -513,7 +520,6 @@ Token? tokDef(Lexer lx, string src) {
   token.tag = tagName;
   token.href = href;
   token.title = title;
-  token.hasTitle = title.length > 0;
   return token;
 }
 
@@ -538,17 +544,22 @@ Token? tokTable(Lexer lx, string src) {
     return null;
   }
   Token item = makeToken(Kind.Table, rtrimNl(group0(cap)));
+  Align[] columnAligns = [];
+  Token[] headerCells = [];
+  Token[][] tableRows = [];
+  item.headerCells = headerCells;
+  item.rows = tableRows;
   int a = 0;
   while (a < aligns.length) {
     string align = aligns[a];
     if (otherTableAlignRight.test(align)) {
-      item.aligns.push(Align.Right);
+      columnAligns.push(Align.Right);
     } else if (otherTableAlignCenter.test(align)) {
-      item.aligns.push(Align.Center);
+      columnAligns.push(Align.Center);
     } else if (otherTableAlignLeft.test(align)) {
-      item.aligns.push(Align.Left);
+      columnAligns.push(Align.Left);
     } else {
-      item.aligns.push(Align.None);
+      columnAligns.push(Align.None);
     }
     a = a + 1;
   }
@@ -558,13 +569,13 @@ Token? tokTable(Lexer lx, string src) {
     cell.text = headers[h];
     cell.tokens = queueInline(lx, headers[h]);
     cell.header = true;
-    cell.align = item.aligns[h];
-    item.headerCells.push(cell);
+    cell.align = columnAligns[h];
+    headerCells.push(cell);
     h = h + 1;
   }
   int r = 0;
   while (r < rows.length) {
-    string[] cells = splitCellsCount(rows[r], item.headerCells.length);
+    string[] cells = splitCellsCount(rows[r], headerCells.length);
     Token[] row = [];
     int c = 0;
     while (c < cells.length) {
@@ -572,11 +583,11 @@ Token? tokTable(Lexer lx, string src) {
       cell.text = cells[c];
       cell.tokens = queueInline(lx, cells[c]);
       cell.header = false;
-      cell.align = item.aligns[c];
+      cell.align = columnAligns[c];
       row.push(cell);
       c = c + 1;
     }
-    item.rows.push(row);
+    tableRows.push(row);
     r = r + 1;
   }
   return item;
@@ -653,7 +664,6 @@ Token? tokTag(Lexer lx, string src) {
     lx.inRawBlock = false;
   }
   Token token = makeToken(Kind.Html, raw);
-  token.block = false;
   token.text = raw;
   return token;
 }
@@ -851,7 +861,7 @@ Token? tokCodespan(Lexer lx, string src) {
 }
 
 Token? tokBr(Lexer lx, string src) {
-  JsValue cap = execRe(pickRe(lx.gfm && lx.breaks, brBreaks, br), src);
+  JsValue cap = execRe(pickRe(!lx.pedantic && lx.gfm && lx.breaks, brBreaks, br), src);
   if (!matched(cap)) {
     return null;
   }
@@ -932,7 +942,7 @@ Token? tokAutolink(Lexer lx, string src) {
   token.href = href;
   Token child = makeToken(Kind.Text, text);
   child.text = text;
-  token.tokens.push(child);
+  token.tokens = [child];
   return token;
 }
 
@@ -964,12 +974,17 @@ Token? tokUrl(Lexer lx, string src) {
   token.href = href;
   Token child = makeToken(Kind.Text, text);
   child.text = text;
-  token.tokens.push(child);
+  token.tokens = [child];
   return token;
 }
 
 Token? tokInlineText(Lexer lx, string src) {
-  JsValue cap = execRe(pickRe3(lx.gfm && lx.breaks, textBreaks, lx.gfm, textGfm, inlineText), src);
+  // Pedantic rules take precedence over both GFM and breaks.
+  Regex textRule = inlineText;
+  if (!lx.pedantic && lx.gfm) {
+    textRule = pickRe(lx.breaks, textBreaks, textGfm);
+  }
+  JsValue cap = execRe(textRule, src);
   if (!matched(cap)) {
     return null;
   }
@@ -1216,25 +1231,40 @@ export Token[] inlineTokens(Lexer lx, string src, Token[] tokens) {
       prevChar = "";
     }
     keepPrevChar = false;
-    Token? token = tokEscape(lx, src);
+    // These anchored rules can only start with the listed ASCII characters.
+    // Keep their original precedence; plain text skips impossible regex calls.
+    string first = src.charAt(0);
+    Token? token = null;
+    if (first == "\\") {
+      token = tokEscape(lx, src);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);
       continue;
     }
-    token = tokTag(lx, src);
+    token = null;
+    if (first == "<") {
+      token = tokTag(lx, src);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);
       continue;
     }
-    token = tokLink(lx, src);
+    token = null;
+    if (first == "[" || first == "!") {
+      token = tokLink(lx, src);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);
       continue;
     }
-    token = tokReflink(lx, src);
+    token = null;
+    if (first == "[" || first == "!") {
+      token = tokReflink(lx, src);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       if (token.kind == Kind.Text && hasTokens(tokens) && lastToken(tokens).kind == Kind.Text) {
@@ -1245,31 +1275,46 @@ export Token[] inlineTokens(Lexer lx, string src, Token[] tokens) {
       }
       continue;
     }
-    token = tokEmStrong(lx, src, maskedSrc, prevChar);
+    token = null;
+    if (first == "*" || first == "_") {
+      token = tokEmStrong(lx, src, maskedSrc, prevChar);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);
       continue;
     }
-    token = tokCodespan(lx, src);
+    token = null;
+    if (first == "`") {
+      token = tokCodespan(lx, src);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);
       continue;
     }
-    token = tokBr(lx, src);
+    token = null;
+    if (first == " " || first == "\\" || first == "\n") {
+      token = tokBr(lx, src);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);
       continue;
     }
-    token = tokDel(lx, src, maskedSrc, prevChar);
+    token = null;
+    if (first == "~") {
+      token = tokDel(lx, src, maskedSrc, prevChar);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);
       continue;
     }
-    token = tokAutolink(lx, src);
+    token = null;
+    if (first == "<") {
+      token = tokAutolink(lx, src);
+    }
     if (token != null) {
       src = sliceFrom(src, token.raw.length);
       tokens.push(token);

@@ -87,7 +87,9 @@ export Regex otherEndAngleBracket = new Regex(">$");
 export Regex otherPedanticHrefTitle = new Regex("^([^'\"]*[^\\s])\\s+(['\"])(.*)\\2");
 export Regex otherUnicodeAlphaNumeric = new Regex("[\\p{L}\\p{N}]", "u");
 export Regex otherEscapeTest = new Regex("[&<>\"']");
+export Regex otherEscapeReplace = new Regex("[&<>\"']", "g");
 export Regex otherEscapeTestNoEncode = new Regex("[<>\"']|&(?!(#\\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\\w+);)");
+export Regex otherEscapeReplaceNoEncode = new Regex("[<>\"']|&(?!(#\\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\\w+);)", "g");
 export Regex otherPercentDecode = new Regex("%25", "g");
 export Regex otherSlashPipe = new Regex("\\\\\\|", "g");
 export Regex otherCarriageReturn = new Regex("\\r\\n|\\r", "g");
@@ -181,4 +183,3 @@ export Regex blockquoteBeginRegex(int indent) {
 export Regex listItemRegex(string bull) {
   return new Regex("^( {0,3}" + bull + ")((?:[\\t ][^\\n]*)?(?:\\n|$))");
 }
-

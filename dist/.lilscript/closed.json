@@ -1,0 +1,169 @@
+{
+  "version": 3,
+  "codec": "brotli",
+  "outputs": [
+    {
+      "mode": "single",
+      "format": "esm",
+      "entries": [
+        {
+          "name": "index",
+          "file": "marked.closed.js",
+          "dynamic": false,
+          "closure": [
+            "marked.closed.js"
+          ],
+          "row": 8851,
+          "raw_row": 35908
+        }
+      ],
+      "files": [
+        {
+          "file": "marked.closed.js",
+          "role": "entry",
+          "source_map_for": null,
+          "label": [
+            "index"
+          ],
+          "modules": [
+            "entry.lil",
+            "types.lil",
+            "parse.lil",
+            "lexer.lil",
+            "rules.lil",
+            "str.lil"
+          ],
+          "anchored": true,
+          "imports": [],
+          "dynamic_imports": [],
+          "bytes": 35908,
+          "codec_bytes": 8851,
+          "sha256": "a6ba04adc7b30f005348f2ce3056e21b0a8aef7627e33d718c47260eff4757af"
+        }
+      ],
+      "side_effects": [
+        "marked.closed.js"
+      ],
+      "codec_total": 8851,
+      "rows_total": 8851,
+      "setters": 0,
+      "output": "primary",
+      "codec": "brotli",
+      "codec_settings": {
+        "brotli": {
+          "quality": 11,
+          "window": 22,
+          "mode": "generic"
+        },
+        "gzip": {
+          "level": 9,
+          "window": 15
+        }
+      },
+      "policy_fingerprint": [
+        56,
+        87,
+        28,
+        160,
+        205,
+        175,
+        30,
+        45,
+        113,
+        180,
+        240,
+        174,
+        231,
+        140,
+        224,
+        156,
+        214,
+        52,
+        233,
+        101,
+        162,
+        113,
+        146,
+        143,
+        103,
+        106,
+        126,
+        42,
+        41,
+        225,
+        177,
+        158
+      ]
+    }
+  ],
+  "source_sha256": "277200365c5aa8a34bd801897f630bcf3a5de19e348b2827c4f2838a78e3e33e",
+  "inputs": {
+    "root": 0,
+    "entries": [
+      {
+        "name": "index",
+        "module": 0
+      }
+    ],
+    "modules": [
+      {
+        "path": "/home/azureuser/markedlil/src/entry.lil",
+        "bytes": 2958,
+        "sha256": "b1f71341712881346d2271eeb8e9ad915529b72699a8c9a798edffec6d073ca5",
+        "dependencies": [
+          1,
+          2
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/markedlil/src/types.lil",
+        "bytes": 3301,
+        "sha256": "14e60975f35cf769dcb60e63426287190a9c2fbf082b849834521e237fd7bf4e",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/markedlil/src/parse.lil",
+        "bytes": 8706,
+        "sha256": "625008f2ae4fb386b7ef35b6039c4ce3d53b38c584380e52937eca88153ad39a",
+        "dependencies": [
+          1,
+          3,
+          5,
+          4
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/markedlil/src/lexer.lil",
+        "bytes": 40106,
+        "sha256": "2f717efc2c13e0aef71dfc6453813cd03c19e57111bdc15f88bc9b703284d5c4",
+        "dependencies": [
+          1,
+          4,
+          5
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/markedlil/src/rules.lil",
+        "bytes": 20226,
+        "sha256": "c584e85a2ace23f0c8b95f2644b9fdc12b3e42a3e40cf41414729091117c70a7",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/markedlil/src/str.lil",
+        "bytes": 7770,
+        "sha256": "5075935f4cac426d577c034f6fa3f5ab9a7facff15028bb23a8483d77ff21320",
+        "dependencies": [
+          4
+        ],
+        "dynamic_dependencies": []
+      }
+    ],
+    "host_modules": [],
+    "host_reserved": []
+  }
+}

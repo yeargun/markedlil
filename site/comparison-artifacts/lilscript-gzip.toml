@@ -26,6 +26,6 @@ mode = "single"
 host_modules = "embed"
 entry_names = "index.mjs"
 [delivery.entries]
-index = "/home/azureuser/markedlil/src/entry.lil"
+index = "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/entry.lil"
 [execution]
 jobs = 1

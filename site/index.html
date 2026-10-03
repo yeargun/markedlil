@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta content="markedlil: current LilScript raw, gzip and Brotli objective builds versus minified upstream, with build times and live examples." name="description"/>
+<meta content="Marked parsing in LilScript: current raw, gzip and Brotli sizes, parse timings and build times versus original minified Marked. Try the live benchmark." name="description"/>
 <meta content="#c9a227" name="theme-color"/>
 <title>itslil/marked — marked 18.0.10 through LilScript</title>
 <link href="./styles.css" rel="stylesheet"/>
@@ -18,6 +18,7 @@
 <span>itslil/marked</span>
 </a>
 <nav aria-label="Main navigation">
+<a href="#performance">parse time</a>
 <a href="#compiler">build time</a>
 <a href="#verify">verify</a>
 <a href="#lab">playground</a>
@@ -31,21 +32,21 @@
 <p class="eyebrow"><span class="live-dot"></span> marked 18.0.10 · LilScript port · @itslil/marked</p>
 <h1>Markdown,<br/><em>compiled.</em></h1>
 <p class="lede">
-            This is not marked. It is the <code>marked@18.0.10</code> <strong>parse path</strong> —
-            <code>parse</code>, <code>parseInline</code>, <code>setOptions</code> — rewritten in
-            LilScript. No <code>use()</code>, Hooks, or Tokenizer subclassing: LilScript cannot
-            override methods, and it is not trying to become JavaScript. Every number on this page
-            compares that same official parse path, then Oxc, Terser and esbuild.
-            The measured ESM is the Brotli-scored compile. gzip and raw each have their own compile.
+            The synchronous parsing API of <code>marked@18.0.10</code> —
+            <code>parse</code>, <code>parseInline</code>, <code>setOptions</code> — implemented in
+            LilScript. Compare the current repository build with original minified Marked:
+            download sizes, parsing time, and build time. Raw, gzip and Brotli each have their
+            own objective build. Marked's extension and subclassing APIs are outside this port.
           </p>
 <div class="install-row">
 <code>npm install @itslil/marked</code>
 <button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
 </div>
 <div class="hero-actions">
-<a class="button primary" href="#compiler">build time</a>
+<a class="button primary" href="#performance">compare parse time</a>
 <a class="button secondary" href="https://www.npmjs.com/package/@itslil/marked">npm ↗</a>
 </div>
+<p class="objective-note">The demo and measurements use the <a href="./marked.js">current repository ESM</a>. npm releases are published separately.</p>
 </div>
 <div aria-label="Compression and performance results" class="scoreboard">
 <div class="score-main">
@@ -54,7 +55,7 @@
 <p id="hero-bytes"></p>
 </div>
 <div class="score-grid">
-<div><strong id="hero-shipped">—</strong><span>Brotli-11 you ship, vs minified original</span></div>
+<div><strong id="hero-shipped">—</strong><span>Brotli-11, vs minified original</span></div>
 <div><strong id="hero-gzip">—</strong><span>gzip-9, gzip-scored compile vs minified original</span></div>
 <div><strong id="hero-raw">—</strong><span>raw, raw-scored compile vs minified original</span></div>
 <div><strong id="hero-spec">—</strong><span>current artifact checks</span></div>
@@ -68,16 +69,21 @@
           <span>✦</span> autolinks <span>✦</span> parse <span>✦</span> parseInline <span>✦</span> setOptions
         </div>
 </section>
-<section class="performance shell" id="performance"><div class="verify" id="verify">
+<section class="performance shell" id="performance">
+<div class="section-heading">
+<div><p class="eyebrow">Current build · original minified</p><h2>Parsing time.</h2></div>
+<p>Recorded in Chromium and Firefox on two documents. Compare the measured medians, inspect every sample, or run both parsers on your own device.</p>
+</div>
+<div id="recorded-runtime"></div>
+<div class="verify" id="verify">
 <div class="verify-head">
 <div>
-<h3>Don't take the number. Run it.</h3>
+<h3>Run it on your device.</h3>
 <p>
-                The table below is a recording. This button is the same benchmark on
-                <strong>your</strong> machine: the same corpus, the same two suites, the same
-                warmup-discard median as
-                <a href="https://github.com/yeargun/markedlil/blob/main/e2e/run.mjs">e2e/run.mjs</a>.
-                Both engines parse all 660 spec cases first, and no timing is reported unless
+                This button measures document parsing and the full spec suite on
+                <strong>your</strong> machine with the shared
+                <a href="https://github.com/yeargun/markedlil/blob/main/site/bench.js">benchmark harness</a>.
+                Both parsers check all 660 spec cases first, and no timing is reported unless
                 every byte of HTML matches.
               </p>
 </div>
@@ -96,8 +102,8 @@
 <h2>Live<br/>markdown.</h2>
 </div>
 <p>
-            Left is the editor. Right is HTML from <code>@itslil/marked</code> or the official
-            <code>marked@18.0.10</code> parse path — the same Lexer/Parser/Renderer cut used for size.
+            Left is the editor. Right is HTML from the current <code>@itslil/marked</code> ESM
+            or original minified <code>marked@18.0.10</code> — the same artifacts used for the recorded timings.
             Marked does not sanitize HTML. Do not paste untrusted markdown.
           </p>
 </div>
@@ -109,7 +115,7 @@
             </label>
 <label>
 <input name="engine" type="radio" value="official"/>
-              official parse path
+              original minified Marked
             </label>
 <button id="race" type="button">race 10×</button>
 <span id="race-out"></span>
@@ -123,7 +129,7 @@
 <section class="objective-section shell" id="evidence"><p class="eyebrow">Current library · original minified</p><h2>Three objectives.<br/>Measured separately.</h2><div id="compression-comparison"></div></section><section class="objective-section shell" id="compiler"><p class="eyebrow">Same machine · sequential builds</p><h2>Build time.</h2><div id="objective-build-times"></div></section>
 <section class="closing shell">
 <p class="eyebrow">Zero runtime dependencies</p>
-<h2>Install the<br/>current port.</h2>
+<h2>Use the<br/>Markdown port.</h2>
 <div class="install-row large">
 <code>npm install @itslil/marked</code>
 <button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
