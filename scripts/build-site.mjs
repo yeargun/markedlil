@@ -10,3 +10,5 @@ await mkdir(output,{recursive:true});
 await cp(join(root,'site'),output,{recursive:true});
 await writeFile(join(output,'.nojekyll'),'');
 console.log(`Built current objective comparisons at ${output}`);
+
+await import('./package-download.mjs').then(({writePackageDownload}) => writePackageDownload(root, output));

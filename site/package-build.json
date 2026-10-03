@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "package": "@itslil/marked",
+  "version": "18.0.15",
+  "checkedAt": "2026-10-03T13:57:32.722303+00:00",
+  "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+  "buildReport": "./comparison/package-build-report.json",
+  "packageBuildSeconds": 48.274,
+  "validation": {
+    "ok": true,
+    "checks": [
+      {
+        "suite": "test",
+        "command": [
+          "bash",
+          "-c",
+          "node --test-concurrency=1 --test test/compat.test.mjs test/options.test.mjs test/official-parse.test.mjs test/api.test.mjs test/closed.test.mjs test/runtime.test.mjs"
+        ],
+        "returncode": 0,
+        "log": "./comparison/package-validation/test.log",
+        "logSha256": "bf209fda1afc5f0016625646e5377c9d197364b3e52df1ed2c387747c25b1031"
+      },
+      {
+        "suite": "pack",
+        "command": [
+          "npm",
+          "run",
+          "check:pack"
+        ],
+        "returncode": 0,
+        "log": "./comparison/package-validation/pack.log",
+        "logSha256": "d8e7f02a5bebff50e2e53cbd934ac414a28ef1f6030bbb909704e2f399ec440b"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "src/browser.lil",
+      "sha256": "29215bc9ba5f6a47a3ab1a01761920857d4b7f0c0dd6cc28af705cdcdd7a74c7"
+    },
+    {
+      "path": "src/entry.lil",
+      "sha256": "b1f71341712881346d2271eeb8e9ad915529b72699a8c9a798edffec6d073ca5"
+    },
+    {
+      "path": "src/lexer.lil",
+      "sha256": "2f717efc2c13e0aef71dfc6453813cd03c19e57111bdc15f88bc9b703284d5c4"
+    },
+    {
+      "path": "src/parse.lil",
+      "sha256": "625008f2ae4fb386b7ef35b6039c4ce3d53b38c584380e52937eca88153ad39a"
+    },
+    {
+      "path": "src/rules.lil",
+      "sha256": "c584e85a2ace23f0c8b95f2644b9fdc12b3e42a3e40cf41414729091117c70a7"
+    },
+    {
+      "path": "src/str.lil",
+      "sha256": "5075935f4cac426d577c034f6fa3f5ab9a7facff15028bb23a8483d77ff21320"
+    },
+    {
+      "path": "src/types.lil",
+      "sha256": "14e60975f35cf769dcb60e63426287190a9c2fbf082b849834521e237fd7bf4e"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/.lilscript/closed.json",
+      "bytes": 3762,
+      "sha256": "cee5fc3da4ddcf379e8862d2946ffa791868292a81db1eca8cd28c5079c0cb34"
+    },
+    {
+      "path": "dist/.lilscript/public.json",
+      "bytes": 11176,
+      "sha256": "ae9b7f9e8170eabe2adc2078af387944285e6cdf7e0202b081fe9aa7e5f3787c"
+    },
+    {
+      "path": "dist/lilscript.manifest.json",
+      "bytes": 10897,
+      "sha256": "f1e3d2f6cc78370d5b6250b54748c3c955b810e2b771c1fad1021b863f1b09b6"
+    },
+    {
+      "path": "dist/marked.bytes.js",
+      "bytes": 31702,
+      "sha256": "e419e59de1ac55d625ddb8a6d2e131ca4d1866c0310b389ce2cf06bd6fa0e498"
+    },
+    {
+      "path": "dist/marked.cjs",
+      "bytes": 36309,
+      "sha256": "08a6521b5624f8724dab04241b4d058184f64c7a5e6fbe76a4cf2834f395e4bb"
+    },
+    {
+      "path": "dist/marked.closed.js",
+      "bytes": 35908,
+      "sha256": "a6ba04adc7b30f005348f2ce3056e21b0a8aef7627e33d718c47260eff4757af"
+    },
+    {
+      "path": "dist/marked.d.ts",
+      "bytes": 873,
+      "sha256": "8817f58467cb6f5f74c423514fe46619bff6fe84b390383f1c50993642ddfc28"
+    },
+    {
+      "path": "dist/marked.esm.js",
+      "bytes": 35908,
+      "sha256": "a6ba04adc7b30f005348f2ce3056e21b0a8aef7627e33d718c47260eff4757af"
+    },
+    {
+      "path": "dist/marked.gzip.js",
+      "bytes": 36044,
+      "sha256": "6712b7d963f6382c8fa6fdbd4c96be0256a5fac8d69a3640a16423f6146fd5e8"
+    },
+    {
+      "path": "dist/marked.raw.js",
+      "bytes": 35908,
+      "sha256": "a6ba04adc7b30f005348f2ce3056e21b0a8aef7627e33d718c47260eff4757af"
+    },
+    {
+      "path": "dist/marked.umd.js",
+      "bytes": 35766,
+      "sha256": "e2f9f9270868e3586de2ad1ce57c8a958b3e0f580a8c505f53692204c12f0a2f"
+    }
+  ],
+  "scope": "Checked repository package; independent of npm publication. Main-entry objective comparisons have separate artifacts and timings."
+}

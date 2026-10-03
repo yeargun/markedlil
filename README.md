@@ -82,3 +82,5 @@ DOCUMENT=node_modules/marked/README.md BATCH=12 npm run bench
 ## License
 
 MIT. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). Marked is copyright Christopher Jeffrey / MarkedJS.
+
+[Download the checked repository package](https://yeargun.github.io/markedlil/downloads/package.tgz) · [Package files, hashes and validation](https://yeargun.github.io/markedlil/package-build.json). npm publication is independent.
