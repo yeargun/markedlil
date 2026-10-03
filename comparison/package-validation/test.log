@@ -1,0 +1,279 @@
+TAP version 13
+# Subtest: @itslil/marked JS library API
+    # Subtest: keeps every public parse-path name exact in the compiler output
+    ok 1 - keeps every public parse-path name exact in the compiler output
+      ---
+      duration_ms: 1.524005
+      ...
+    # Subtest: exposes the same parse-path surface on ESM, CJS, and UMD
+    ok 2 - exposes the same parse-path surface on ESM, CJS, and UMD
+      ---
+      duration_ms: 0.904695
+      ...
+    # Subtest: reads per-call option objects under their real names, including null
+    ok 3 - reads per-call option objects under their real names, including null
+      ---
+      duration_ms: 38.756254
+      ...
+    # Subtest: lets named and marked.setOptions / options mutate live defaults
+    ok 4 - lets named and marked.setOptions / options mutate live defaults
+      ---
+      duration_ms: 2.898661
+      ...
+    # Subtest: rejects a non-string on every marked() entry
+    ok 5 - rejects a non-string on every marked() entry
+      ---
+      duration_ms: 0.525915
+      ...
+    1..5
+ok 1 - @itslil/marked JS library API
+  ---
+  duration_ms: 45.913726
+  type: 'suite'
+  ...
+# Subtest: @itslil/marked closed LilScript lane
+    # Subtest: is compiled next to the library artifact
+    ok 1 - is compiled next to the library artifact
+      ---
+      duration_ms: 0.827581
+      ...
+    # Subtest: keeps default parse working
+    ok 2 - keeps default parse working
+      ---
+      duration_ms: 17.347787
+      ...
+    1..2
+ok 2 - @itslil/marked closed LilScript lane
+  ---
+  duration_ms: 19.677874
+  type: 'suite'
+  ...
+# Subtest: @itslil/marked codec-specific compiles
+    # Subtest: keeps the marked option keys on gzip and raw cost models
+    ok 1 - keeps the marked option keys on gzip and raw cost models
+      ---
+      duration_ms: 22.288025
+      ...
+    1..1
+ok 3 - @itslil/marked codec-specific compiles
+  ---
+  duration_ms: 22.469484
+  type: 'suite'
+  ...
+# Subtest: @itslil/marked vs marked@18.0.10
+    # Subtest: exports parse, parseInline, and marked()
+    ok 1 - exports parse, parseInline, and marked()
+      ---
+      duration_ms: 9.660032
+      ...
+    # Subtest: ships the compiler-selected compact ESM
+    ok 2 - ships the compiler-selected compact ESM
+      ---
+      duration_ms: 1.037454
+      ...
+    # Subtest: loads from CommonJS
+    ok 3 - loads from CommonJS
+      ---
+      duration_ms: 10.981999
+      ...
+    # Subtest: matches official HTML on GFM and CommonMark spec cases
+    ok 4 - matches official HTML on GFM and CommonMark spec cases
+      ---
+      duration_ms: 109.474922
+      ...
+    1..4
+ok 4 - @itslil/marked vs marked@18.0.10
+  ---
+  duration_ms: 132.472997
+  type: 'suite'
+  ...
+# Subtest: parse-only marked@18.0.10
+    # Subtest: matches published marked HTML on the spec corpus
+    ok 1 - matches published marked HTML on the spec corpus
+      ---
+      duration_ms: 112.656934
+      ...
+    1..1
+ok 5 - parse-only marked@18.0.10
+  ---
+  duration_ms: 113.974243
+  type: 'suite'
+  ...
+# Subtest: @itslil/marked options
+    # Subtest: matches official HTML with {}
+    ok 1 - matches official HTML with {}
+      ---
+      duration_ms: 85.842467
+      ...
+    # Subtest: matches official HTML with {"gfm":false,"breaks":false,"pedantic":false}
+    ok 2 - matches official HTML with {"gfm":false,"breaks":false,"pedantic":false}
+      ---
+      duration_ms: 37.077468
+      ...
+    # Subtest: matches official HTML with {"gfm":false,"breaks":false,"pedantic":true}
+    ok 3 - matches official HTML with {"gfm":false,"breaks":false,"pedantic":true}
+      ---
+      duration_ms: 60.032573
+      ...
+    # Subtest: matches official HTML with {"gfm":false,"breaks":true,"pedantic":false}
+    ok 4 - matches official HTML with {"gfm":false,"breaks":true,"pedantic":false}
+      ---
+      duration_ms: 32.21157
+      ...
+    # Subtest: matches official HTML with {"gfm":false,"breaks":true,"pedantic":true}
+    ok 5 - matches official HTML with {"gfm":false,"breaks":true,"pedantic":true}
+      ---
+      duration_ms: 27.588948
+      ...
+    # Subtest: matches official HTML with {"gfm":true,"breaks":false,"pedantic":false}
+    ok 6 - matches official HTML with {"gfm":true,"breaks":false,"pedantic":false}
+      ---
+      duration_ms: 29.034036
+      ...
+    # Subtest: matches official HTML with {"gfm":true,"breaks":false,"pedantic":true}
+    ok 7 - matches official HTML with {"gfm":true,"breaks":false,"pedantic":true}
+      ---
+      duration_ms: 16.918373
+      ...
+    # Subtest: matches official HTML with {"gfm":true,"breaks":true,"pedantic":false}
+    ok 8 - matches official HTML with {"gfm":true,"breaks":true,"pedantic":false}
+      ---
+      duration_ms: 23.131525
+      ...
+    # Subtest: matches official HTML with {"gfm":true,"breaks":true,"pedantic":true}
+    ok 9 - matches official HTML with {"gfm":true,"breaks":true,"pedantic":true}
+      ---
+      duration_ms: 20.503431
+      ...
+    # Subtest: marked() reads the same option object as parse()
+    ok 10 - marked() reads the same option object as parse()
+      ---
+      duration_ms: 20.744433
+      ...
+    # Subtest: matches official parseInline across the corpus
+    ok 11 - matches official parseInline across the corpus
+      ---
+      duration_ms: 10.518901
+      ...
+    # Subtest: matches official parseInline with {}
+    ok 12 - matches official parseInline with {}
+      ---
+      duration_ms: 8.457798
+      ...
+    # Subtest: matches official parseInline with {"gfm":false,"breaks":false,"pedantic":false}
+    ok 13 - matches official parseInline with {"gfm":false,"breaks":false,"pedantic":false}
+      ---
+      duration_ms: 7.360653
+      ...
+    # Subtest: matches official parseInline with {"gfm":false,"breaks":false,"pedantic":true}
+    ok 14 - matches official parseInline with {"gfm":false,"breaks":false,"pedantic":true}
+      ---
+      duration_ms: 7.368909
+      ...
+    # Subtest: matches official parseInline with {"gfm":false,"breaks":true,"pedantic":false}
+    ok 15 - matches official parseInline with {"gfm":false,"breaks":true,"pedantic":false}
+      ---
+      duration_ms: 6.990209
+      ...
+    # Subtest: matches official parseInline with {"gfm":false,"breaks":true,"pedantic":true}
+    ok 16 - matches official parseInline with {"gfm":false,"breaks":true,"pedantic":true}
+      ---
+      duration_ms: 6.43057
+      ...
+    # Subtest: matches official parseInline with {"gfm":true,"breaks":false,"pedantic":false}
+    ok 17 - matches official parseInline with {"gfm":true,"breaks":false,"pedantic":false}
+      ---
+      duration_ms: 7.062274
+      ...
+    # Subtest: matches official parseInline with {"gfm":true,"breaks":false,"pedantic":true}
+    ok 18 - matches official parseInline with {"gfm":true,"breaks":false,"pedantic":true}
+      ---
+      duration_ms: 6.321154
+      ...
+    # Subtest: matches official parseInline with {"gfm":true,"breaks":true,"pedantic":false}
+    ok 19 - matches official parseInline with {"gfm":true,"breaks":true,"pedantic":false}
+      ---
+      duration_ms: 7.314697
+      ...
+    # Subtest: matches official parseInline with {"gfm":true,"breaks":true,"pedantic":true}
+    ok 20 - matches official parseInline with {"gfm":true,"breaks":true,"pedantic":true}
+      ---
+      duration_ms: 5.899905
+      ...
+    1..20
+ok 6 - @itslil/marked options
+  ---
+  duration_ms: 429.232825
+  type: 'suite'
+  ...
+# Subtest: @itslil/marked option API
+    # Subtest: emits the public option keys, not mangled names
+    ok 1 - emits the public option keys, not mangled names
+      ---
+      duration_ms: 0.516508
+      ...
+    # Subtest: reports defaults under their real names
+    ok 2 - reports defaults under their real names
+      ---
+      duration_ms: 0.685274
+      ...
+    # Subtest: CJS getDefaults uses the same keys
+    ok 3 - CJS getDefaults uses the same keys
+      ---
+      duration_ms: 0.161683
+      ...
+    # Subtest: getDefaults stays the factory after setOptions
+    ok 4 - getDefaults stays the factory after setOptions
+      ---
+      duration_ms: 0.177333
+      ...
+    # Subtest: setOptions changes later parses and refreshes marked.defaults
+    ok 5 - setOptions changes later parses and refreshes marked.defaults
+      ---
+      duration_ms: 0.221906
+      ...
+    # Subtest: marked() rejects a non-string
+    ok 6 - marked() rejects a non-string
+      ---
+      duration_ms: 0.433683
+      ...
+    1..6
+ok 7 - @itslil/marked option API
+  ---
+  duration_ms: 2.463606
+  type: 'suite'
+  ...
+# Subtest: HTML escaping distinguishes entities from literal ampersands
+ok 8 - HTML escaping distinguishes entities from literal ampersands
+  ---
+  duration_ms: 53.480946
+  ...
+# Subtest: code escaping preserves sparse and dense text, including UTF-16 edges
+ok 9 - code escaping preserves sparse and dense text, including UTF-16 edges
+  ---
+  duration_ms: 7.515824
+  ...
+# Subtest: inline dispatch preserves matches after every ASCII leading character
+ok 10 - inline dispatch preserves matches after every ASCII leading character
+  ---
+  duration_ms: 447.552905
+  ...
+# Subtest: inline dispatch preserves nested, incomplete, and Unicode constructs
+ok 11 - inline dispatch preserves nested, incomplete, and Unicode constructs
+  ---
+  duration_ms: 77.421767
+  ...
+# Subtest: successive parses isolate child storage and regular-expression state
+ok 12 - successive parses isolate child storage and regular-expression state
+  ---
+  duration_ms: 38.788539
+  ...
+1..12
+# tests 44
+# suites 7
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2028.065853

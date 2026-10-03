@@ -1,0 +1,5 @@
+
+> @itslil/marked@18.0.15 check:pack
+> node scripts/check-pack.mjs
+
+npm pack: 15 files, 50018 bytes packed, 200239 bytes unpacked
