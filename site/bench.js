@@ -13,7 +13,7 @@ export const HARNESS = {
   specRounds: 40,
   runner: "https://github.com/yeargun/markedlil/blob/main/e2e/run.mjs",
   corpus: "https://github.com/yeargun/markedlil/blob/main/scripts/spec.mjs",
-  recorded: "https://github.com/yeargun/markedlil/blob/main/reports/bench.json",
+  recorded: "https://github.com/yeargun/markedlil/blob/main/site/runtime.json",
   browser: "https://github.com/yeargun/markedlil/blob/main/site/bench.js",
 }
 

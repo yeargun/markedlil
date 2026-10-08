@@ -1,9 +1,6 @@
 # Compiler-owned delivery; no JavaScript post-minifier or export rewriting.
 [policy]
 version = 3
-[policy.resources]
-# Match the independently measured objective builds instead of inheriting the service ceiling.
-logical_work = 2000000000
 [javascript]
 priority = "size-first"
 # Assumes unpatched platform builtins; disable when consumers replace them.
@@ -17,18 +14,18 @@ level = 15
 
 # Optimize the delivered files for this codec, independently of raw/gzip objectives.
 [objective]
-codecs = "brotli"
+codecs = "gzip"
 [mangle]
 identifiers = true
 properties = true
 pool_strings = true
 
+
 [delivery]
 mode = "single"
-entry_names = "marked.closed.js"
+host_modules = "embed"
+entry_names = "index.mjs"
 [delivery.entries]
-index = "src/entry.lil"
-
-# Keep package delivery builds serial.
+index = "/home/azureuser/lilscript-rebuild-reports/2026-10-03-marked-runtime-next/checked/src/entry.lil"
 [execution]
 jobs = 1

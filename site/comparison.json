@@ -1,181 +1,218 @@
 {
-  "schemaVersion": 2,
-  "measuredAt": "2026-09-24T04:26:28Z",
+  "schemaVersion": 4,
   "name": "markedlil",
+  "package": "@itslil/marked",
+  "measuredAt": "2026-10-03T08:34:08.563993+00:00",
   "compiler": {
-    "commit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
-    "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9"
+    "baseRevision": "f7d29bd9",
+    "binarySha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+    "hasLocalSourceChanges": true
   },
   "upstream": {
     "package": "marked",
     "version": "18.0.10",
-    "repository": "https://github.com/markedjs/marked.git",
-    "commit": "8698d35b84c17f86ea8a299a6183d47ccb3d2bd7"
+    "external": [],
+    "sharedExports": [
+      "defaults",
+      "getDefaults",
+      "marked",
+      "options",
+      "parse",
+      "parseInline",
+      "setOptions"
+    ],
+    "excludedExports": [
+      "Hooks",
+      "Lexer",
+      "Marked",
+      "Parser",
+      "Renderer",
+      "TextRenderer",
+      "Tokenizer",
+      "lexer",
+      "parser",
+      "use",
+      "walkTokens"
+    ],
+    "additionalExports": [
+      "default"
+    ],
+    "resolution": {
+      "platform": "neutral",
+      "conditions": [
+        "production"
+      ],
+      "mainFields": [
+        "module",
+        "main"
+      ],
+      "target": "es2020",
+      "defines": {
+        "process.env.NODE_ENV": "production"
+      }
+    }
   },
-  "scope": "Pinned Marked parse-only source graph via scripts/official-parse-bundle.mjs; excludes extension API. Original ESM assembled from the pinned Git source build.",
-  "compatibility": "Runtime checks: 29/29 pass.",
-  "tests": {
-    "pass": 29,
-    "total": 29
-  },
-  "buildComplete": true,
+  "scope": "Portable main-entry ESM with matching shared named exports and no external runtime imports. The port implements synchronous parse, parseInline and option APIs; Marked extensions, tokenizers and the full upstream API are outside its supported boundary.",
   "machine": {
-    "provider": "Azure",
-    "instanceClass": "Standard_B8als_v2",
     "cpu": "AMD EPYC 7763 64-Core Processor",
     "logicalCpus": 8,
-    "memoryBytes": 16706420736,
-    "os": "Ubuntu 24.04.3 LTS",
-    "kernel": "7.0.0-1014-azure",
-    "node": "v24.11.1",
-    "rayonThreads": 8,
-    "loadAtStart": [
-      2.08837890625,
-      2.48876953125,
-      2.82470703125
-    ],
-    "loadAtEnd": [
-      4.4052734375,
-      3.11083984375,
-      3.021484375
-    ]
+    "memoryGiB": 15.6,
+    "os": "Linux-7.0.0-1014-azure-x86_64-with-glibc2.39",
+    "node": "v20.19.0"
   },
-  "build": {
-    "compilerSeconds": 2.3995420932769775,
-    "compilerInvocations": 4,
-    "compilerScope": "Sum of the wall times of the compiler invocations in one package build (lilscript.toml, .closed, .gzip, .bytes), median of three clean builds.",
-    "primaryCompilerSeconds": 1.127229928970337,
-    "primaryCompilerRange": [
-      0.7886292934417725,
-      1.3102452754974365
-    ],
-    "primaryCompilerScope": "The lilscript.toml invocation that writes the published ESM, median of three clean builds.",
-    "packageSeconds": 2.6753435840000748,
-    "originalSeconds": 6.027411709001171,
-    "originalEsmSeconds": 0.257381494,
-    "packageScope": "node scripts/build.mjs --compile --force",
-    "originalScope": "npm run build",
-    "protocol": {
-      "repetitions": 3,
-      "cleanOutputs": true,
-      "dependencyInstallationTimedSeparately": true,
-      "sourceArchives": "Pinned Git checkouts; original repository package build commands, followed by production ESM assembly.",
-      "workerUse": "Both implementations use the same machine and Node version. The machine is a burstable Azure VM that also runs unrelated jobs; timings are contextual wall times, with CPU time recorded separately."
+  "objectives": [
+    {
+      "objective": "raw",
+      "metric": "raw",
+      "lilscript": {
+        "artifact": "./comparison-artifacts/lilscript-raw.mjs",
+        "sizes": {
+          "raw": 31834,
+          "gzip9": 10303,
+          "brotli11": 9177
+        },
+        "sha256": "0cb7c81b69e9e84b848bd0b66a682c73714d380575a7ad7ccbdb01c2779a7c89",
+        "buildSeconds": 14.789840931996878,
+        "config": "./comparison-artifacts/lilscript-raw.toml",
+        "configSha256": "4ad64deacc101dffbe0c398d2fae4d70e0e2d5981bfa025dddb4921fafc56b3e"
+      },
+      "original": {
+        "tool": "Oxc",
+        "version": "via Vite 8.2.1",
+        "artifact": "./comparison-artifacts/original-oxc.mjs",
+        "sizes": {
+          "raw": 42650,
+          "gzip9": 12530,
+          "brotli11": 11518
+        },
+        "sha256": "062e75a6a50248d3a737e0bf8cdc39a05c070751b581c256c4e24f51390400ab",
+        "buildSeconds": 0.220522068
+      },
+      "ratio": 0.7464009378663541
+    },
+    {
+      "objective": "gzip",
+      "metric": "gzip9",
+      "lilscript": {
+        "artifact": "./comparison-artifacts/lilscript-gzip.mjs",
+        "sizes": {
+          "raw": 36044,
+          "gzip9": 9834,
+          "brotli11": 8815
+        },
+        "sha256": "6712b7d963f6382c8fa6fdbd4c96be0256a5fac8d69a3640a16423f6146fd5e8",
+        "buildSeconds": 13.189285849999578,
+        "config": "./comparison-artifacts/lilscript-gzip.toml",
+        "configSha256": "34bbebaee659354797a0953053de631493f65301386f3859c8c999e6eee2ab93"
+      },
+      "original": {
+        "tool": "Oxc",
+        "version": "via Vite 8.2.1",
+        "artifact": "./comparison-artifacts/original-oxc.mjs",
+        "sizes": {
+          "raw": 42650,
+          "gzip9": 12530,
+          "brotli11": 11518
+        },
+        "sha256": "062e75a6a50248d3a737e0bf8cdc39a05c070751b581c256c4e24f51390400ab",
+        "buildSeconds": 0.220522068
+      },
+      "ratio": 0.7848363926576217
+    },
+    {
+      "objective": "brotli",
+      "metric": "brotli11",
+      "lilscript": {
+        "artifact": "./comparison-artifacts/lilscript-brotli.mjs",
+        "sizes": {
+          "raw": 35908,
+          "gzip9": 9903,
+          "brotli11": 8851
+        },
+        "sha256": "a6ba04adc7b30f005348f2ce3056e21b0a8aef7627e33d718c47260eff4757af",
+        "buildSeconds": 29.870925612995052,
+        "config": "./comparison-artifacts/lilscript-brotli.toml",
+        "configSha256": "9f2f764371eec7ed198e511682b6b3c2dd021470bdb9fb313947bfae12be3211"
+      },
+      "original": {
+        "tool": "Terser",
+        "version": "5.51.2",
+        "artifact": "./comparison-artifacts/original-terser.mjs",
+        "sizes": {
+          "raw": 43010,
+          "gzip9": 12573,
+          "brotli11": 11488
+        },
+        "sha256": "e889afecd9de22eb14258ccac9861face3feda2aa4d6dc6a207583832f8b6a17",
+        "buildSeconds": 0.5653430779999999
+      },
+      "ratio": 0.7704561281337048
     }
-  },
-  "esm": {
-    "lilscript": {
-      "raw": 36633,
-      "gzip9": 10314,
-      "brotli11": 9287,
-      "sha256": "8330ff69158b0e1b0996630c7dc9a3320903ce18b7beb86dde012aa7abfd445e",
-      "file": "./esm-comparison/lilscript.js"
+  ],
+  "minifiers": [
+    {
+      "tool": "Terser",
+      "version": "5.51.2",
+      "artifact": "./comparison-artifacts/original-terser.mjs",
+      "sizes": {
+        "raw": 43010,
+        "gzip9": 12573,
+        "brotli11": 11488
+      },
+      "sha256": "e889afecd9de22eb14258ccac9861face3feda2aa4d6dc6a207583832f8b6a17",
+      "buildSeconds": 0.5653430779999999
     },
-    "original": {
-      "raw": 37726,
-      "gzip9": 11048,
-      "brotli11": 10114,
-      "sha256": "84581ae2212f70adf8dab87990e7ab8e98451c289769da1e56009214bf2ade8e",
-      "file": "./esm-comparison/original.js"
+    {
+      "tool": "esbuild",
+      "version": "0.28.1",
+      "artifact": "./comparison-artifacts/original-esbuild.mjs",
+      "sizes": {
+        "raw": 42912,
+        "gzip9": 12831,
+        "brotli11": 11791
+      },
+      "sha256": "e72d6028a4333f3a4232cead0869cc12e12701ea3ba59481cecabec1da90998f",
+      "buildSeconds": 0.06554774799999996
+    },
+    {
+      "tool": "Oxc",
+      "version": "via Vite 8.2.1",
+      "artifact": "./comparison-artifacts/original-oxc.mjs",
+      "sizes": {
+        "raw": 42650,
+        "gzip9": 12530,
+        "brotli11": 11518
+      },
+      "sha256": "062e75a6a50248d3a737e0bf8cdc39a05c070751b581c256c4e24f51390400ab",
+      "buildSeconds": 0.220522068
     }
+  ],
+  "validation": {
+    "checks": 38127,
+    "objectives": [
+      {
+        "objective": "raw",
+        "checks": 12709,
+        "suite": "differential",
+        "scope": "All 660 cases: parse/parseInline x default and eight option combinations; 32x document; three independent documents x default and eight option combinations; 400 mixed documents and interleaved plain documents; live options."
+      },
+      {
+        "objective": "gzip",
+        "checks": 12709,
+        "suite": "differential",
+        "scope": "All 660 cases: parse/parseInline x default and eight option combinations; 32x document; three independent documents x default and eight option combinations; 400 mixed documents and interleaved plain documents; live options."
+      },
+      {
+        "objective": "brotli",
+        "checks": 12709,
+        "suite": "differential",
+        "scope": "All 660 cases: parse/parseInline x default and eight option combinations; 32x document; three independent documents x default and eight option combinations; 400 mixed documents and interleaved plain documents; live options."
+      }
+    ],
+    "scope": "Main ESM: 660 cases through parse and parseInline with defaults and all eight gfm/breaks/pedantic combinations; large and independent documents; mixed documents; live options. Separate package tests cover ESM, CJS and UMD. This is not complete upstream API equivalence."
   },
-  "sourceBuild": {
-    "original": {
-      "complete": true,
-      "medianSeconds": 6.027411709001171,
-      "minimumSeconds": 5.826678186000208,
-      "maximumSeconds": 13.418629251995299,
-      "samples": [
-        {
-          "command": [
-            "npm",
-            "run",
-            "build"
-          ],
-          "wallSeconds": 13.418629251995299,
-          "cpuSeconds": 15.342124999999998,
-          "exitCode": 0,
-          "timedOut": false,
-          "log": "original-build-1.log",
-          "logSha256": "6f0fae95b868624120a5a216d537ab4f6bb2961df5b9ab8f44cab227677f7f9c"
-        },
-        {
-          "command": [
-            "npm",
-            "run",
-            "build"
-          ],
-          "wallSeconds": 6.027411709001171,
-          "cpuSeconds": 11.200799999999997,
-          "exitCode": 0,
-          "timedOut": false,
-          "log": "original-build-2.log",
-          "logSha256": "ad9e46c7781207807c069f6e68af442aea700943865f928bc39ecf1147396fea"
-        },
-        {
-          "command": [
-            "npm",
-            "run",
-            "build"
-          ],
-          "wallSeconds": 5.826678186000208,
-          "cpuSeconds": 10.738856000000004,
-          "exitCode": 0,
-          "timedOut": false,
-          "log": "original-build-3.log",
-          "logSha256": "fd8ae1dc632649e744355287a4ea54504eee827455d261e11020bd85a1900905"
-        }
-      ]
-    },
-    "lilscript": {
-      "complete": true,
-      "medianSeconds": 2.6753435840000748,
-      "minimumSeconds": 2.318447086996457,
-      "maximumSeconds": 4.095410964000621,
-      "samples": [
-        {
-          "command": [
-            "bash",
-            "-c",
-            "node scripts/build.mjs --compile --force"
-          ],
-          "wallSeconds": 4.095410964000621,
-          "cpuSeconds": 3.5568680000000024,
-          "exitCode": 0,
-          "timedOut": false,
-          "log": "lilscript-build-1.log",
-          "logSha256": "447211eaf3dae5330e8a7b8abfbc44eae543d71a2dec6e181157e0b138bbcd83"
-        },
-        {
-          "command": [
-            "bash",
-            "-c",
-            "node scripts/build.mjs --compile --force"
-          ],
-          "wallSeconds": 2.6753435840000748,
-          "cpuSeconds": 2.597275000000005,
-          "exitCode": 0,
-          "timedOut": false,
-          "log": "lilscript-build-2.log",
-          "logSha256": "447211eaf3dae5330e8a7b8abfbc44eae543d71a2dec6e181157e0b138bbcd83"
-        },
-        {
-          "command": [
-            "bash",
-            "-c",
-            "node scripts/build.mjs --compile --force"
-          ],
-          "wallSeconds": 2.318447086996457,
-          "cpuSeconds": 2.2834039999999938,
-          "exitCode": 0,
-          "timedOut": false,
-          "log": "lilscript-build-3.log",
-          "logSha256": "447211eaf3dae5330e8a7b8abfbc44eae543d71a2dec6e181157e0b138bbcd83"
-        }
-      ]
-    },
-    "scopeNote": "Both timings cover each repository’s package build command; their output formats and build checks can differ.",
-    "cleanOutputs": true,
-    "installationExcluded": true
+  "runtime": {
+    "artifact": "./runtime.json",
+    "sha256": "fd3cec000fb565f28dbf7547d4f1615bb2487093b65ef5f625ce37f4faaf2abf"
   }
 }

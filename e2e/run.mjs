@@ -1,267 +1,51 @@
-import { chromium } from "playwright"
-import { createServer } from "node:http"
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs"
-import { dirname, join, resolve } from "node:path"
-import { fileURLToPath } from "node:url"
-import { spawnSync } from "node:child_process"
-import { marked as officialMarked } from "marked"
-import { parse as lilParse } from "../dist/marked.esm.js"
-import { corpusMarkdown, loadSpecCases } from "../scripts/spec.mjs"
-
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
-const lanesDir = join(root, ".tmp", "lanes")
-const sizesPath = join(root, "reports", "sizes.json")
-
-if (!existsSync(sizesPath) || !existsSync(join(lanesDir, "itslil.js")) || !existsSync(join(lanesDir, "parse.js"))) {
-  const measured = spawnSync(process.execPath, [join(root, "scripts", "measure.mjs")], {
-    cwd: root,
-    stdio: "inherit",
-  })
-  if (measured.status !== 0) process.exit(measured.status ?? 1)
-}
-
-const sizes = JSON.parse(readFileSync(sizesPath, "utf8"))
-const cases = loadSpecCases()
-const spec = { total: cases.length, pass: 0, fail: [] }
-for (const test of cases) {
-  const officialHtml = officialMarked.parse(test.markdown)
-  let lilHtml
-  try {
-    lilHtml = lilParse(test.markdown)
-  } catch (error) {
-    spec.fail.push({ example: test.example, section: test.section, error: String(error) })
-    continue
-  }
-  if (officialHtml === lilHtml) spec.pass++
-  else spec.fail.push({ example: test.example, section: test.section, file: test.file })
-}
-const passing = cases.filter((test) => {
-  try {
-    return lilParse(test.markdown) === officialMarked.parse(test.markdown)
-  } catch {
-    return false
-  }
-})
-const documentCorpus = corpusMarkdown(passing)
-const heavyDocument = Array.from({ length: 32 }, () => documentCorpus).join("\n\n")
-const specCases = passing.map((test) => test.markdown)
-const inlineCorpus = passing
-  .map((test) => test.markdown.replace(/\n{2,}/g, " ").trim())
-  .filter((src) => src.length > 0 && src.length < 400)
-  .slice(0, 180)
-  .join("\n")
-
-const pageHtml = `<!doctype html>
-<html>
-  <body>
-    <script type="module">
-      window.__pageError = null;
-      window.addEventListener("error", (event) => {
-        window.__pageError = String(event.error || event.message);
-      });
-      const params = new URLSearchParams(location.search);
-      const lane = params.get("lane");
-      try {
-        const mod = await import("/lane/" + lane + ".js");
-        const parse = resolveParse(mod);
-        const parseInline = resolveParseInline(mod);
-        const corpus = await (await fetch("/corpus.json")).json();
-        const html = parse(corpus.document);
-        const inlineHtml = parseInline(corpus.inline);
-        window.__ready = { parse, parseInline, corpus, html, inlineHtml };
-      } catch (error) {
-        window.__pageError = String(error && error.stack ? error.stack : error);
-      }
-
-      function resolveParse(mod) {
-        if (typeof mod.parse === "function") return (src) => mod.parse(src);
-        if (typeof mod.marked === "function") {
-          return (src) => (mod.marked.parse ? mod.marked.parse(src) : mod.marked(src));
-        }
-        const def = mod.default;
-        if (typeof def === "function") return (src) => (def.parse ? def.parse(src) : def(src));
-        if (def && typeof def.parse === "function") return (src) => def.parse(src);
-        throw new Error("no parse export");
-      }
-
-      function resolveParseInline(mod) {
-        if (typeof mod.parseInline === "function") return (src) => mod.parseInline(src);
-        if (mod.marked && typeof mod.marked.parseInline === "function") {
-          return (src) => mod.marked.parseInline(src);
-        }
-        const def = mod.default;
-        if (def && typeof def.parseInline === "function") return (src) => def.parseInline(src);
-        return (src) => resolveParse(mod)(src);
-      }
-    </script>
-  </body>
-</html>`
-
-function serve() {
-  return new Promise((resolveListen) => {
-    const server = createServer((req, res) => {
-      const url = req.url.split("?")[0]
-      if (url === "/corpus.json") {
-        res.writeHead(200, { "content-type": "application/json" })
-        res.end(JSON.stringify({
-          document: documentCorpus,
-          heavy: heavyDocument,
-          cases: specCases,
-          inline: inlineCorpus,
-        }))
-        return
-      }
-      if (url.startsWith("/lane/") && url.endsWith(".js")) {
-        const id = url.slice("/lane/".length, -".js".length)
-        const file = join(lanesDir, `${id}.js`)
-        if (!existsSync(file)) {
-          res.writeHead(404)
-          res.end("missing lane")
-          return
-        }
-        res.writeHead(200, { "content-type": "text/javascript; charset=utf-8" })
-        res.end(readFileSync(file))
-        return
-      }
-      res.writeHead(200, { "content-type": "text/html; charset=utf-8" })
-      res.end(pageHtml)
-    })
-    server.listen(0, "127.0.0.1", () => resolveListen(server))
-  })
-}
-
-function median(values) {
-  const sorted = [...values].sort((a, b) => a - b)
-  const mid = Math.floor(sorted.length / 2)
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
-}
-
-/// One suite, once. Warming and timing are the same code path so a warm run and
-/// a counted run cannot drift apart, and the timed region stays inside the page.
-async function sampleSuite(page, kind, timed) {
-  return page.evaluate(
-    ({ kind, timed }) => {
-      const { parse, parseInline, corpus } = window.__ready
-      const fn =
-        kind === "inline"
-          ? () => parseInline(corpus.inline)
-          : kind === "spec"
-            ? () => {
-                for (let round = 0; round < 40; round++) {
-                  for (const src of corpus.cases) parse(src)
-                }
-              }
-            : () => parse(corpus.heavy)
-      if (!timed) {
-        fn()
-        return null
-      }
-      const start = performance.now()
-      fn()
-      return performance.now() - start
-    },
-    { kind, timed },
-  )
-}
-
-const warmupDiscard = 3
-const loops = 10
-const server = await serve()
-const { port } = server.address()
-const browser = await chromium.launch()
-const officialHtml = { document: null, inline: null }
-const suites = []
-
-const running = []
-for (const lane of sizes.lanes) {
-  const page = await browser.newPage()
-  page.on("pageerror", (error) => console.error(lane.id, error))
-  await page.goto(`http://127.0.0.1:${port}/?lane=${encodeURIComponent(lane.id)}`)
-  await page.waitForFunction(() => window.__ready || window.__pageError)
-  const pageError = await page.evaluate(() => window.__pageError)
-  if (pageError) {
-    throw new Error(`${lane.id} page error: ${pageError}`)
-  }
-  const html = await page.evaluate(() => ({
-    document: window.__ready.html,
-    inline: window.__ready.inlineHtml,
-  }))
-  if (lane.id === "parse") {
-    officialHtml.document = html.document
-    officialHtml.inline = html.inline
-  } else if (html.document !== officialHtml.document) {
-    throw new Error(`${lane.id} document HTML diverged from parse-only marked@18.0.10`)
-  } else if (html.inline !== officialHtml.inline) {
-    throw new Error(`${lane.id} inline HTML diverged from parse-only marked@18.0.10`)
-  }
-  running.push({ lane, page, samples: { document: [], spec: [] } })
-}
-
-/// Lanes are sampled round-robin rather than one lane at a time. Run in blocks,
-/// a machine that speeds up or slows down over the minutes of a run hands that
-/// drift to whichever lane held the floor, and lanes that are the same program
-/// through different minifiers come out disagreeing by more than the result
-/// being measured. Alternating the order each round cancels the linear part.
-for (const kind of ["document", "spec"]) {
-  for (const entry of running) await sampleSuite(entry.page, kind, false)
-  for (let round = 0; round < loops; round++) {
-    const order = round % 2 === 0 ? running : [...running].reverse()
-    for (const entry of order) {
-      entry.samples[kind].push(await sampleSuite(entry.page, kind, true))
-    }
-  }
-}
-
-for (const entry of running) {
-  await entry.page.close()
-  const counted = {
-    document: entry.samples.document.slice(warmupDiscard),
-    spec: entry.samples.spec.slice(warmupDiscard),
-  }
-  suites.push({
-    id: entry.lane.id,
-    name: entry.lane.name,
-    primary: entry.lane.primary,
-    documentMs: median(counted.document),
-    specMs: median(counted.spec),
-    documentRange: [Math.min(...counted.document), Math.max(...counted.document)],
-    specRange: [Math.min(...counted.spec), Math.max(...counted.spec)],
-    htmlOk: true,
-  })
-}
-
-await browser.close()
-server.close()
-
-const official = suites.find((row) => row.id === "parse")
-const report = {
-  generatedAt: new Date().toISOString(),
-  browser: "playwright-chromium",
-  pin: "marked@18.0.10",
-  warmupDiscard,
-  loops,
-  interleaved: true,
-  spec,
-  corpus: {
-    documentChars: documentCorpus.length,
-    heavyChars: heavyDocument.length,
-    specCases: passing.length,
-  },
-  suites: suites.map((row) => ({
-    ...row,
-    documentRatio: row.documentMs / official.documentMs,
-    specRatio: row.specMs / official.specMs,
-  })),
-}
-
-mkdirSync(join(root, "reports"), { recursive: true })
-mkdirSync(join(root, "e2e-out"), { recursive: true })
-writeFileSync(join(root, "reports", "bench.json"), `${JSON.stringify(report, null, 2)}\n`)
-writeFileSync(join(root, "e2e-out", "report.json"), `${JSON.stringify(report, null, 2)}\n`)
-console.log(JSON.stringify(report, null, 2))
-
-const writeResults = spawnSync(process.execPath, [join(root, "scripts", "write-results.mjs")], {
-  cwd: root,
-  stdio: "inherit",
-})
-if (writeResults.status !== 0) process.exit(writeResults.status ?? 1)
+// Current repository artifacts, measured with the same harness as the website.
+// ENGINE=firefox selects Firefox; EXECUTABLE optionally selects a browser binary.
+// DOCUMENT=path BATCH=12 repeats an independent document; default is the 32x corpus.
+// REPEATS defaults to three fresh pages. INCLUDE_SPEC=1 also runs the full spec workload.
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {chromium,firefox} from 'playwright';
+const playwright={chromium,firefox};
+const engine=playwright[process.env.ENGINE||'chromium'];
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const site=path.join(root,'site');
+const alternateCorpus=process.env.DOCUMENT?JSON.stringify({...JSON.parse(fs.readFileSync(site+'/corpus.json')),document:fs.readFileSync(process.env.DOCUMENT,'utf8')}):null;
+const lanes={original:site+'/marked-official.js',lilscript:site+'/marked.js'};
+const server=http.createServer((req,res)=>{
+ const url=new URL(req.url,'http://localhost');
+ if(url.pathname==='/corpus.json'&&alternateCorpus){res.setHeader('content-type','application/json');res.end(alternateCorpus);return;}
+ if(url.pathname==='/'){res.setHeader('content-type','text/html');res.end('<!doctype html><title>Marked benchmark</title>');return;}
+ const file=url.pathname==='/corpus.json'?site+'/corpus.json':url.pathname==='/bench.js'?site+'/bench.js':lanes[url.pathname.slice(1)];
+ if(!file){res.writeHead(404);res.end();return;}
+ res.setHeader('content-type',file.endsWith('json')?'application/json':'text/javascript');res.end(fs.readFileSync(file));
+});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await engine.launch({headless:true,...(process.env.EXECUTABLE?{executablePath:process.env.EXECUTABLE}:{}),...(process.env.ENGINE==='firefox'?{}:{args:['--no-sandbox']})});
+const rows=[];
+const selected=Object.keys(lanes);
+try{
+ for(let repeat=0;repeat<Number(process.env.REPEATS||3);repeat++){
+  const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/`);
+  const result=await page.evaluate(async({selected,repeat,skipSpec,batch})=>{
+   const {loadCorpus,runSuite,verify,HARNESS}=await import('/bench.js');
+   const corpus=await loadCorpus('/corpus.json');
+   const lanes=[];
+   for(const id of selected){const mod=await import('/'+id);lanes.push({id,name:id,parse:s=>{if(batch===1||s!==corpus.heavy)return mod.marked.parse(s);let out;for(let n=0;n<batch;n++)out=mod.marked.parse(s);return out}});}
+   const verification=verify(lanes,corpus);if(!verification.ok)throw Error(JSON.stringify(verification));
+   const expected=lanes[0].parse(corpus.heavy);for(const l of lanes)if(l.parse(corpus.heavy)!==expected)throw Error('Heavy mismatch '+l.id);
+   const original=await runSuite({lanes:repeat%2?[...lanes].reverse():lanes,kind:'document',corpus});
+   HARNESS.loops=24;HARNESS.warmupDiscard=8;
+   const warm=await runSuite({lanes:repeat%2?[...lanes].reverse():lanes,kind:'document',corpus});
+   let spec=null;if(repeat===0 && !skipSpec){HARNESS.loops=10;HARNESS.warmupDiscard=3;spec=await runSuite({lanes,kind:'spec',corpus});}
+   for(const rows of [original,warm])for(const row of rows){row.ms/=batch;row.min/=batch;row.max/=batch;row.samples=row.samples.map(n=>n/batch)}
+   return {repeat,verification,documentBatch:batch,heavyChars:corpus.heavy.length,original,warm,spec,userAgent:navigator.userAgent};
+  },{selected,repeat,skipSpec:process.env.INCLUDE_SPEC!=='1',batch:Number(process.env.BATCH||1)});
+  rows.push(result);console.log(JSON.stringify(result));await page.close();
+ }
+ fs.mkdirSync(path.join(root,'reports'),{recursive:true});
+ const artifacts=Object.fromEntries(Object.entries(lanes).map(([name,file])=>[name,{file:path.relative(root,file),sha256:createHash('sha256').update(fs.readFileSync(file)).digest('hex')}]))
+ fs.writeFileSync(path.join(root,'reports',process.env.OUTPUT||`runtime-${process.env.ENGINE||'chromium'}.json`),JSON.stringify({measuredAt:new Date().toISOString(),artifacts,rows},null,2)+'\n');
+}finally{await browser.close();server.close();}

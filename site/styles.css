@@ -188,7 +188,7 @@ tbody td:last-child strong { color: var(--acid); }
 footer.shell { display: flex; justify-content: space-between; gap: 20px; padding-block: 28px; border-top: 1px solid var(--line); color: var(--muted); font: 500 10px "DM Mono", monospace; text-transform: uppercase; }
 
 @media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; gap: 60px; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 60px; }
   .scoreboard { width: min(620px, calc(100% - 16px)); }
   .section-heading { grid-template-columns: 1fr; align-items: start; }
   .play-grid { grid-template-columns: 1fr; min-height: 720px; }
@@ -201,7 +201,7 @@ footer.shell { display: flex; justify-content: space-between; gap: 20px; padding
   .nav { height: 68px; }
   .nav nav a:not(:last-child) { display: none; }
   .hero { min-height: 0; padding-block: 62px 80px; }
-  h1 { font-size: clamp(62px, 22vw, 92px); }
+  h1 { font-size: clamp(52px, 19vw, 92px); }
   .score-main { padding: 27px; }
   .score-grid strong { font-size: 23px; }
   .lab, .evidence, .performance { padding-block: 82px; }

@@ -47,15 +47,12 @@ export class Token {
   bool checked;
   bool header;
   bool escaped;
-  bool pre;
-  bool block;
-  bool hasTitle;
   bool hasLang;
-  Token[] tokens;
-  Token[] items;
-  Token[] headerCells;
-  Token[][] rows;
-  Align[] aligns;
+  Token[]? tokens;
+  // List/table storage is allocated only for those token kinds.
+  Token[]? items;
+  Token[]? headerCells;
+  Token[][]? rows;
 
   init() {
     this.kind = Kind.Space;
@@ -74,9 +71,6 @@ export class Token {
     this.checked = false;
     this.header = false;
     this.escaped = false;
-    this.pre = false;
-    this.block = false;
-    this.hasTitle = false;
     this.hasLang = false;
   }
 }

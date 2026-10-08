@@ -1,339 +1,145 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="@itslil/marked is the parse path of marked 18.0.10, not the full package. Size and speed are versus official Lexer/Parser/Renderer minified by Oxc, Terser and esbuild."
-    />
-    <meta name="theme-color" content="#c9a227" />
-    <title>itslil/marked — marked 18.0.10 through LilScript</title>
-    <link rel="stylesheet" href="./styles.css" />
-    <script type="module" src="./app.js"></script>
-  </head>
-  <body>
-    <div class="progress" aria-hidden="true"></div>
-    <header class="nav shell">
-      <a class="wordmark" href="#top" aria-label="itslil/marked home">
-        <span class="mark">md</span>
-        <span>itslil/marked</span>
-      </a>
-      <nav aria-label="Main navigation">
-        <a href="#performance">performance</a>
-        <a href="#verify">verify</a>
-        <a href="#lab">playground</a>
-        <a href="#evidence">size</a>
-        <a href="https://github.com/yeargun/markedlil">GitHub ↗</a>
-      </nav>
-    </header>
-
-    <main id="top">
-      <section class="hero shell">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="live-dot"></span> marked 18.0.10 · LilScript port · @itslil/marked</p>
-          <h1>Markdown,<br /><em>compiled.</em></h1>
-          <p class="lede">
-            This is not marked. It is the <code>marked@18.0.10</code> <strong>parse path</strong> —
-            <code>parse</code>, <code>parseInline</code>, <code>setOptions</code> — rewritten in
-            LilScript. No <code>use()</code>, Hooks, or Tokenizer subclassing: LilScript cannot
-            override methods, and it is not trying to become JavaScript. Every number on this page
-            compares that same official parse path, then Oxc, Terser and esbuild.
-            The measured ESM is the Brotli-scored compile. gzip and raw each have their own compile.
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="Marked parsing in LilScript: current raw, gzip and Brotli sizes, parse timings and build times versus original minified Marked. Try the live benchmark." name="description"/>
+<meta content="#c9a227" name="theme-color"/>
+<title>itslil/marked — marked 18.0.10 through LilScript</title>
+<link href="./styles.css" rel="stylesheet"/>
+<script src="./app.js" type="module"></script>
+<link href="./objective-comparison.css" rel="stylesheet"/></head>
+<body>
+<div aria-hidden="true" class="progress"></div>
+<header class="nav shell">
+<a aria-label="itslil/marked home" class="wordmark" href="#top">
+<span class="mark">md</span>
+<span>itslil/marked</span>
+</a>
+<nav aria-label="Main navigation">
+<a href="#performance">parse time</a>
+<a href="#compiler">build time</a>
+<a href="#verify">verify</a>
+<a href="#lab">playground</a>
+<a href="#evidence">size</a>
+<a href="https://github.com/yeargun/markedlil">GitHub ↗</a>
+</nav>
+</header>
+<main id="top">
+<section class="hero shell">
+<div class="hero-copy">
+<p class="eyebrow"><span class="live-dot"></span> marked 18.0.10 · LilScript port · @itslil/marked</p>
+<h1>Markdown,<br/><em>compiled.</em></h1>
+<p class="lede">
+            The synchronous parsing API of <code>marked@18.0.10</code> —
+            <code>parse</code>, <code>parseInline</code>, <code>setOptions</code> — implemented in
+            LilScript. Compare the current repository build with original minified Marked:
+            download sizes, parsing time, and build time. Raw, gzip and Brotli each have their
+            own objective build. Marked's extension and subclassing APIs are outside this port.
           </p>
-          <div class="install-row">
-            <code>npm install @itslil/marked</code>
-            <button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
-          </div>
-          <div class="hero-actions">
-            <a class="button primary" href="#performance">Playwright</a>
-            <a class="button secondary" href="https://www.npmjs.com/package/@itslil/marked">npm ↗</a>
-          </div>
-        </div>
-
-        <div class="scoreboard" aria-label="Compression and performance results">
-          <div class="score-main">
-            <span class="score-label">Bytes over the wire, Brotli-11, against the official parse path minified by Oxc</span>
-            <strong id="hero-ratio">—<span>smaller</span></strong>
-            <p id="hero-bytes"></p>
-          </div>
-          <div class="score-grid">
-            <div><strong id="hero-shipped">—</strong><span>Brotli-11 you ship, vs Oxc</span></div>
-            <div><strong id="hero-gzip">—</strong><span>gzip-9, gzip-scored compile vs Oxc</span></div>
-            <div><strong id="hero-raw">—</strong><span>raw, raw-scored compile vs Oxc</span></div>
-            <div><strong id="hero-spec">—</strong><span>spec cases with identical HTML</span></div>
-          </div>
-          <p class="score-note">
-            Official rows are one parse-path file, then Oxc or Terser, measured three ways.
-            LilScript searches a different artifact for each <code>cost_model</code>, so the gzip
-            and raw numbers come from those compiles — not from compressing the Brotli npm file.
-            Brotli is still the headline. The published official marked package is not a lane.
-            <strong>Speed</strong> is time spent parsing in Chromium. HTML is checked byte-for-byte
-            against that same official parse path before any number is reported. Runtime checks: 29/29 pass.</p>
-        </div>
-      </section>
-
-      <section class="ticker" aria-label="Supported features">
-        <div>
+<div class="install-row">
+<code>npm install @itslil/marked</code>
+<button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
+</div>
+<div class="hero-actions">
+<a class="button primary" href="#performance">compare parse time</a>
+<a class="button secondary" href="https://www.npmjs.com/package/@itslil/marked">npm ↗</a>
+</div>
+<p class="objective-note">The demo and measurements use the <a href="./marked.js">current repository ESM</a>. npm releases are published separately.</p>
+</div>
+<div aria-label="Compression and performance results" class="scoreboard">
+<div class="score-main">
+<span class="score-label">Current LilScript versus minified original · portable ESM</span>
+<strong id="hero-ratio">—<span>smaller</span></strong>
+<p id="hero-bytes"></p>
+</div>
+<div class="score-grid">
+<div><strong id="hero-shipped">—</strong><span>Brotli-11, vs minified original</span></div>
+<div><strong id="hero-gzip">—</strong><span>gzip-9, gzip-scored compile vs minified original</span></div>
+<div><strong id="hero-raw">—</strong><span>raw, raw-scored compile vs minified original</span></div>
+<div><strong id="hero-spec">—</strong><span>current artifact checks</span></div>
+</div>
+<p class="score-note">Raw, gzip and Brotli each use a separate LilScript compilation targeting that objective. The original uses the same export and dependency boundary, then a JavaScript minifier.</p>
+</div>
+</section>
+<section aria-label="Supported features" class="ticker">
+<div>
           gfm <span>✦</span> commonmark <span>✦</span> tables <span>✦</span> task lists <span>✦</span> fences
           <span>✦</span> autolinks <span>✦</span> parse <span>✦</span> parseInline <span>✦</span> setOptions
         </div>
-      </section>
+</section>
 <section class="performance shell" id="performance">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Measured in Chromium</p>
-            <h2>Playwright,<br />not inferred.</h2>
-          </div>
-          <p>
-            HTML must match the official parse path of <code>marked@18.0.10</code>. The document suite is the GFM+CommonMark
-            corpus repeated 32 times. The loop suite parses all 660 cases forty times. The official rows are the same
-            program through different minifiers, so the distance between them is the noise floor — a lane is only called
-            faster when it clears its own sample range.
-          </p>
-        </div>
-        <div class="perf-cards" id="perf-cards"></div>
-
-        <div class="verify" id="verify">
-          <div class="verify-head">
-            <div>
-              <h3>Don't take the number. Run it.</h3>
-              <p>
-                The table below is a recording. This button is the same benchmark on
-                <strong>your</strong> machine: the same corpus, the same two suites, the same
-                warmup-discard median as
-                <a href="https://github.com/yeargun/markedlil/blob/main/e2e/run.mjs">e2e/run.mjs</a>.
-                Both engines parse all 660 spec cases first, and no timing is reported unless
+<div class="section-heading">
+<div><p class="eyebrow">Current build · original minified</p><h2>Parsing time.</h2></div>
+<p>Recorded in Chromium and Firefox on two documents. Compare the measured medians, inspect every sample, or run both parsers on your own device.</p>
+</div>
+<div id="recorded-runtime"></div>
+<div class="verify" id="verify">
+<div class="verify-head">
+<div>
+<h3>Run it on your device.</h3>
+<p>
+                This button measures document parsing and the full spec suite on
+                <strong>your</strong> machine with the shared
+                <a href="https://github.com/yeargun/markedlil/blob/main/site/bench.js">benchmark harness</a>.
+                Both parsers check all 660 spec cases first, and no timing is reported unless
                 every byte of HTML matches.
               </p>
-            </div>
-            <button type="button" id="verify-run">run the benchmark</button>
-          </div>
-          <p class="verify-status" id="verify-status">
+</div>
+<button id="verify-run" type="button">run the benchmark</button>
+</div>
+<p class="verify-status" id="verify-status">
             Keep this tab in front while it runs — a background tab is throttled and the numbers
             are meaningless. Takes a few seconds.
           </p>
-          <div class="verify-out" id="verify-out" aria-live="polite"></div>
-        </div>
-
-        <ul class="source-links">
-          <li>
-            <span>the harness</span>
-            <a href="https://github.com/yeargun/markedlil/blob/main/e2e/run.mjs">e2e/run.mjs</a>
-            <small>Playwright Chromium. Produced the recorded table.</small>
-          </li>
-          <li>
-            <span>the same thing, in your browser</span>
-            <a href="https://github.com/yeargun/markedlil/blob/main/site/bench.js">site/bench.js</a>
-            <small>What the button above runs.</small>
-          </li>
-          <li>
-            <span>the corpus</span>
-            <a href="https://github.com/yeargun/markedlil/blob/main/scripts/spec.mjs">scripts/spec.mjs</a>
-            <small>GFM 0.29 and CommonMark 0.31.2 fixtures, joined.</small>
-          </li>
-          <li>
-            <span>the recorded run</span>
-            <a href="https://github.com/yeargun/markedlil/blob/main/reports/bench.json">reports/bench.json</a>
-            <small>Every sample behind the table, not just the median.</small>
-          </li>
-        </ul>
-
-        <div class="table-wrap light">
-          <table>
-            <thead>
-              <tr>
-                <th>Lane</th>
-                <th>32× document</th>
-                <th>range</th>
-                <th>document vs official</th>
-                <th>660-case ×40</th>
-                <th>range</th>
-                <th>spec loop vs official</th>
-              </tr>
-            </thead>
-            <tbody id="perf-body"></tbody>
-          </table>
-        </div>
-        <p class="perf-note" id="perf-note"></p>
-      </section>
-
-      <section class="lab shell" id="lab">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">The compiled runtime, in the browser</p>
-            <h2>Live<br />markdown.</h2>
-          </div>
-          <p>
-            Left is the editor. Right is HTML from <code>@itslil/marked</code> or the official
-            <code>marked@18.0.10</code> parse path — the same Lexer/Parser/Renderer cut used for size.
+<div aria-live="polite" class="verify-out" id="verify-out"></div>
+</div></section>
+<section class="lab shell" id="lab">
+<div class="section-heading">
+<div>
+<p class="eyebrow">The compiled runtime, in the browser</p>
+<h2>Live<br/>markdown.</h2>
+</div>
+<p>
+            Left is the editor. Right is HTML from the current <code>@itslil/marked</code> ESM
+            or original minified <code>marked@18.0.10</code> — the same artifacts used for the recorded timings.
             Marked does not sanitize HTML. Do not paste untrusted markdown.
           </p>
-        </div>
-        <div class="playground">
-          <div class="play-toolbar">
-            <label>
-              <input type="radio" name="engine" value="lil" checked />
+</div>
+<div class="playground">
+<div class="play-toolbar">
+<label>
+<input checked="" name="engine" type="radio" value="lil"/>
               @itslil/marked
             </label>
-            <label>
-              <input type="radio" name="engine" value="official" />
-              official parse path
+<label>
+<input name="engine" type="radio" value="official"/>
+              original minified Marked
             </label>
-            <button type="button" id="race">race 10×</button>
-            <span id="race-out"></span>
-          </div>
-          <div class="play-grid">
-            <textarea id="source" spellcheck="false" aria-label="Markdown source"></textarea>
-            <iframe id="preview" title="Rendered markdown" sandbox="allow-same-origin"></iframe>
-          </div>
-        </div>
-      </section>
-
-      <section class="evidence" id="evidence">
-        <div class="shell">
-          <div class="section-heading inverse">
-            <div>
-              <p class="eyebrow">The receipts</p>
-              <h2>Raw, gzip,<br />and Brotli.</h2>
-            </div>
-            <p>
-              Official 18.0.10 Lexer/Parser/Tokenizer/Renderer, then Oxc and Terser with mangling on and off,
-              and esbuild's minifier. LilScript is not post-minified. Each codec below uses the LilScript
-              compile scored for that codec (<code>cost_model = raw | gzip | brotli</code>). The npm file is
-              the Brotli compile. Closed LilScript is the Brotli compile of <code>lilscript.closed.toml</code>;
-              this compiler renames no properties yet (<code>extern_fields</code> has no effect), so that lane
-              is the npm file byte for byte.
-            </p>
-          </div>
-
-          <div class="codec-block">
-            <h3>Brotli-11</h3>
-            <p class="codec-lead">The wire number. LilScript row is <code>cost_model = brotli</code>, the npm file.</p>
-            <div class="total-bar" id="bar-brotli"></div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Lane</th>
-                    <th>Brotli-11</th>
-                    <th>vs Oxc</th>
-                  </tr>
-                </thead>
-                <tbody id="body-brotli"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="codec-block">
-            <h3>gzip-9</h3>
-            <p class="codec-lead">LilScript row is a separate compile: <code>cost_model = gzip</code>.</p>
-            <div class="total-bar" id="bar-gzip"></div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Lane</th>
-                    <th>gzip-9</th>
-                    <th>vs Oxc</th>
-                  </tr>
-                </thead>
-                <tbody id="body-gzip"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="codec-block">
-            <h3>Raw</h3>
-            <p class="codec-lead">LilScript row is a separate compile: <code>cost_model = raw</code>.</p>
-            <div class="total-bar" id="bar-raw"></div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Lane</th>
-                    <th>Raw</th>
-                    <th>vs Oxc</th>
-                  </tr>
-                </thead>
-                <tbody id="body-raw"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="codec-block">
-            <h3>All three, matched compiles</h3>
-            <p class="codec-lead">
-              Official rows are one file measured three ways. The LilScript library row takes raw from the
-              raw compile, gzip from the gzip compile, and Brotli from the Brotli compile.
-            </p>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Lane</th>
-                    <th>Raw</th>
-                    <th>gzip-9</th>
-                    <th>Brotli-11</th>
-                    <th>Brotli vs Oxc</th>
-                  </tr>
-                </thead>
-                <tbody id="body-matched"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="codec-block">
-            <h3>The files you install</h3>
-            <p class="codec-lead">
-              Measured as shipped, license banner included. No minifier or bundler runs after the compiler:
-              the CommonJS and browser files are the ESM compile with only its export clause swapped.
-            </p>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>File</th>
-                    <th>Raw</th>
-                    <th>gzip-9</th>
-                    <th>Brotli-11</th>
-                    <th>How it is written</th>
-                  </tr>
-                </thead>
-                <tbody id="body-delivered"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="method-note">
-            <p>
-              <strong>Why this surface.</strong> LilScript cannot override methods, so this port has no
-              <code>use()</code> / Hooks / walkTokens — and there is no plan to grow the language into
-              JavaScript to get them. Comparing against published <code>marked.esm.js</code> would put
-              the extension system on one side only. The fair fight is the 18.0.10 parse path, then the
-              same Oxc, Terser and esbuild work the JS ecosystem actually ships. Closed LilScript is the
-              other honest comparison: a program with no JavaScript options object, whose property names
-              could mangle. The compiler does not rename properties yet, so today it adds nothing.
-            </p>
-            <a href="https://github.com/yeargun/markedlil#what-is-compared">README ↗</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="closing shell">
-        <p class="eyebrow">Zero runtime dependencies</p>
-        <h2>Install the<br />current port.</h2>
-        <div class="install-row large">
-          <code>npm install @itslil/marked</code>
-          <button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
-        </div>
-      </section>
-    </main>
-
-    <footer class="shell">
-      <span>@itslil/marked · MIT</span>
-      <span>Parse path of marked@18.0.10, rewritten in LilScript — not the full package</span>
-      <a href="https://github.com/yeargun/markedlil">source ↗</a>
-    </footer>
-  </body>
+<button id="race" type="button">race 10×</button>
+<span id="race-out"></span>
+</div>
+<div class="play-grid">
+<textarea aria-label="Markdown source" id="source" spellcheck="false"></textarea>
+<iframe id="preview" sandbox="allow-same-origin" title="Rendered markdown"></iframe>
+</div>
+</div>
+</section>
+<section class="objective-section shell" id="evidence"><p class="eyebrow">Current library · original minified</p><h2>Three objectives.<br/>Measured separately.</h2><div id="compression-comparison"></div></section><section class="objective-section shell" id="compiler"><p class="eyebrow">Same machine · sequential builds</p><h2>Build time.</h2><div id="objective-build-times"></div></section>
+<section class="closing shell">
+<p class="eyebrow">Zero runtime dependencies</p>
+<h2>Use the<br/>Markdown port.</h2>
+<div class="install-row large">
+<code>npm install @itslil/marked</code>
+<button class="copy" data-copy="npm install @itslil/marked" type="button">copy</button>
+</div>
+</section>
+</main>
+<footer class="shell">
+<span>@itslil/marked · MIT</span>
+<span>Parse path of marked@18.0.10, rewritten in LilScript — not the full package</span>
+<a href="https://github.com/yeargun/markedlil">source ↗</a>
+</footer>
+</body>
 </html>
